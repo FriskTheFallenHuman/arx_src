@@ -3300,6 +3300,8 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		gameLocal.Printf("ARX - No roast chicken - gash.\n" );
 	}
 	
+	//REMOVEME TEST
+	PostEventSec( &AI_SpawnItem, 2, "a goat" );
 
 	// make sure the monster is activated
 	EndAttack();

@@ -335,6 +335,7 @@ const idEventDef AI_SetNextState( "setNextState", "s" );
 const idEventDef AI_SetState( "setState", "s" );
 const idEventDef AI_GetState( "getState", NULL, 's' );
 const idEventDef AI_GetHead( "getHead", NULL, 'e' );
+const idEventDef AI_SpawnItem( "spawnItem", NULL, 's' );
 
 CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_EnableEyeFocus,			idActor::Event_EnableEyeFocus )
@@ -378,6 +379,7 @@ CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_SetState,					idActor::Event_SetState )
 	EVENT( AI_GetState,					idActor::Event_GetState )
 	EVENT( AI_GetHead,					idActor::Event_GetHead )
+	EVENT( AI_SpawnItem,				idActor::Event_SpawnItem )	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 END_CLASS
 
 /*
@@ -3327,4 +3329,15 @@ idActor::Event_GetHead
 */
 void idActor::Event_GetHead( void ) {
 	idThread::ReturnEntity( head.GetEntity() );
+}
+
+/*
+=====================
+idActor::Event_GetHead
+=====================
+*/
+void idActor::Event_SpawnItem( const char *name ) {
+	
+	gameLocal.Printf( "idActor::Event_SpawnItem %s\n", name );
+
 }

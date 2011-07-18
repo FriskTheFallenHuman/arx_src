@@ -27,6 +27,7 @@ extern const idEventDef AI_PlayCycle;
 extern const idEventDef AI_AnimDone;
 extern const idEventDef AI_SetBlendFrames;
 extern const idEventDef AI_GetBlendFrames;
+extern const idEventDef AI_SpawnItem;	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 
 class idDeclParticle;
 
@@ -289,6 +290,7 @@ private:
 	void					Event_SetState( const char *name );
 	void					Event_GetState( void );
 	void					Event_GetHead( void );
+	void					Event_SpawnItem( const char *name );	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 };
 
 #endif /* !__GAME_ACTOR_H__ */
