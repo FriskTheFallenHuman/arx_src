@@ -336,7 +336,7 @@ const idEventDef AI_SetState( "setState", "s" );
 const idEventDef AI_GetState( "getState", NULL, 's' );
 const idEventDef AI_GetHead( "getHead", NULL, 'e' );
 const idEventDef AI_SpawnItem( "spawnItem" );
-const idEventDef AI_SpawnItemCooked( "spawnItemCooked", NULL, 's' );
+const idEventDef AI_SpawnItemCooked( "spawnItemCooked", "s" );
 
 CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_EnableEyeFocus,			idActor::Event_EnableEyeFocus )
@@ -3352,6 +3352,9 @@ void idActor::Event_SpawnItem( void ) {
 		args.Set( "classname", kv->GetValue() );
 		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
 
+		args.Set( "dropped", "1" );
+		args.Set( "nodrop", "1" );
+
 		gameLocal.SpawnEntityDef( args );
 		kv = spawnArgs.MatchPrefix( "def_delayed_drops", kv );
 	}
@@ -3372,11 +3375,25 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 	if ( !*name == '\0' ) {
 
 		idDict args;
+		idEntity *item;
+		idVec3 forward, up, throwVector;
 
 		args.Set( "classname", spawnArgs.GetString( name ) );
 		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
 
-		gameLocal.SpawnEntityDef( args );
-	}
+		args.Set( "dropped", "1" );
+		args.Set( "nodrop", "0" ); // Was 1
 
+		gameLocal.SpawnEntityDef( args, &item );
+
+		/*
+		if ( item ) {
+		// set item position
+		item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
+		item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
+		item->GetPhysics()->SetLinearVelocity(  );
+		item->UpdateVisuals();
+		*/
+	}
 }
+

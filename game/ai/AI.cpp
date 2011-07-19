@@ -3375,7 +3375,7 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		gameLocal.Printf("Spawning cooked body parts.\n" );
 
 		spawnArgs.SetFloat( "arx_dinner_is_ready", 1 );
-		PostEventSec( &AI_SpawnItem, 1, "def_cooked_drops" );
+		PostEventSec( &AI_SpawnItemCooked, 1, "def_cooked_drops" );
 	}
 	else
 	{
