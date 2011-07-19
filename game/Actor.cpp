@@ -335,7 +335,8 @@ const idEventDef AI_SetNextState( "setNextState", "s" );
 const idEventDef AI_SetState( "setState", "s" );
 const idEventDef AI_GetState( "getState", NULL, 's' );
 const idEventDef AI_GetHead( "getHead", NULL, 'e' );
-const idEventDef AI_SpawnItem( "spawnItem", NULL, 's' );
+const idEventDef AI_SpawnItem( "spawnItem" );
+const idEventDef AI_SpawnItemCooked( "spawnItemCooked", NULL, 's' );
 
 CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_EnableEyeFocus,			idActor::Event_EnableEyeFocus )
@@ -380,6 +381,7 @@ CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_GetState,					idActor::Event_GetState )
 	EVENT( AI_GetHead,					idActor::Event_GetHead )
 	EVENT( AI_SpawnItem,				idActor::Event_SpawnItem )	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
+	EVENT( AI_SpawnItemCooked,			idActor::Event_SpawnItemCooked )	// Solarsplace 18th July 2011 - Spawn cooked body parts a few seconds after death
 END_CLASS
 
 /*
@@ -3333,11 +3335,48 @@ void idActor::Event_GetHead( void ) {
 
 /*
 =====================
-idActor::Event_GetHead
+idActor::Event_SpawnItem
 =====================
 */
-void idActor::Event_SpawnItem( const char *name ) {
+void idActor::Event_SpawnItem( void ) {
 	
-	gameLocal.Printf( "idActor::Event_SpawnItem %s\n", name );
+	// SP - Arx
+
+	gameLocal.Printf( "idActor::Event_SpawnItem\n");
+
+	const idKeyValue *kv = spawnArgs.MatchPrefix( "def_delayed_drops", NULL );
+	while( kv ) {
+
+		idDict args;
+
+		args.Set( "classname", kv->GetValue() );
+		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
+
+		gameLocal.SpawnEntityDef( args );
+		kv = spawnArgs.MatchPrefix( "def_delayed_drops", kv );
+	}
+
+}
+
+/*
+=====================
+idActor::Event_SpawnItem
+=====================
+*/
+void idActor::Event_SpawnItemCooked( const char *name  ) {
+	
+	// SP - Arx
+
+	gameLocal.Printf( "idActor::Event_SpawnItemCooked\n");
+
+	if ( !*name == '\0' ) {
+
+		idDict args;
+
+		args.Set( "classname", spawnArgs.GetString( name ) );
+		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
+
+		gameLocal.SpawnEntityDef( args );
+	}
 
 }

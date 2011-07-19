@@ -3289,20 +3289,6 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	idAngles ang;
 	const char *modelDeath;
 
-	//REMOVEME
-	gameLocal.Printf("ARX - idAI %s was killed by inflictor %s.\n", this->name.c_str(),  inflictor->name.c_str() );
-	if ( inflictor->spawnArgs.GetBool( "cooked_enemy", "0" ) )
-	{
-		gameLocal.Printf("ARX - Roast chicken - yum yum.\n" );
-	}
-	else
-	{
-		gameLocal.Printf("ARX - No roast chicken - gash.\n" );
-	}
-	
-	//REMOVEME TEST
-	PostEventSec( &AI_SpawnItem, 2, "a goat" );
-
 	// make sure the monster is activated
 	EndAttack();
 
@@ -3375,6 +3361,34 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	}
 
 	restartParticles = false;
+
+	//***************************************************************
+	//*** Start - Solarsplace 19th Jul 2011
+
+	// This must be before setting script to state_Killed as we set spawn args here that are checked in the ai_monster_base.script
+
+	//REMOVEME
+	gameLocal.Printf("ARX - idAI %s was killed by inflictor %s.\n", this->name.c_str(),  inflictor->name.c_str() );
+
+	if ( inflictor->spawnArgs.GetBool( "cooked_enemy", "0" ) )
+	{
+		gameLocal.Printf("Spawning cooked body parts.\n" );
+
+		spawnArgs.SetFloat( "arx_dinner_is_ready", 1 );
+		PostEventSec( &AI_SpawnItem, 1, "def_cooked_drops" );
+	}
+	else
+	{
+		//REMOVEME
+		gameLocal.Printf("Not spawning cooked body parts.\n" );
+	}
+	
+	// Spawn death drop items on a delay, so they are not affected by the physics of fire ball blasts etc.
+	PostEventSec( &AI_SpawnItem, 1 );
+
+	//*** End - Solarsplace
+	//***************************************************************
+
 
 	state = GetScriptFunction( "state_Killed" );
 	SetState( state );
