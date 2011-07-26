@@ -3382,18 +3382,18 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
 
 		args.Set( "dropped", "1" );
-		args.Set( "nodrop", "0" ); // Was 1
+		args.Set( "nodrop", "1" );
 
 		gameLocal.SpawnEntityDef( args, &item );
 
-		/*
-		if ( item ) {
-		// set item position
-		item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
-		item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
-		item->GetPhysics()->SetLinearVelocity(  );
-		item->UpdateVisuals();
-		*/
+		if ( item )
+		{
+			item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
+			item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
+			item->GetPhysics()->SetLinearVelocity( vec3_origin );
+			item->UpdateVisuals();
+		}
+		
 	}
 }
 
