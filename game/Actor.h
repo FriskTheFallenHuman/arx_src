@@ -188,6 +188,7 @@ protected:
 	float					fovDot;				// cos( fovDegrees )
 	idVec3					eyeOffset;			// offset of eye relative to physics origin
 	idVec3					modelOffset;		// offset of visual model relative to the physics origin
+	idVec3					mHeadModelOffset;	// offset for the head - SP 14th Sep 2011 Arx EOS - From TDM
 
 	idAngles				deltaViewAngles;	// delta angles relative to view input angles
 

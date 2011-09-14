@@ -644,6 +644,11 @@ void idActor::SetupHead( void ) {
 
 	headModel = spawnArgs.GetString( "def_head", "" );
 	if ( headModel[ 0 ] ) {
+
+		// SP 14th Sep 2011 - Arx EOS - From TDM
+		// greebo: Regardless what happens, the offsetHeadModel vector always gets added to the offset
+		mHeadModelOffset += spawnArgs.GetVector("offsetHeadModel", "0 0 0");
+
 		jointName = spawnArgs.GetString( "head_joint" );
 		joint = animator.GetJointHandle( jointName );
 		if ( joint == INVALID_JOINT ) {
@@ -677,7 +682,7 @@ void idActor::SetupHead( void ) {
 		idAttachInfo &attach = attachments.Alloc();
 		attach.channel = animator.GetChannelForJoint( joint );
 		animator.GetJointTransform( joint, gameLocal.time, origin, axis );
-		origin = renderEntity.origin + ( origin + modelOffset ) * renderEntity.axis;
+		origin = renderEntity.origin + ( origin + modelOffset + mHeadModelOffset ) * renderEntity.axis; // SP 14th Sep 2011 - Arx EOS - (mHeadModelOffset) From TDM
 		attach.ent = headEnt;
 		headEnt->SetOrigin( origin );
 		headEnt->SetAxis( renderEntity.axis );
@@ -754,6 +759,7 @@ void idActor::Save( idSaveGame *savefile ) const {
 	savefile->WriteFloat( fovDot );
 	savefile->WriteVec3( eyeOffset );
 	savefile->WriteVec3( modelOffset );
+	savefile->WriteVec3( mHeadModelOffset ); // SP 14th Sep 2011 - Arx EOS - From TDM
 	savefile->WriteAngles( deltaViewAngles );
 
 	savefile->WriteInt( pain_debounce_time );
@@ -872,6 +878,7 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	savefile->ReadFloat( fovDot );
 	savefile->ReadVec3( eyeOffset );
 	savefile->ReadVec3( modelOffset );
+	savefile->ReadVec3( mHeadModelOffset ); // SP 14th Sep 2011 - Arx EOS - From TDM
 	savefile->ReadAngles( deltaViewAngles );
 
 	savefile->ReadInt( pain_debounce_time );
