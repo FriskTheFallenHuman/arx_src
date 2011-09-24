@@ -1016,6 +1016,10 @@ idPlayer::idPlayer() {
 	magicAttackInProgress	= false;				// (15th May 2010)		Spell casting related
 	magicDoingPreCastSpellProjectile	= false;	// (22nd Jul 2010)		Spell casting related
 
+	// Solarsplace 24th Sep 2011
+	invItemGroupCount = new idDict();
+	invItemGroupPointer = new idDict();
+
 	// Solarsplace 3rd June 2010
 	waterScreenFinishTime = 0;
 	playerUnderWater = false;
@@ -4606,29 +4610,57 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		return true;
 	}
 
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+
+	const idKeyValue *kv;
+
 	// Solarsplace 11th April 2010 - Inventory related
 	if ( token.Icmp( "inventoryitemuse" ) == 0 ) {
+
+		//REMOVEME
 		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemuse\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
-			//REMOVED
-			//gameLocal.Printf( "&token2 = %s\n", token2.c_str() );
-			ConsumeInventoryItem( atoi( token2 ) );
+
+			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
+
+			if ( kv ) {
+				//REMOVED
+				//gameLocal.Printf( "&token2 = %s\n", token2.c_str() );
+				ConsumeInventoryItem( atoi( kv->GetValue() ) );
+			}
 		}
 		return true;
 	}
 
 	// Solarsplace 15th April 2010 - Inventory related
 	if ( token.Icmp( "inventoryitemdrop" ) == 0 ) {
+
+		//REMOVEME
 		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemdrop\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
-			//REMOVED
-			//gameLocal.Printf( "&token2 = %s\n", token2.c_str() );
-			DropInventoryItem( atoi( token2 ) );
+
+			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
+
+			if ( kv ) {
+				//REMOVED
+				//gameLocal.Printf( "&token2 = %s\n", token2.c_str() );
+				DropInventoryItem( atoi( kv->GetValue() ) );
+			}
 		}
 		return true;
 	}
+
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
 
 	src->UnreadToken( &token );
 	return false;
@@ -7348,14 +7380,16 @@ void idPlayer::UpdateInventoryGUI( void )
 	if ( inventorySystem && inventorySystemOpen )
 	{
 		int totalMana; // Solarsplace 26th April 2010 - Inventory related
-		int x;
 
+		/* Solarsplace 24th Sep 2011 - This seems not to be used anymore in the gui's
+		int x;
 		for( x = 0; x < MAX_INVENTORY_ITEMS; x++ ) {
 			inventorySystem->SetStateString( va( "inv_has_item_at_%i", x ), "0" );
 			if ( x <= inventory.items.Num() ) {
 				inventorySystem->SetStateString( va( "inv_has_item_at_%i", x ), "1" );
 			}
 		}
+		*/
 
 		// Solarsplace - 16th May 2010 - Poison related
 		if ( playerPoisoned )
@@ -7372,28 +7406,101 @@ void idPlayer::UpdateInventoryGUI( void )
 		// Show the player health
 		inventorySystem->SetStateInt( "player_health", health );
 
+		// This clears out the hud strings - not 100% sure if needed.
 		int j, c = inventory.items.Num();
 		inventorySystem->SetStateInt( "inv_count", c );
 		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
 			inventorySystem->SetStateString( va( "inv_name_%i", j ), "" );
 			inventorySystem->SetStateString( va( "inv_icon_%i", j ), "" );
 			inventorySystem->SetStateString( va( "inv_text_%i", j ), "" );
+			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), "0" ); // Solarsplace 24th Sep 2011 - Reset item groupings totals.
 		}
+
+		const idKeyValue *argPointer;
+		const idKeyValue *argGroupCount;
+
+		invItemGroupCount->Clear();
+		invItemGroupPointer->Clear();
+
+		int itemGroupCount;
+
 		for ( j = 0; j < c; j++ ) {
+
 			idDict *item = inventory.items[j];
+
 			if ( !item->GetBool( "inv_pda" ) ) {
+
 				const char *iname = item->GetString( "inv_name" );
 				const char *iicon = item->GetString( "inv_icon" );
 				const char *itext = item->GetString( "inv_text" );
+
+				idStr n1 = iname;
+				idStr n2 = va( "_%i", j );
+
+				if ( item->GetBool( "inventory_nostack", "0" ) )
+				{
+					//gameLocal.Printf("Adding new item %s\n", iname);
+					// Add 1 new item
+
+					//invItemGroupPointer->SetInt( iname, j );
+					//invItemGroupCount->SetInt( iname, 1 );
+
+					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j ); //invItemGroupPointer->SetInt( iname, j );
+					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
+				}
+				else
+				{
+					if ( !invItemGroupPointer->FindKey( iname ) )
+					{
+						//gameLocal.Printf("Adding new item %s\n", iname);
+						// Add 1 new item
+						invItemGroupPointer->SetInt( iname, j );
+						invItemGroupCount->SetInt( iname, 1 );
+					}
+					else
+					{
+						//gameLocal.Printf("Updating existing item\n", iname);
+						// We have this inv_name in the dictionary already. So update its quantity count.
+						itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
+						invItemGroupCount->SetInt( iname, itemGroupCount );
+					}
+				}
+
+				/*
 				inventorySystem->SetStateString( va( "inv_name_%i", j ), iname );
 				inventorySystem->SetStateString( va( "inv_icon_%i", j ), iicon );
 				inventorySystem->SetStateString( va( "inv_text_%i", j ), itext );
+
+				// SP 24th Sep 2011 'inv_id' does not seem to be used by the game or custom Neuro guis's
 				const idKeyValue *kv = item->MatchPrefix( "inv_id", NULL );
 				if ( kv ) {
 					inventorySystem->SetStateString( va( "inv_id_%i", j ), kv->GetValue() );
 				}
+				*/
+
 			}
 		}
+
+		c = invItemGroupPointer->GetNumKeyVals();
+
+		for ( j = 0; j < c; j++ ) {
+
+			argPointer = invItemGroupPointer->GetKeyVal( j );
+			argGroupCount = invItemGroupCount->GetKeyVal( j );
+
+			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
+
+			const char *iname = item->GetString( "inv_name" );
+			const char *iicon = item->GetString( "inv_icon" );
+			const char *itext = item->GetString( "inv_text" );
+
+			inventorySystem->SetStateString( va( "inv_name_%i", j ), iname );
+			inventorySystem->SetStateString( va( "inv_icon_%i", j ), iicon );
+			inventorySystem->SetStateString( va( "inv_text_%i", j ), itext );
+
+			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
+		}
+
 	}
 }
 

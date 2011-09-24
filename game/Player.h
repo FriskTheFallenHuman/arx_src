@@ -757,7 +757,9 @@ private:
 	void					PlaySpecificEntitySoundShader( idEntity *ent, const char *sndShaderName );	// solarsplace 1st Mar 2010
 	bool					ConsumeInventoryItem( int invItemIndex );						// solarsplace 15th Apr 2010
 	void					DropInventoryItem( int invItemIndex );							// solarsplace 15th Apr 2010
-	
+	idDict					*invItemGroupCount;												// solarsplace 24th Sep 2011
+	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011											
+			
 	// Poison related
 	void					healthDecreaseOverTime();										// solarsplace 16th May 2010
 	int						healthNextDecreaseTime;											// solarsplace 16th May 2010
