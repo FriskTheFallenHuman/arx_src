@@ -59,6 +59,7 @@ const idEventDef EV_Player_GetIdealWeapon( "getIdealWeapon", NULL, 's' );
 // Arx EOS Events
 const idEventDef EV_Player_InventoryContainsItem( "inventoryContainsItem", "s", 'f' );
 const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint", "s", NULL );
+const idEventDef EV_HudMessage( "HudMessage", "s" );
 //*****************************************************************
 //*****************************************************************
 
@@ -85,8 +86,9 @@ CLASS_DECLARATION( idActor, idPlayer )
 	//*****************************************************************
 	//*****************************************************************
 	// Arx EOS Events
-	EVENT( EV_Player_InventoryContainsItem,	idPlayer::Event_InventoryContainsItem )
+	EVENT( EV_Player_InventoryContainsItem,		idPlayer::Event_InventoryContainsItem )
 	EVENT( EV_Player_LevelTransitionSpawnPoint,	idPlayer::Event_LevelTransitionSpawnPoint )
+	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -7886,6 +7888,11 @@ void idPlayer::GetEntityByViewRay( void )
 		// Solarsplace 2nd April 2010 - It is critical that the inv_ remains
 		if ( target->spawnArgs.GetBool( "inv_arx_inventory_item" ) && !target->IsHidden() )
 		{
+
+			// Solarsplace 25th Sep 2011
+			if ( target->spawnArgs.GetString( "inv_name" ) )
+			{ ShowHudMessage( target->spawnArgs.GetString( "inv_name" ) ); }
+
 			// Solarsplace 4th Oct 2010 - Level transition related
 			SaveTransitionInfoSpecific( target, false, true );
 
@@ -11364,6 +11371,22 @@ void idPlayer::Event_LevelTransitionSpawnPoint( const char *levelTransitionSpawn
 	SetMapEntryPoint( levelTransitionSpawnPoint );
 }
 
+
+void idPlayer::Event_HudMessage( const char *message )
+{
+	if ( hud )
+	{
+		hud->SetStateString( "arx_MainMessageText", message );
+		hud->HandleNamedEvent( "arx_ShowMainMessage" );
+	}
+	gameLocal.Printf("%s\n", message);
+}
+
+
+void idPlayer::ShowHudMessage( idStr message )
+{
+	Event_HudMessage( message.c_str() );
+}
 
 /*
 //REMOVEME - HUD debugging

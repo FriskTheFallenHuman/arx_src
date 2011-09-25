@@ -492,6 +492,9 @@ public:
 	idStr					GetMapEntryPoint( void );
 	void					SaveTransitionInfoSpecific( idEntity *ent, bool spawnedItem, bool hiddenItem );
 
+	// HUD messages
+	void					ShowHudMessage( idStr message );		// Solarsplace 25th Sep 2011
+
 	/*
 	*** END - Solarsplace - Arx EOS - Public
 	*****************************************************************************************************
@@ -748,7 +751,7 @@ private:
 	// EVENTS
 	void					Event_InventoryContainsItem( const char *itemName );			// 2nd Jan 2009 - Solarsplace
 	void					Event_LevelTransitionSpawnPoint( const char *spawnPointEntName );	// 3rd Oct 2010 - Solarsplace
-
+	void					Event_HudMessage( const char *message );						// 25th Sep 2011 - Solarsplace
 	// Inventory Related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
 	idStr					lastUsableName;													// solarsplace 7th June 2010
