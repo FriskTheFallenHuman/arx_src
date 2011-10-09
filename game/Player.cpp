@@ -7889,6 +7889,19 @@ void idPlayer::GetEntityByViewRay( void )
 		if ( target->spawnArgs.GetBool( "inv_arx_inventory_item" ) && !target->IsHidden() )
 		{
 
+			// Solarsplace 9th Oct 2011 - Does this item require another inventory item before it can be picked up?
+			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
+			if ( idStr::Icmp( requiredItemInvName, "" ) != 0 ) // Updated to be in line with the level change code below 20th Nov 2010
+			{
+				inventoryItem = FindInventoryItem( target->spawnArgs.GetString( "requires_inv_item" ) );
+				if ( !inventoryItem )
+				{
+					// Play a sound to indicate nothing to pickup.
+					StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+					return;
+				}
+			}
+
 			// Solarsplace 25th Sep 2011
 			if ( target->spawnArgs.GetString( "inv_name" ) )
 			{ ShowHudMessage( target->spawnArgs.GetString( "inv_name" ) ); }
@@ -7907,7 +7920,17 @@ void idPlayer::GetEntityByViewRay( void )
 
 			// Solarsplace 4th Oct 2010 - Level transition related
 			// Need to save 'classname' args in the inventory args as 'inv_classname' so it is persisted through level transitions
-			entityClassName = target->spawnArgs.GetString( "classname" );
+
+			// Solarsplace 9th Oct 2011 - If we specify a drop item use that.
+			if ( target->spawnArgs.GetString( "def_dropItem" ) )
+			{
+				entityClassName = target->spawnArgs.GetString( "def_dropItem" );
+			}
+			else
+			{
+				entityClassName = target->spawnArgs.GetString( "classname" );
+			}
+
 			//REMOVEME
 			gameLocal.Printf( "Setting inv_classname to %s\n ", entityClassName.c_str() );
 			args.Set( "inv_classname", entityClassName );
