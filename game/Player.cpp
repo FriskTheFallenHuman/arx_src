@@ -99,7 +99,7 @@ const int RAGDOLL_DEATH_TIME = 3000;
 const int MAX_PDAS = 64;
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
-const int MAX_INVENTORY_ITEMS = 22; // Solarsplace - 6th May 2010 - Inventory related - Increaced by 2 to make inventory look neat.
+const int MAX_INVENTORY_ITEMS = 48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
 
 const int ARX_MAGIC_WEAPON = 9;		// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = 6;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
@@ -7970,7 +7970,7 @@ void idPlayer::GetEntityByViewRay( void )
 
 				// Solarsplace 1st July 2010 - Inventory related
 				// Need to tell the HUD we got more money
-				if ( hud ) { hud->HandleNamedEvent( "GainMoney" ); }
+				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
 
 			}
 			//************************************************************************************************
@@ -7979,7 +7979,7 @@ void idPlayer::GetEntityByViewRay( void )
 			else if ( target->spawnArgs.GetBool( "player_inventory_weapon" ) )
 			{
 				// Need to tell the HUD we got a weapon
-				if ( hud ) { hud->HandleNamedEvent( "GainWeapon" ); }
+				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
 				GiveInventoryItem( &args );
 			}
 			//************************************************************************************************
