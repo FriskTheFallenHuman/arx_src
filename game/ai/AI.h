@@ -245,6 +245,9 @@ public:
 							// Finds the best collision free trajectory for a clip model.
 	static bool				PredictTrajectory( const idVec3 &firePos, const idVec3 &target, float projectileSpeed, const idVec3 &projGravity, const idClipModel *clip, int clipmask, float max_height, const idEntity *ignore, const idEntity *targetEntity, int drawtime, idVec3 &aimDir );
 
+	// Solarsplace 13th Oct 2011 - Arx EOS - Moved to public
+	void					SetEnemy( idActor *newEnemy );
+
 protected:
 	// navigation
 	idAAS *					aas;
@@ -473,7 +476,8 @@ protected:
 	bool					EnemyPositionValid( void ) const;
 	void					SetEnemyPosition( void );
 	void					UpdateEnemyPosition( void );
-	void					SetEnemy( idActor *newEnemy );
+		
+	//void					SetEnemy( idActor *newEnemy ); // Solarsplace 13th Oct 2011 - Arx EOS - Moved to public
 
 	// attacks
 	void					CreateProjectileClipModel( void ) const;

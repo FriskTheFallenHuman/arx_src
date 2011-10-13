@@ -6646,12 +6646,67 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 		switch( impulse )
 		{
-			// Solarsplace 14th Aug 2010 - Don't need this stuff
-			/*
+			//REMOVEME
 			case IMPULSE_13: {
-				Reload();
+
+				/***********************************************************************/
+				/***********************************************************************/
+				/***********************************************************************/
+				gameLocal.Printf("IMPULSE_13\n");
+
+
+				if ( playerInvisibleEndTime > gameLocal.time ) // Do not alert AI or set enemy if player invisible
+				{ break; };
+
+				int			e;
+				idEntity *	ent;
+				idEntity *	entityList[ MAX_GENTITIES ];
+				int			numListedEntities;
+				idBounds	bounds;
+				//idActor	*	actor;
+
+				bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( 1024 );
+
+				const idActor *actor = static_cast<const idActor *>( this );
+
+				// get all entities touching the bounds
+				numListedEntities = gameLocal.clip.EntitiesTouchingBounds( bounds, -1, entityList, MAX_GENTITIES );
+
+				for ( e = 0; e < numListedEntities; e++ ) {
+
+					ent = entityList[ e ];
+						
+					if ( ent->IsType( idAI::Type ) ) {
+
+						gameLocal.Printf("idAI is %s\n", ent->name.c_str());
+
+						if ( static_cast<idActor *>( ent )->CanSee(this, true) )
+						{
+							gameLocal.Printf("The idAI %s can see the player\n", ent->name.c_str());
+						}
+						else
+						{
+							gameLocal.Printf("The idAI %s can NOT see the player\n", ent->name.c_str());
+						}
+
+						gameLocal.AlertAI( this );
+
+						static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( ent ) );// TouchedByFlashlight( actor );
+						
+					}
+				}
+
+				/***********************************************************************/
+				/***********************************************************************/
+				/***********************************************************************/
+
+
+				//Reload();
 				break;
 			}
+
+			// Solarsplace 14th Aug 2010 - Don't need this stuff
+			/*
 			case IMPULSE_14: {
 				NextWeapon();
 				break;
