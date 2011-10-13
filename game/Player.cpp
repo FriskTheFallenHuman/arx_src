@@ -6691,7 +6691,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 						gameLocal.AlertAI( this );
 
-						static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( ent ) );// TouchedByFlashlight( actor );
+						static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( this ) );// TouchedByFlashlight( actor );
 						
 					}
 				}
@@ -7922,6 +7922,54 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	return gave;
 }
 
+/*
+==============
+idPlayer::AlertAI
+==============
+*/
+void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
+
+	int			e;
+	idEntity *	ent;
+	idEntity *	entityList[ MAX_GENTITIES ];
+	int			numListedEntities;
+	idBounds	bounds;
+
+	if ( playerInvisibleEndTime > gameLocal.time ) // Do not alert AI or set enemy if player is invisible.
+	{ return; };
+
+	bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( alertRadius );
+
+	const idActor *actor = static_cast<const idActor *>( this );
+
+	// Get all entities touching the bounds
+	numListedEntities = gameLocal.clip.EntitiesTouchingBounds( bounds, -1, entityList, MAX_GENTITIES );
+
+	for ( e = 0; e < numListedEntities; e++ ) {
+
+		ent = entityList[ e ];
+						
+		if ( ent->IsType( idAI::Type ) ) {
+
+			gameLocal.Printf("idAI is %s\n", ent->name.c_str());
+
+			if ( playerVisible ) {
+				if ( !static_cast<idActor *>( ent )->CanSee(this, true) ) { return; }
+			}
+
+			gameLocal.AlertAI( this );
+			static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( this ) );
+						
+		}
+	}
+}
+
+/*
+==============
+idPlayer::GetEntityByViewRay
+==============
+*/
+
 void idPlayer::GetEntityByViewRay( void )
 {
 	// Solarsplace 4th Mar 2010
@@ -7956,6 +8004,20 @@ void idPlayer::GetEntityByViewRay( void )
 					return;
 				}
 			}
+
+			//*** Start - Solarsplace 13th Oct 2011 - Should we alert AI?
+			bool alertai;
+			bool alertaifov;
+			float alertradius;
+
+			target->spawnArgs.GetBool( "alertai", "0", alertai );
+			target->spawnArgs.GetBool( "alertfov", "0", alertaifov );
+			target->spawnArgs.GetFloat( "alerteffectradius", "1024", alertradius );
+
+			if ( alertai ) {
+				AlertAI( alertaifov, alertradius );
+			}
+			//*** End - Solarsplace 13th Oct 2011 - Should we alert AI?
 
 			// Solarsplace 25th Sep 2011
 			if ( target->spawnArgs.GetString( "inv_name" ) )

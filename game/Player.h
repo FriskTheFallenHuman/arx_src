@@ -808,6 +808,9 @@ private:
 	int						GetTransitionKeyIndex( idStr recordType, idStr entityName );
 	void					SpawnTransitionEntity( idStr entityName );
 
+	// AI related
+	void					AlertAI( bool playerVisible, float alertRadius );
+
 	/*
 	*** END - Solarsplace - Arx EOS - Private
 	*****************************************************************************************************
