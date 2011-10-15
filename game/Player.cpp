@@ -60,6 +60,7 @@ const idEventDef EV_Player_GetIdealWeapon( "getIdealWeapon", NULL, 's' );
 const idEventDef EV_Player_InventoryContainsItem( "inventoryContainsItem", "s", 'f' );
 const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint", "s", NULL );
 const idEventDef EV_HudMessage( "HudMessage", "s" );
+const idEventDef EV_PlayerMoney( "PlayerMoney", "d", 'd' );
 //*****************************************************************
 //*****************************************************************
 
@@ -89,6 +90,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_InventoryContainsItem,		idPlayer::Event_InventoryContainsItem )
 	EVENT( EV_Player_LevelTransitionSpawnPoint,	idPlayer::Event_LevelTransitionSpawnPoint )
 	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
+	EVENT( EV_PlayerMoney,						idPlayer::Event_PlayerMoney )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -162,6 +164,9 @@ void idInventory::Clear( void ) {
 	deplete_rate	= 0.0f;
 	deplete_ammount	= 0;
 	nextArmorDepleteTime = 0;
+
+	// Solarsplace - Arx EOS
+	money			= 0;
 
 	memset( ammo, 0, sizeof( ammo ) );
 
@@ -257,6 +262,9 @@ void idInventory::GetPersistantData( idDict &dict ) {
 
 	// armor
 	dict.SetInt( "armor", armor );
+
+	// Solarsplace - Arx EOS
+	dict.SetInt( "money", money );
 
     // don't bother with powerups, maxhealth, maxarmor, or the clip
 
@@ -373,6 +381,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	deplete_rate	= dict.GetFloat( "deplete_rate", "2.0" );
 	deplete_ammount	= dict.GetInt( "deplete_ammount", "1" );
 
+	// Solarsplace - Arx EOS
+	money			= dict.GetInt( "money", "0" );
+
 	// the clip and powerups aren't restored
 
 	// ammo
@@ -479,6 +490,9 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( deplete_ammount );
 	savefile->WriteInt( nextArmorDepleteTime );
 
+	// Solarsplace - Arx EOS
+	savefile->WriteInt( money );
+
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
 		savefile->WriteInt( ammo[ i ] );
 	}
@@ -574,6 +588,9 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadFloat( deplete_rate );
 	savefile->ReadInt( deplete_ammount );
 	savefile->ReadInt( nextArmorDepleteTime );
+
+	// Solarsplace - Arx EOS
+	savefile->ReadInt( money );
 
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
 		savefile->ReadInt( ammo[ i ] );
@@ -882,11 +899,11 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 		// ignore these as they're handled elsewhere
 		return false;
 
-	// Solarsplace 15th April 2010 - Inventory related
-	} else if (!idStr::Icmp(statname, "arx_inventory_item" )
+	} else if (!idStr::Icmp(statname, "arx_inventory_item" ) // Solarsplace 15th April 2010 - Inventory related
 			|| !idStr::Icmp( statname, "invis" )
 			|| !idStr::Icmp( statname, "poison" )
 			|| !idStr::Icmp( statname, "classname" )
+			|| !idStr::Icmp( statname, "wine" )
 			|| !idStr::Icmp( statname, "torch" ))
 	{
 		// ignore these as they are at this time not important here, but are necessary to enable the item to be re-picked up.
@@ -7448,6 +7465,9 @@ void idPlayer::UpdateInventoryGUI( void )
 		}
 		*/
 
+		// Solarsplace 15th Oct 2011 - Money
+		inventorySystem->SetStateString( "player_money", va( "%i", inventory.money ) );
+
 		// Solarsplace - 16th May 2010 - Poison related
 		if ( playerPoisoned )
 		{ inventorySystem->SetStateString( "poisoned", "1" ); }
@@ -7880,14 +7900,19 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				gave = true;
 			}
 
-			// Invis
+			// Poison
 			if ( arg->GetKey() == "inv_poison" )
 			{
 				playerPoisoned = true;
 				gave = true;
 			}
 
-			// Invis
+			// Wine
+			if ( arg->GetKey() == "inv_wine" && gave)
+			{
+				Damage( this, this, vec3_origin, "damage_arx_drunk", 1.0f, INVALID_JOINT );
+			}
+			// Wooden flame torch
 			if ( arg->GetKey() == "inv_torch" )
 			{
 				// Solarsplace 21st Jan 2011
@@ -8067,10 +8092,6 @@ void idPlayer::GetEntityByViewRay( void )
 			{
 				gameLocal.persistentLevelInfo.SetBool( target->spawnArgs.GetString( "persistent_rune_name" ), true );
 
-				//REMOVEMEx
-				//gameLocal.Printf( "gameLocal.persistentLevelInfo.Set( %s, '1' )\n ", target->spawnArgs.GetString( "persistent_rune_name" ) );
-
-				// Solarsplace 1st June 2010 - Inventory related
 				// Need to tell the HUD we picked up a rune
 				if ( hud ) { hud->HandleNamedEvent( "NewRune" ); } // Changed to 'NewRune' - 6th June 2010 for Nuro
 
@@ -8083,12 +8104,13 @@ void idPlayer::GetEntityByViewRay( void )
 			//************************************************************************************************
 			else if ( target->spawnArgs.GetBool( "player_money_gold" ) )
 			{
-				//gameLocal.persistentLevelInfo.SetBool( target->spawnArgs.GetString( "persistent_rune_name" ), true );
-
-				// Solarsplace 1st July 2010 - Inventory related
 				// Need to tell the HUD we got more money
 				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
 
+				int moneyAmount = atoi( target->spawnArgs.GetString( "player_money_gold_amount", "0" ) );
+				if ( moneyAmount > 0) {
+					inventory.money += moneyAmount;
+				}
 			}
 			//************************************************************************************************
 			//************************************************************************************************
@@ -8196,6 +8218,13 @@ void idPlayer::GetEntityByViewRay( void )
 		//************************************************************************************************
 		//************************************************************************************************
 		//************************************************************************************************
+		else if ( target->spawnArgs.GetBool( "arx_trigger_script" ) && !target->IsHidden() )
+		{
+			// Solarsplace 15th Oct 2011 - trigger scripts of entities in game
+
+			target->Signal( SIG_TRIGGER );
+			return;
+		}
 		else
 		{
 			// Play a sound to indicate nothing to pickup.
@@ -11526,6 +11555,29 @@ void idPlayer::Event_HudMessage( const char *message )
 void idPlayer::ShowHudMessage( idStr message )
 {
 	Event_HudMessage( message.c_str() );
+}
+
+void idPlayer::Event_PlayerMoney( int amount )
+{
+	if ( amount > 0 )
+	{
+		inventory.money += amount;
+		idThread::ReturnInt( 1 );
+	}
+	else
+	{
+		if ( inventory.money + amount >= 0 )
+		{
+			inventory.money += amount;
+			idThread::ReturnInt( 1 );
+		}
+		else
+		{
+			idThread::ReturnInt( 0 );
+		}
+	}
+
+
 }
 
 /*

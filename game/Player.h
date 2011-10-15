@@ -96,6 +96,9 @@ public:
 	int						clip[ MAX_WEAPONS ];
 	int						powerupEndTime[ MAX_POWERUPS ];
 
+	// Solarsplace - Arx EOS
+	int						money;
+
 	// mp
 	int						ammoPredictTime;
 
@@ -749,9 +752,11 @@ private:
 	*/
 
 	// EVENTS
-	void					Event_InventoryContainsItem( const char *itemName );			// 2nd Jan 2009 - Solarsplace
+	void					Event_InventoryContainsItem( const char *itemName );				// 2nd Jan 2009 - Solarsplace
 	void					Event_LevelTransitionSpawnPoint( const char *spawnPointEntName );	// 3rd Oct 2010 - Solarsplace
-	void					Event_HudMessage( const char *message );						// 25th Sep 2011 - Solarsplace
+	void					Event_HudMessage( const char *message );							// 25th Sep 2011 - Solarsplace
+	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
+
 	// Inventory Related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
 	idStr					lastUsableName;													// solarsplace 7th June 2010
