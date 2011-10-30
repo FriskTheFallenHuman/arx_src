@@ -820,6 +820,10 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	// get the projectile
 	projectileDict.Clear();
 
+	// Solarsplace - Arx - 30th Oct 2011 - Added this line back in from the clean SDK - Did I delete it by accident?
+	// as every melee weapon causes the console to moan about an invalid projectile when it does not have one!
+
+	projectileName = weaponDef->dict.GetString( "def_projectile" );
 	if ( projectileName[0] != '\0' ) {
 		const idDeclEntityDef *projectileDef = gameLocal.FindEntityDef( projectileName, false );
 		if ( !projectileDef ) {

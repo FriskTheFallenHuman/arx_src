@@ -7435,6 +7435,12 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// Locate the item being dropped from the inventory and put its spawn args in item.
 		idDict *droppingItem = FindInventoryItem( iname );
 
+		if ( droppingItem->GetString( "inv_weapon" ) )
+		{
+			// Dropping a weapon - select the fists
+			SelectWeapon( 0, true );
+		}
+
 		// Now remove the item from the players inventory
 		RemoveInventoryItem( droppingItem ); 
 		
@@ -7864,7 +7870,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	// Solarsplace - 14th Aug 2010 - Weapons
 	if ( item->GetBool( "inv_weapon" ) )
 	{
-		int weaponId = item->GetInt( "weapon_def" );
+		int weaponId = item->GetInt( "inv_weapon_def" );
 		SelectWeapon( weaponId, false );
 
 		// Optional, may wish to play an equip sound.
