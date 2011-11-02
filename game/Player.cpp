@@ -1579,6 +1579,10 @@ void idPlayer::Spawn( void ) {
 		objectiveSystem = uiManager->FindGui( "guis/pda.gui", true, false, true );
 		objectiveSystemOpen = false;
 
+		// Solarsplace 2nd Nov 2011 - NPC GUI related
+		conversationSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
+		conversationSystemOpen = false;
+
 		// Solarsplace 11th June 2010 - Readable related
 		readableSystem = uiManager->FindGui( "guis/arx_inventory.gui", true, false, true );
 		readableSystemOpen = false;
@@ -1590,8 +1594,6 @@ void idPlayer::Spawn( void ) {
 		// Solarsplace 6th May 2010 - Journal related
 		journalSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
 		journalSystemOpen = false;
-
-		
 
 	}
 
@@ -1776,6 +1778,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteUserInterface( readableSystem, false );
 	savefile->WriteBool( readableSystemOpen );
+
+	savefile->WriteUserInterface( conversationSystem, false );
+	savefile->WriteBool( conversationSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Save Arx EOS user interfaces
 
 	savefile->WriteInt( weapon_soulcube );
@@ -2030,6 +2035,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadUserInterface( readableSystem );
 	savefile->ReadBool( readableSystemOpen );
+
+	savefile->ReadUserInterface( conversationSystem );
+	savefile->ReadBool( conversationSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Load Arx EOS user interfaces
 
 	savefile->ReadInt( weapon_soulcube );
@@ -4109,6 +4117,12 @@ idUserInterface *idPlayer::ActiveGui( void ) {
 		return readableSystem;
 	}
 
+	// Solarsplace 2nd Nov 2011 - NPC GUI related
+	if ( conversationSystemOpen )
+	{
+		return conversationSystem;
+	}
+
 
 	return focusUI;
 }
@@ -4231,6 +4245,14 @@ void idPlayer::Weapon_NPC( void ) {
 
 	if ( ( usercmd.buttons & BUTTON_ATTACK ) && !( oldButtons & BUTTON_ATTACK ) ) {
 		buttonMask |= BUTTON_ATTACK;
+
+		// SP - Arx EOS - NPC GUI
+		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
+		{
+			readableSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
+			ToggleConversationSystem();
+		}
+
 		focusCharacter->TalkTo( this );
 	}
 }
@@ -4310,8 +4332,17 @@ void idPlayer::Weapon_GUI( void ) {
 		weapon.GetEntity()->LowerWeapon();
 	}
 
-	// Solarsplace 6th May 2010 - Journal related
+	// Solarsplace 6th May 2010 - Readable related
 	if ( !readableSystemOpen ) {
+		if ( idealWeapon != currentWeapon ) {
+			Weapon_Combat();
+		}
+		StopFiring();
+		weapon.GetEntity()->LowerWeapon();
+	}
+
+	// Solarsplace 2nd Nov 2011 - NPC GUI related
+	if ( !conversationSystemOpen ) {
 		if ( idealWeapon != currentWeapon ) {
 			Weapon_Combat();
 		}
@@ -4586,6 +4617,14 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		// Solarsplace 6th May 2010 - Journal related
 		if ( readableSystemOpen ) {
 			ToggleReadableSystem();
+		}
+	}
+
+	if ( token.Icmp( "shutnpcgui" ) == 0 ) {
+
+		// Solarsplace 2nd Nov 2011 - NPC GUI related
+		if ( conversationSystemOpen ) {
+			ToggleConversationSystem();
 		}
 	}
 
@@ -4993,6 +5032,13 @@ void idPlayer::UpdateFocus( void ) {
 		} else {
 			hud->SetStateString( "npc", "" );
 			hud->HandleNamedEvent( "hideNPC" );
+
+			// SP - Arx EOS - NPC GUI
+			if (conversationSystemOpen)
+			{
+				// If the conversation GUI is open and we no longer have a focus AI then shut the GUI.
+				ToggleConversationSystem();
+			}
 		}
 	}
 }
@@ -5566,7 +5612,8 @@ void idPlayer::UpdateViewAngles( void ) {
 
 	// Solarsplace 11th April 2010 - Inventory related - Added inventorySystem to condition
 	// Solarsplace 6th May 2010 - Journal related - Added journalSystem to condition
-	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen) ) {
+	// Solarsplace 2nd Nov 2011 - Added NPC GUI
+	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen) ) {
 		// no view changes at all, but we still want to update the deltas or else when
 		// we get out of this mode, our view will snap to a kind of random angle
 		UpdateDeltaViewAngles( viewAngles );
@@ -6369,6 +6416,26 @@ void idPlayer::ToggleReadableSystem(void)
 	{
 		readableSystem->Activate( false, gameLocal.time );
 		readableSystemOpen = false;
+	}
+}
+
+/*
+==============
+idPlayer::ToggleConversationSystem
+==============
+*/
+void idPlayer::ToggleConversationSystem(void)
+{
+	// Solarsplace 2nd Nov 2011 - NPC GUI Related
+	if( !conversationSystemOpen )
+	{
+		conversationSystem->Activate( true, gameLocal.time );
+		conversationSystemOpen = true;
+	}
+	else
+	{
+		conversationSystem->Activate( false, gameLocal.time );
+		conversationSystemOpen = false;
 	}
 }
 

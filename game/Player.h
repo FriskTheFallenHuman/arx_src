@@ -242,13 +242,17 @@ public:
 	idUserInterface *		inventorySystem;
 	bool					inventorySystemOpen;
 
-	// Solarsplace 6th May 2010 - Journal related
+	// Solarsplace 6th May 2010 - Journal GUI related
 	idUserInterface *		journalSystem;
 	bool					journalSystemOpen;
 
-	// Solarsplace 6th May 2010 - Journal related
+	// Solarsplace 6th May 2010 - Readable GUI related
 	idUserInterface *		readableSystem;
 	bool					readableSystemOpen;
+
+	// Solarsplace 2nd Nov 2011 - NPC GUI related
+	idUserInterface *		conversationSystem;
+	bool					conversationSystemOpen;
 
 	// Solarsplace - Poison related
 	bool					playerPoisoned;
@@ -486,6 +490,10 @@ public:
 	// Readable related
 	void					ToggleReadableSystem( void );			// Solarsplace 6th May 2010
 	void					UpdateReadableGUI( void );				// solarsplace 6th May 2010
+
+	// Readable related
+	void					ToggleConversationSystem( void );				// Solarsplace 2nd Nov 2011
+	void					UpdateConversationSystem( void );					// Solarsplace 2nd Nov 2011
 
 	// Magic related
 	void					ToggleMagicMode( void );				// Solarsplace 29th Apr 2010
