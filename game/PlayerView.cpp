@@ -1071,6 +1071,13 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 			//return;
 		}
 
+		// Solarsplace 3rd Nov 2011 - NPC GUI related
+		// Re-positioned this if block here so we still render the world.
+		if ( player->conversationSystemOpen ) {
+			player->conversationSystem->Redraw( gameLocal.time );
+			//return;
+		}
+
 		// End - Solarsplace - Arx End Of Sun
 		//******************************************************************************************************
 		//******************************************************************************************************

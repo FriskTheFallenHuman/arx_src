@@ -4249,7 +4249,7 @@ void idPlayer::Weapon_NPC( void ) {
 		// SP - Arx EOS - NPC GUI
 		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
 		{
-			readableSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
+			conversationSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
 			ToggleConversationSystem();
 		}
 
