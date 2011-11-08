@@ -697,6 +697,7 @@ const int	CINEMATIC_SKIP_DELAY	= SEC2MS( 2.0f );
 
 // Solarsplace 23rd April 2010 - Magic related.
 #include "ArxMisc.h"
+#include "ArxShop.h"
 
 #include "SmokeParticles.h"
 
