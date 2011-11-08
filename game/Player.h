@@ -254,6 +254,11 @@ public:
 	idUserInterface *		conversationSystem;
 	bool					conversationSystemOpen;
 
+	// Solarsplace 6th Nov 2011 - Shopping GUI related
+	idUserInterface *		shoppingSystem;
+	bool					shoppingSystemOpen;
+	idEntity *				lastShopEntity;
+
 	// Solarsplace - Poison related
 	bool					playerPoisoned;
 
@@ -491,9 +496,13 @@ public:
 	void					ToggleReadableSystem( void );			// Solarsplace 6th May 2010
 	void					UpdateReadableGUI( void );				// solarsplace 6th May 2010
 
-	// Readable related
-	void					ToggleConversationSystem( void );				// Solarsplace 2nd Nov 2011
-	void					UpdateConversationSystem( void );					// Solarsplace 2nd Nov 2011
+	// NPG GUI related
+	void					ToggleConversationSystem( void );		// Solarsplace 2nd Nov 2011
+	void					UpdateConversationSystem( void );		// Solarsplace 2nd Nov 2011
+
+	// Shop GUI related
+	void					ToggleShoppingSystem( void );		// Solarsplace 2nd Nov 2011
+	void					UpdateShoppingSystem( void );		// Solarsplace 2nd Nov 2011
 
 	// Magic related
 	void					ToggleMagicMode( void );				// Solarsplace 29th Apr 2010
@@ -790,6 +799,9 @@ private:
 	void					increaseManaOverTime();											// solarsplace 18th Mar 2010
 	int						manaNextGiveTime;												// solarsplace 18th Mar 2010
 	void					MagicUpdateJournalSpells( void );								// solarsplace 22nd Jul 2010
+
+	// Shop related
+	idArxShop				arxShopFunctions;
 
 	// Spell casting related
 	idEntity				*magicWand;

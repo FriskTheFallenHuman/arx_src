@@ -14,9 +14,12 @@ class idArxShop {
 
 	public:
 
+		idDict					*shopSlotItem_Icon;
+		idDict					*shopSlotItem_Class;
+
 	public:
 
-		void	LoadActiveShop			( idEntity shopEntity );
+		void	LoadActiveShop			( idEntity *shopEntity );
 
 };
 #endif   /* !_PLAYER_ARXSHOP_H_ */

@@ -103,11 +103,11 @@ const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
 const int MAX_INVENTORY_ITEMS = 48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
 
-const int ARX_MAGIC_WEAPON = 9;		// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
-const int ARX_MANA_WEAPON = 6;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
-const int ARX_MANA_TYPE = 4;		// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "4"
-const int ARX_MANA_BASE_COST = 10;	// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
-const int ARX_INVIS_TIME = 30 * 1000; // Solarsplace - 6th June 2010 - Time invis potion lasts 
+const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
+const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
+const int ARX_MANA_TYPE = 1;						// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "1"
+const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
+const int ARX_INVIS_TIME = 30 * 1000;				// Solarsplace - 6th June 2010 - Time invis potion lasts 
 
 //*****************************************************************
 //*****************************************************************
@@ -1579,6 +1579,10 @@ void idPlayer::Spawn( void ) {
 		objectiveSystem = uiManager->FindGui( "guis/pda.gui", true, false, true );
 		objectiveSystemOpen = false;
 
+		// Solarsplace 6th Nov 2011 - Shop GUI related
+		shoppingSystem = uiManager->FindGui( "guis/arx_inventory_and_shop.gui", true, false, true );
+		shoppingSystemOpen = false;
+
 		// Solarsplace 2nd Nov 2011 - NPC GUI related
 		conversationSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
 		conversationSystemOpen = false;
@@ -1781,6 +1785,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteUserInterface( conversationSystem, false );
 	savefile->WriteBool( conversationSystemOpen );
+
+	savefile->WriteUserInterface( shoppingSystem, false );
+	savefile->WriteBool( shoppingSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Save Arx EOS user interfaces
 
 	savefile->WriteInt( weapon_soulcube );
@@ -2038,6 +2045,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadUserInterface( conversationSystem );
 	savefile->ReadBool( conversationSystemOpen );
+
+	savefile->ReadUserInterface( shoppingSystem );
+	savefile->ReadBool( shoppingSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Load Arx EOS user interfaces
 
 	savefile->ReadInt( weapon_soulcube );
@@ -2686,6 +2696,7 @@ int idPlayer::GetPlayerManaAmount( void )
 	{ return inventory.HasAmmo( weap ); }
 	else
 	{ return 0; }
+
 }
 
 /*
@@ -4123,6 +4134,12 @@ idUserInterface *idPlayer::ActiveGui( void ) {
 		return conversationSystem;
 	}
 
+	// Solarsplace 6th Nov 2011 - Shop GUI related
+	if ( shoppingSystemOpen )
+	{
+		return shoppingSystem;
+	}
+
 
 	return focusUI;
 }
@@ -4250,6 +4267,10 @@ void idPlayer::Weapon_NPC( void ) {
 		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
 		{
 			conversationSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
+
+			//REMOVEME
+			gameLocal.Printf("ToggleConversationSystem(%s)\n", focusCharacter->spawnArgs.GetString( "characters_gui" ) );
+
 			ToggleConversationSystem();
 		}
 
@@ -4343,6 +4364,15 @@ void idPlayer::Weapon_GUI( void ) {
 
 	// Solarsplace 2nd Nov 2011 - NPC GUI related
 	if ( !conversationSystemOpen ) {
+		if ( idealWeapon != currentWeapon ) {
+			Weapon_Combat();
+		}
+		StopFiring();
+		weapon.GetEntity()->LowerWeapon();
+	}
+
+	// Solarsplace 2nd Nov 2011 - NPC GUI related
+	if ( !shoppingSystemOpen ) {
 		if ( idealWeapon != currentWeapon ) {
 			Weapon_Combat();
 		}
@@ -4625,6 +4655,14 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		// Solarsplace 2nd Nov 2011 - NPC GUI related
 		if ( conversationSystemOpen ) {
 			ToggleConversationSystem();
+		}
+	}
+
+	if ( token.Icmp( "shutshopgui" ) == 0 ) {
+
+		// Solarsplace 6th Nov 2011 - Shop GUI related
+		if ( shoppingSystemOpen ) {
+			ToggleShoppingSystem();
 		}
 	}
 
@@ -5427,6 +5465,16 @@ void idPlayer::TraceUsables()
 		if ( readableSystemOpen )
 		{ ToggleReadableSystem(); }
 
+		// Apply the same logic to the shop
+		if ( shoppingSystemOpen )
+		{
+			if ( lastShopEntity )
+			{
+				lastShopEntity->ActivateTargets( player ); // If the shop is a door / chest then shut it!
+			}
+			ToggleShoppingSystem();
+		}
+
 		if ( lastUsableTraceWasNothing == false )
 		{ 
 			lastUsableTraceWasNothing = true;
@@ -5613,7 +5661,7 @@ void idPlayer::UpdateViewAngles( void ) {
 	// Solarsplace 11th April 2010 - Inventory related - Added inventorySystem to condition
 	// Solarsplace 6th May 2010 - Journal related - Added journalSystem to condition
 	// Solarsplace 2nd Nov 2011 - Added NPC GUI
-	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen) ) {
+	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen || shoppingSystemOpen) ) {
 		// no view changes at all, but we still want to update the deltas or else when
 		// we get out of this mode, our view will snap to a kind of random angle
 		UpdateDeltaViewAngles( viewAngles );
@@ -6441,6 +6489,26 @@ void idPlayer::ToggleConversationSystem(void)
 
 /*
 ==============
+idPlayer::ToggleShoppingSystem
+==============
+*/
+void idPlayer::ToggleShoppingSystem(void)
+{
+	// Solarsplace 6th Nov 2011 - Shop GUI Related
+	if( !shoppingSystemOpen )
+	{
+		shoppingSystem->Activate( true, gameLocal.time );
+		shoppingSystemOpen = true;
+	}
+	else
+	{
+		shoppingSystem->Activate( false, gameLocal.time );
+		shoppingSystemOpen = false;
+	}
+}
+
+/*
+==============
 idPlayer::ToggleMagicMode
 ==============
 */
@@ -6929,9 +6997,9 @@ void idPlayer::PerformImpulse( int impulse ) {
 		}
 
 		case IMPULSE_25: { // Arx - Weapon Empty (Magic Weapon)
-			if ( !inventorySystemOpen && !journalSystemOpen )
+			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ 
-					SelectWeapon( ARX_MAGIC_WEAPON, false );
+					SelectWeapon( ARX_MAGIC_WEAPON, true );
 				}
 			break;
 		}
@@ -8218,6 +8286,7 @@ void idPlayer::GetEntityByViewRay( void )
 		//************************************************************************************************
 		else if ( target->spawnArgs.GetBool( "arx_usable_item_door" ) && !target->IsHidden() )
 		{
+
 			// Solarsplace -> BUT! - remember in this case target is a script created fucking trigger!
 			// We need to find the door entity name or master door if teamed from the barstard triggers spawn args.
 			idEntity * actualDoorMaster = gameLocal.FindEntity( target->spawnArgs.GetString( "target" ) );
@@ -8254,7 +8323,27 @@ void idPlayer::GetEntityByViewRay( void )
 			{
 				// Solarsplace -> Remember target the trigger here and NOT the real door entity.
 				target->ActivateTargets( player );
+
+				// Shopping
+				if ( actualDoorMaster->spawnArgs.GetBool( "arx_shop" ) && !actualDoorMaster->IsHidden() )
+				{
+					if ( shoppingSystemOpen == false )
+					{ arxShopFunctions.LoadActiveShop( actualDoorMaster ); }
+
+					lastShopEntity = target; // Needed so we can close the door when we move away from, or stop looking at the door!
+					ToggleShoppingSystem();
+
+				}
+
 			}
+		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
+		else if ( target->spawnArgs.GetBool( "arx_shop" ) && !target->IsHidden() )
+		{
+			/* ALL TESTS SO FAR BASED ON SHOPS FROM CHESTS THAT USE func_rotatingdoor !!! */
+			/* This needs to be implemented if we need it                                 */
 		}
 		//************************************************************************************************
 		//************************************************************************************************
