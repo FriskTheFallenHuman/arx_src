@@ -77,7 +77,6 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, itemCount );
 	}
 
-	
 	/******************************************************************************/
 	/******************************************************************************/
 
@@ -106,6 +105,9 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			// Grouping of identical items or not.
 			int existingShopItemIndex = FindShopItem( result );
 
+			//REMOVEME
+			gameLocal.Printf( "existingShopItemIndex( %s ) = %i\n", result , existingShopItemIndex );
+
 			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
 			{
 				// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
@@ -114,6 +116,8 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 				shopSlotItem_Class->Set( va( "shop_item_name_%i", itemCount ), shop_item_name.c_str() );
 				shopSlotItem_Class->Set( va( "shop_item_value_%i", itemCount ), shop_item_value.c_str() );
 				shopSlotItem_Class->Set( va( "shop_item_count_%i", itemCount ), "1" );
+
+				itemCount ++;
 			}
 			else
 			{
@@ -124,9 +128,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 			//REMOVEME
 			gameLocal.Printf( "shop_item_icon_%i = %s\n", itemCount, shop_item_icon.c_str() );
-			gameLocal.Printf( "shop_item_class_%i = %s\n", itemCount, result );
-
-			itemCount ++;
+			gameLocal.Printf( "shop_item_class_%i = %s\n", itemCount, result );	
 		}
 
 	}
@@ -141,13 +143,25 @@ int idArxShop::FindShopItem( const char *name ) {
 
 	for ( int i = 0; i < ARX_MAX_SHOP_SLOTS; i++ ) {
 
-		shopSlotItem_Class->GetString( va( "shop_item_%i", i ), shop_item  );
+		shop_item = shopSlotItem_Class->GetString( va( "shop_item_class_%i", i ) );
 		 
 		if ( shop_item && *shop_item ) {
+
+			//REMOVEME
+			gameLocal.Printf( "(%i): name = %s and shop_item = %s\n", i, name, shop_item );
+
 			if ( idStr::Icmp( name, shop_item ) == 0 ) {
+
+				//REMOVEME
+				gameLocal.Printf( "FindShopItem returns: %i\n", i );
+
 				return i;
 			}
 		}
 	}
+
+	//REMOVEME
+	gameLocal.Printf( "FindShopItem returns: -1\n" );
+
 	return -1;
 }
