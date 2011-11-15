@@ -7588,6 +7588,142 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	}
 }
 
+void idPlayer::UpdateShoppingSystem( void )
+{
+	if ( shoppingSystem && shoppingSystemOpen )
+	{
+		/*********************************************************************************************************/
+		/*********************************************************************************************************/
+		/*********************************************************************************************************/
+		/*** From UpdateInventoryGUI ***/ 
+
+		int totalMana; // Solarsplace 26th April 2010 - Inventory related
+
+		// Solarsplace 15th Oct 2011 - Money
+		shoppingSystem->SetStateString( "player_money", va( "%i", inventory.money ) );
+
+		// Solarsplace - 16th May 2010 - Poison related
+		if ( playerPoisoned )
+		{ shoppingSystem->SetStateString( "poisoned", "1" ); }
+		else
+		{ shoppingSystem->SetStateString( "poisoned", "0" ); }
+
+		// Solarsplace 26th April 2010 - Inventory related
+		// Show the mana total for the player
+		totalMana = GetPlayerManaAmount();
+		shoppingSystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
+
+		// Solarsplace 26th April 2010 - Inventory related
+		// Show the player health
+		shoppingSystem->SetStateInt( "player_health", health );
+
+		// This clears out the hud strings - not 100% sure if needed.
+		int j, c = inventory.items.Num();
+		shoppingSystem->SetStateInt( "inv_count", c );
+		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
+			shoppingSystem->SetStateString( va( "inv_name_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "inv_text_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), "0" ); // Solarsplace 24th Sep 2011 - Reset item groupings totals.
+		}
+
+		const idKeyValue *argPointer;
+		const idKeyValue *argGroupCount;
+
+		invItemGroupCount->Clear();
+		invItemGroupPointer->Clear();
+
+		int itemGroupCount;
+
+		for ( j = 0; j < c; j++ ) {
+
+			idDict *item = inventory.items[j];
+
+			if ( !item->GetBool( "inv_pda" ) ) {
+
+				const char *iname = item->GetString( "inv_name" );
+				const char *iicon = item->GetString( "inv_icon" );
+				const char *itext = item->GetString( "inv_text" );
+
+				idStr n1 = iname;
+				idStr n2 = va( "_%i", j );
+
+				if ( item->GetBool( "inventory_nostack", "0" ) )
+				{
+					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j ); //invItemGroupPointer->SetInt( iname, j );
+					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
+				}
+				else
+				{
+					if ( !invItemGroupPointer->FindKey( iname ) )
+					{
+						// Add 1 new item
+						invItemGroupPointer->SetInt( iname, j );
+						invItemGroupCount->SetInt( iname, 1 );
+					}
+					else
+					{
+						// We have this inv_name in the dictionary already. So update its quantity count.
+						itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
+						invItemGroupCount->SetInt( iname, itemGroupCount );
+					}
+				}
+			}
+		}
+
+		c = invItemGroupPointer->GetNumKeyVals();
+
+		for ( j = 0; j < c; j++ ) {
+
+			argPointer = invItemGroupPointer->GetKeyVal( j );
+			argGroupCount = invItemGroupCount->GetKeyVal( j );
+
+			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
+
+			const char *iname = item->GetString( "inv_name" );
+			const char *iicon = item->GetString( "inv_icon" );
+			const char *itext = item->GetString( "inv_text" );
+
+			shoppingSystem->SetStateString( va( "inv_name_%i", j ), iname );
+			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), iicon );
+			shoppingSystem->SetStateString( va( "inv_text_%i", j ), itext );
+
+			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
+		}
+
+		/*********************************************************************************************************/
+		/*********************************************************************************************************/
+		/*********************************************************************************************************/
+		/*** Shop ***/
+
+		shoppingSystem->SetStateInt( "shop_inv_count", 999 ); // GUI just checks > 0
+
+		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
+
+			shoppingSystem->SetStateString( va( "shop_inv_icon_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "shop_inv_name_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "shop_item_count_%i", j ), "0" );
+		}
+
+		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
+
+			const char *sicon = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_icon_%i", j ), "");
+			const char *sname = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_name_%i", j ), "");
+			const char *svalue = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_value_%i", j ), "");
+			const char *scount = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_count_%i", j ), "0");
+
+			if ( atoi(scount) > 0 ) {
+
+				shoppingSystem->SetStateString( va( "shop_inv_icon_%i", j ), sicon );
+				shoppingSystem->SetStateString( va( "shop_inv_name_%i", j ), sname );
+				shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), svalue );
+				shoppingSystem->SetStateString( va( "shop_inv_group_count_%i", j ), scount );
+			}
+		}
+	}
+}
+
 void idPlayer::UpdateInventoryGUI( void )
 {
 	// Solarsplace 14th April 2010 - Inventory related
@@ -7655,8 +7791,8 @@ void idPlayer::UpdateInventoryGUI( void )
 				idStr n1 = iname;
 				idStr n2 = va( "_%i", j );
 
-				if ( item->GetBool( "inventory_nostack", "0" ) )
-				{
+				if ( item->GetBool( "inventory_nostack", "0" ) ) {
+
 					//gameLocal.Printf("Adding new item %s\n", iname);
 					// Add 1 new item
 
@@ -7668,15 +7804,15 @@ void idPlayer::UpdateInventoryGUI( void )
 				}
 				else
 				{
-					if ( !invItemGroupPointer->FindKey( iname ) )
-					{
+					if ( !invItemGroupPointer->FindKey( iname ) ) {
+
 						//gameLocal.Printf("Adding new item %s\n", iname);
 						// Add 1 new item
 						invItemGroupPointer->SetInt( iname, j );
 						invItemGroupCount->SetInt( iname, 1 );
 					}
-					else
-					{
+					else {
+
 						//gameLocal.Printf("Updating existing item\n", iname);
 						// We have this inv_name in the dictionary already. So update its quantity count.
 						itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
@@ -9385,6 +9521,7 @@ void idPlayer::Think( void ) {
 	// GUI's
 	UpdateJournalGUI();
 	UpdateInventoryGUI();
+	UpdateShoppingSystem();
 	
 	increaseManaOverTime();
 	healthDecreaseOverTime();

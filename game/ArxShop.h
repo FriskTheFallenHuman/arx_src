@@ -14,12 +14,15 @@ class idArxShop {
 
 	public:
 
-		idDict					*shopSlotItem_Icon;
 		idDict					*shopSlotItem_Class;
 
 	public:
 
 		void	LoadActiveShop			( idEntity *shopEntity );
+
+	private:
+
+		int	FindShopItem			( const char *name );
 
 };
 #endif   /* !_PLAYER_ARXSHOP_H_ */
