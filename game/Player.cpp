@@ -4721,12 +4721,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemsell\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
-
-			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
-
-			if ( kv ) {
-				arxShopFunctions.RemoveShopItem( atoi( kv->GetValue() ) );
-			}
+			arxShopFunctions.RemoveShopItem( atoi( token2 )  );
 		}
 		return true;
 	}

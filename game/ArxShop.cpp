@@ -143,35 +143,67 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 void idArxShop::RemoveShopItem( int slotId )
 {
+	//REMOVEME
+	gameLocal.Printf( "RemoveShopItem( %i )\n", slotId );
+
 	idDict tempShopSlotItem_Class;
 	int itemGroupCount;
 
+	// Remove a shop item from the items count.
 	itemGroupCount = shopSlotItem_Class->GetInt( va( "shop_item_count_%i", slotId ), "0" );
 
-	if ( itemGroupCount > 1 ) { // More than 1 of these grouped items left. Just reduce the count available.
-		
-		shopSlotItem_Class->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount - 1 );
+	if ( itemGroupCount > 1 ) { // It is a stacked / grouped item
+
+		itemGroupCount --; // Reduce slot count, grouped or not.
+
+		shopSlotItem_Class->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
+
+		totalUsedShopSlots = totalUsedShopSlots; // Serves no purpose - but shows the theory.
+
+		return;
 	}
-	else { // Only 1 item in slot or 1 grouped item left. Remove from shop.
+
+	if ( itemGroupCount <= 1 ) {
+
+		itemGroupCount --; // Reduce slot count, grouped or not.
+
+		shopSlotItem_Class->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
+
+		// We are now removing a slot item ( 1 shot / inventory item square is a slot )
+		totalUsedShopSlots -= 1;
 
 		// Copy the shop into a temp dictionary.
-		shopSlotItem_Class->Copy( tempShopSlotItem_Class );
+		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
+			tempShopSlotItem_Class.Set( va( "shop_item_class_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_class_%i", i ) ) );
+			tempShopSlotItem_Class.Set( va( "shop_item_icon_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_icon_%i", i ) ) );
+			tempShopSlotItem_Class.Set( va( "shop_item_name_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_name_%i", i ) ) );
+			tempShopSlotItem_Class.Set( va( "shop_item_value_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_value_%i", i ) ) );
+			tempShopSlotItem_Class.Set( va( "shop_item_count_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_count_%i", i ) ) );
+		}
 
 		// Clear the shop dictionary.
 		shopSlotItem_Class->Clear();
 
 		// Copy back the items 1 by 1 ommitting the empty slots.
+		int slotIndex = 0;
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
+
+			//REMOVEME
+			gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempShopSlotItem_Class.GetString( va( "shop_item_class_%i", i ) ) );
+			gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempShopSlotItem_Class.GetString( va( "shop_item_count_%i", i ) ) );
 
 			if ( tempShopSlotItem_Class.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
 
-				shopSlotItem_Class->Set( va( "shop_item_class_%i", i ), tempShopSlotItem_Class.GetString( "shop_item_class_%i" ) );
-				shopSlotItem_Class->Set( va( "shop_item_icon_%i", i ), tempShopSlotItem_Class.GetString( "shop_item_icon_%i" ) );
-				shopSlotItem_Class->Set( va( "shop_item_name_%i", i ), tempShopSlotItem_Class.GetString( "shop_item_name_%i" ) );
-				shopSlotItem_Class->Set( va( "shop_item_value_%i", i ), tempShopSlotItem_Class.GetString( "shop_item_value_%i" ) );
-				shopSlotItem_Class->Set( va( "shop_item_count_%i", i ), tempShopSlotItem_Class.GetString( "shop_item_count_%i" ) );
+				shopSlotItem_Class->Set( va( "shop_item_class_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_class_%i", i ) ) );
+				shopSlotItem_Class->Set( va( "shop_item_icon_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_icon_%i", i ) ) );
+				shopSlotItem_Class->Set( va( "shop_item_name_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_name_%i", i ) ) );
+				shopSlotItem_Class->Set( va( "shop_item_value_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_value_%i", i ) ) );
+				shopSlotItem_Class->Set( va( "shop_item_count_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_count_%i", i ) ) );
+
+				slotIndex ++;
 			}
 		}
+		totalUsedShopSlots = slotIndex; // Update the new amount of slot spaces taken up in the shop.
 	}
 }
 
