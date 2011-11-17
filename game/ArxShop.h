@@ -15,10 +15,13 @@ class idArxShop {
 	public:
 
 		idDict					*shopSlotItem_Class;
+		int						totalUsedShopSlots;
 
 	public:
 
 		void	LoadActiveShop			( idEntity *shopEntity );
+
+		void	RemoveShopItem			( int slotId );
 
 	private:
 

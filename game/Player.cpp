@@ -4714,6 +4714,23 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	const idKeyValue *kv;
 
+	// Solarsplace 17th Nov 2011 - Shop related
+	if ( token.Icmp( "inventoryitemsell" ) == 0 ) {
+
+		//REMOVEME
+		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemsell\n" );
+
+		if ( src->ReadToken( &token2 ) ) {
+
+			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
+
+			if ( kv ) {
+				arxShopFunctions.RemoveShopItem( atoi( kv->GetValue() ) );
+			}
+		}
+		return true;
+	}
+
 	// Solarsplace 11th April 2010 - Inventory related
 	if ( token.Icmp( "inventoryitemuse" ) == 0 ) {
 
