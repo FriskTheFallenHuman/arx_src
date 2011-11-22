@@ -6970,19 +6970,19 @@ void idPlayer::PerformImpulse( int impulse ) {
 		}
 
 		case IMPULSE_20: { // Arx - Inventory
-			if ( !journalSystemOpen )
+			if ( !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ ToggleInventorySystem(); }
 			break;
 		}
 
 		case IMPULSE_21: { // Arx - Journal
-			if ( !inventorySystemOpen )
+			if ( !inventorySystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ ToggleJournalSystem(); }
 			break;
 		}
 		
 		case IMPULSE_22: { // Arx - Quick spell 1
-			if ( !inventorySystemOpen && !journalSystemOpen )
+			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 0, 0 ); }
@@ -6991,7 +6991,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 		}
 
 		case IMPULSE_23: { // Arx - Quick spell 2
-			if ( !inventorySystemOpen && !journalSystemOpen )
+			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 1, 0 ); }
@@ -7000,7 +7000,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 		}
 
 		case IMPULSE_24: { // Arx - Quick spell 3
-			if ( !inventorySystemOpen && !journalSystemOpen )
+			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 2, 0 ); }
@@ -8417,6 +8417,9 @@ void idPlayer::GetEntityByViewRay( void )
 			{
 				GiveInventoryItem( &args );
 			}
+
+			// Solarsplace 22nd Nov 2011 - Finally remove the model and anything bound to it such as food steam etc.
+			target->PostEventMS( &EV_Remove, 0 );
 		}
 		//************************************************************************************************
 		//************************************************************************************************
@@ -8476,13 +8479,20 @@ void idPlayer::GetEntityByViewRay( void )
 				if ( actualDoorMaster->spawnArgs.GetBool( "arx_shop" ) && !actualDoorMaster->IsHidden() )
 				{
 					if ( shoppingSystemOpen == false )
-					{ arxShopFunctions.LoadActiveShop( actualDoorMaster ); }
+					{
+						arxShopFunctions.LoadActiveShop( actualDoorMaster );
+					
+						// If any other GUI's are open then shut them
+						if ( inventorySystemOpen ) { ToggleInventorySystem(); }
+						if ( readableSystemOpen ) { ToggleReadableSystem(); }
+						if ( journalSystemOpen ) { ToggleJournalSystem(); }
+						if ( conversationSystemOpen ) { ToggleConversationSystem(); }
+					}
 
 					lastShopEntity = target; // Needed so we can close the door when we move away from, or stop looking at the door!
 					ToggleShoppingSystem();
 
 				}
-
 			}
 		}
 		//************************************************************************************************
@@ -8819,6 +8829,18 @@ bool idPlayer::HandleESC( void ) {
 	// Solarsplace 6th May 2010 - Journal related
 	if ( journalSystemOpen ) {
 		ToggleJournalSystem();
+		return true;
+	}
+
+	// Solarsplace 22nd Nov 2011 - Readable related
+	if ( readableSystemOpen ) {
+		ToggleReadableSystem();
+		return true;
+	}
+
+	// Solarsplace 22nd Nov 2011 - Readable related
+	if ( shoppingSystemOpen ) {
+		ToggleShoppingSystem();
 		return true;
 	}
 

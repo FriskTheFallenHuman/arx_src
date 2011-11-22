@@ -238,6 +238,16 @@ public:
 	*** BEGIN - Solarsplace - Arx EOS - PUBLIC
 	*/
 
+	/* All the Arx GUI's are
+
+		inventorySystem
+		journalSystem
+		readableSystem
+		conversationSystem
+		shoppingSystem
+
+	*/
+
 	// Solarsplace 10th April 2010 - Inventory related
 	idUserInterface *		inventorySystem;
 	bool					inventorySystemOpen;
