@@ -7927,8 +7927,8 @@ void idPlayer::UpdateJournalGUI( void )
 		gameLocal.persistentLevelInfo.GetString( "cosum", "0", &result );
 		journalSystem->SetStateString( "cosum", result );
 
-		gameLocal.persistentLevelInfo.GetString( "communicatum", "0", &result );
-		journalSystem->SetStateString( "communicatum", result );
+		gameLocal.persistentLevelInfo.GetString( "comunicatum", "0", &result );
+		journalSystem->SetStateString( "comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "movis", "0", &result );
 		journalSystem->SetStateString( "movis", result );
@@ -8014,8 +8014,8 @@ void idPlayer::UpdateJournalGUI( void )
 		gameLocal.persistentLevelInfo.GetString( "spell_yok_kaom", "0", &result );
 		journalSystem->SetStateString( "spell_yok_kaom", result );
 
-		gameLocal.persistentLevelInfo.GetString( "spell_spacium_communicatum", "0", &result );
-		journalSystem->SetStateString( "spell_spacium_communicatum", result );
+		gameLocal.persistentLevelInfo.GetString( "spell_spacium_comunicatum", "0", &result );
+		journalSystem->SetStateString( "spell_spacium_comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_stregum_vitae", "0", &result );
 		journalSystem->SetStateString( "spell_rhaa_stregum_vitae", result );
@@ -8098,8 +8098,8 @@ void idPlayer::UpdateJournalGUI( void )
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_aam_taar_folgora", "0", &result );
 		journalSystem->SetStateString( "spell_mega_aam_taar_folgora", result );
 
-		gameLocal.persistentLevelInfo.GetString( "spell_movis_communicatum", "0", &result );
-		journalSystem->SetStateString( "spell_movis_communicatum", result );
+		gameLocal.persistentLevelInfo.GetString( "spell_movis_comunicatum", "0", &result );
+		journalSystem->SetStateString( "spell_movis_comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_tempus", "0", &result );
 		journalSystem->SetStateString( "spell_nhi_tempus", result );
@@ -8575,7 +8575,7 @@ void idPlayer::MagicUpdateJournalSpells( void )
 	bool stregum = gameLocal.persistentLevelInfo.GetBool("stregum", "0");
 	bool morte = gameLocal.persistentLevelInfo.GetBool("morte", "0");
 	bool cosum = gameLocal.persistentLevelInfo.GetBool("cosum", "0");
-	bool communicatum = gameLocal.persistentLevelInfo.GetBool("communicatum", "0");
+	bool comunicatum = gameLocal.persistentLevelInfo.GetBool("comunicatum", "0");
 	bool movis = gameLocal.persistentLevelInfo.GetBool("movis", "0");
 	bool tempus = gameLocal.persistentLevelInfo.GetBool("tempus", "0");
 	bool folgora = gameLocal.persistentLevelInfo.GetBool("folgora", "0");
@@ -8639,8 +8639,8 @@ void idPlayer::MagicUpdateJournalSpells( void )
 	if ( yok && kaom )
 	{ gameLocal.persistentLevelInfo.Set("spell_yok_kaom", "1"); }
 
-	if ( spacium && communicatum )
-	{ gameLocal.persistentLevelInfo.Set("spell_spacium_communicatum", "1"); }
+	if ( spacium && comunicatum )
+	{ gameLocal.persistentLevelInfo.Set("spell_spacium_comunicatum", "1"); }
 
 	if ( rhaa && stregum && vitae )
 	{ gameLocal.persistentLevelInfo.Set("spell_rhaa_stregum_vitae", "1"); }
@@ -8723,8 +8723,8 @@ void idPlayer::MagicUpdateJournalSpells( void )
 	if ( mega && aam && taar && folgora )
 	{ gameLocal.persistentLevelInfo.Set("spell_mega_aam_taar_folgora", "1"); }
 
-	if ( movis && communicatum )
-	{ gameLocal.persistentLevelInfo.Set("spell_movis_communicatum", "1"); }
+	if ( movis && comunicatum )
+	{ gameLocal.persistentLevelInfo.Set("spell_movis_comunicatum", "1"); }
 
 	if ( nhi && tempus )
 	{ gameLocal.persistentLevelInfo.Set("spell_nhi_tempus", "1"); }
