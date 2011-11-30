@@ -61,6 +61,7 @@ const idEventDef EV_Player_InventoryContainsItem( "inventoryContainsItem", "s", 
 const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint", "s", NULL );
 const idEventDef EV_HudMessage( "HudMessage", "s" );
 const idEventDef EV_PlayerMoney( "PlayerMoney", "d", 'd' );
+const idEventDef EV_OpenCloseShop( "OpenCloseShop", "s", NULL );
 //*****************************************************************
 //*****************************************************************
 
@@ -91,6 +92,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_LevelTransitionSpawnPoint,	idPlayer::Event_LevelTransitionSpawnPoint )
 	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
 	EVENT( EV_PlayerMoney,						idPlayer::Event_PlayerMoney )
+	EVENT( EV_OpenCloseShop,					idPlayer::Event_OpenCloseShop )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -101,7 +103,7 @@ const int RAGDOLL_DEATH_TIME = 3000;
 const int MAX_PDAS = 64;
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
-const int MAX_INVENTORY_ITEMS = 48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
+const int MAX_INVENTORY_ITEMS = 3; //48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
 
 const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
@@ -1033,7 +1035,7 @@ idPlayer::idPlayer() {
 	magicModeActive			= false;				// (27th April 2010)	Spell casting related
 	lastMagicModeActive		= false;				// (02nd July 2010)		Spell casting related
 	magicAttackInProgress	= false;				// (15th May 2010)		Spell casting related
-	magicDoingPreCastSpellProjectile	= false;	// (22nd Jul 2010)		Spell casting related
+	magicDoingPreCastSpellProjectile	= false;	// (22nd Jul 2010)		Spell casting related			
 
 	// Solarsplace 24th Sep 2011
 	invItemGroupCount = new idDict();
@@ -4662,7 +4664,13 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 		// Solarsplace 6th Nov 2011 - Shop GUI related
 		if ( shoppingSystemOpen ) {
-			ToggleShoppingSystem();
+
+			//ToggleShoppingSystem();
+
+			// If there is an associated chest (door) then shut it
+			if ( lastShopEntity ) {
+				lastShopEntity->ActivateTargets( gameLocal.GetLocalPlayer() ); // If the shop is a door / chest then shut it!
+			}
 		}
 	}
 
@@ -4715,14 +4723,52 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	const idKeyValue *kv;
 
 	// Solarsplace 17th Nov 2011 - Shop related
-	if ( token.Icmp( "inventoryitemsell" ) == 0 ) {
+	if ( token.Icmp( "shop_buyitem" ) == 0 ) {
 
 		//REMOVEME
-		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemsell\n" );
+		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
 
-		if ( src->ReadToken( &token2 ) ) {
-			arxShopFunctions.RemoveShopItem( atoi( token2 )  );
+		//arxShopFunctions.AddShopItem( "item_arx_potion_health" );
+
+		if ( arxShopFunctions.totalUsedShopSlots < MAX_INVENTORY_ITEMS )
+		{
+
+			if ( src->ReadToken( &token2 ) ) {
+
+				int itemPrice = atoi( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_value_%i", atoi( token2 ) ), "") );
+
+				//REMOVEME
+				gameLocal.Printf( "itemPrice = %i\n", itemPrice );
+
+				if ( inventory.money - itemPrice >= 0 )
+				{
+					// !!! Must do the steps in this order !!!
+
+					// Add the item to the players inventory
+					const idDeclEntityDef *shopItemDef = NULL;
+					shopItemDef = gameLocal.FindEntityDef( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_class_%i", atoi( token2 ) ), ""), false );
+					idDict args = shopItemDef->dict;
+
+					// Solarsplace 9th Oct 2011 - If we specify a drop item use that.
+					// This is because the item we may 'get' is static, but it must be a moveable variant to be dropped from the inventory on most occasions.
+					if ( args.GetString( "def_dropItem" ) )
+					{ args.Set( "inv_classname", args.GetString( "def_dropItem" ) ); }
+					else
+					{ args.Set( "inv_classname", args.GetString( "classname" ) ); }
+
+					GiveInventoryItem( &args );
+
+					// Spend money and remove the item from the shop
+					inventory.money -= itemPrice;
+					arxShopFunctions.RemoveShopItem( atoi( token2 )  );
+					StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
+				}
+				else
+				{ StartSound( "snd_shop_fail", SND_CHANNEL_ANY, 0, false, NULL ); }
+			}
+
 		}
+
 		return true;
 	}
 
@@ -5480,11 +5526,12 @@ void idPlayer::TraceUsables()
 		// Apply the same logic to the shop
 		if ( shoppingSystemOpen )
 		{
-			if ( lastShopEntity )
-			{
-				lastShopEntity->ActivateTargets( player ); // If the shop is a door / chest then shut it!
+			// If there is an associated chest (door) then shut it
+			if ( lastShopEntity ) {
+				lastShopEntity->ActivateTargets( gameLocal.GetLocalPlayer() ); // If the shop is a door / chest then shut it!
 			}
-			ToggleShoppingSystem();
+			
+			//ToggleShoppingSystem();
 		}
 
 		if ( lastUsableTraceWasNothing == false )
@@ -6506,14 +6553,19 @@ idPlayer::ToggleShoppingSystem
 */
 void idPlayer::ToggleShoppingSystem(void)
 {
+
 	// Solarsplace 6th Nov 2011 - Shop GUI Related
 	if( !shoppingSystemOpen )
 	{
+		gameLocal.Printf("ToggleShoppingSystem = opening\n" ); //REMOVEME
+
 		shoppingSystem->Activate( true, gameLocal.time );
 		shoppingSystemOpen = true;
 	}
 	else
 	{
+		gameLocal.Printf("ToggleShoppingSystem = closing\n" ); //REMOVEME
+
 		shoppingSystem->Activate( false, gameLocal.time );
 		shoppingSystemOpen = false;
 	}
@@ -7720,10 +7772,10 @@ void idPlayer::UpdateShoppingSystem( void )
 
 		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
 
-			const char *sicon = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_icon_%i", j ), "");
-			const char *sname = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_name_%i", j ), "");
-			const char *svalue = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_value_%i", j ), "");
-			const char *scount = arxShopFunctions.shopSlotItem_Class->GetString( va( "shop_item_count_%i", j ), "0");
+			const char *sicon = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", j ), "");
+			const char *sname = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_name_%i", j ), "");
+			const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_value_%i", j ), "");
+			const char *scount = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_count_%i", j ), "0");
 
 			if ( atoi(scount) > 0 ) {
 
@@ -8490,7 +8542,8 @@ void idPlayer::GetEntityByViewRay( void )
 					}
 
 					lastShopEntity = target; // Needed so we can close the door when we move away from, or stop looking at the door!
-					ToggleShoppingSystem();
+
+					//ToggleShoppingSystem();
 
 				}
 			}
@@ -8840,7 +8893,13 @@ bool idPlayer::HandleESC( void ) {
 
 	// Solarsplace 22nd Nov 2011 - Readable related
 	if ( shoppingSystemOpen ) {
-		ToggleShoppingSystem();
+		
+		//ToggleShoppingSystem();
+
+		if ( lastShopEntity ) {
+			lastShopEntity->ActivateTargets( gameLocal.GetLocalPlayer() ); // If the shop is a door / chest then shut it!
+		}
+		
 		return true;
 	}
 
@@ -11911,6 +11970,12 @@ void idPlayer::Event_PlayerMoney( int amount )
 	}
 
 
+}
+
+void idPlayer::Event_OpenCloseShop( const char *newState )
+{
+	gameLocal.Printf( "Event_OpenCloseShop\n" ); //REMOVEME
+	ToggleShoppingSystem();
 }
 
 /*

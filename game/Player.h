@@ -783,6 +783,7 @@ private:
 	void					Event_LevelTransitionSpawnPoint( const char *spawnPointEntName );	// 3rd Oct 2010 - Solarsplace
 	void					Event_HudMessage( const char *message );							// 25th Sep 2011 - Solarsplace
 	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
+	void					Event_OpenCloseShop( const char *newState );						// 30th Nov 2011 - Solarsplace
 
 	// Inventory Related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

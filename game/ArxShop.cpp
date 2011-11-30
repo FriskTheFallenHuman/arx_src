@@ -4,7 +4,9 @@
 #pragma hdrstop
 
 #include "Game_local.h"
-#include "ArxShop.h"
+
+//CLASS_DECLARATION(idClass, idArxShop)
+//END_CLASS
 
 /************************************************************************/
 /************************************************************************/
@@ -12,16 +14,17 @@
 
 /*** !!! IMPLEMENT SAVE / LOAD !!!
 
+Some info is here: http://www.doom3world.org/phpbb2/viewtopic.php?f=56&t=9490
+
 /************************************************************************/
 /************************************************************************/
 /************************************************************************/
 
 idArxShop::idArxShop() {
 
-	shopSlotItem_Class = new idDict();
+	shopSlotItem_Dict = new idDict();
 
 	totalUsedShopSlots = 0;
-
 }
 
 idArxShop::~idArxShop() {
@@ -32,6 +35,26 @@ const int ARX_MAX_SHOP_SLOTS = 48; // 0 to 47
 const idStr ARX_REC_SEP = "<@@@ARX@@@>";
 const idStr ARX_PROP_SHOP = "ARX_ENT_SHOP";
 const idStr ARX_PROP_SHOP_ITEM = "ARX_ENT_SHOP_ITEM_";
+
+/* NOT implemented properly yet!
+void idArxShop::Save( idSaveGame *savefile ) const {
+
+	//REMOVEME
+	gameLocal.Printf( "idArxShop::Save\n" );
+
+	savefile->WriteInt( totalUsedShopSlots );
+	savefile->WriteDict( shopSlotItem_Dict );
+}
+
+void idArxShop::Restore( idRestoreGame *savefile ) {
+
+		//REMOVEME
+	gameLocal.Printf( "idArxShop::Restore\n" );
+
+	savefile->ReadInt( totalUsedShopSlots );
+	savefile->ReadDict( shopSlotItem_Dict );
+}
+*/
 
 void idArxShop::LoadActiveShop( idEntity *shopEntity )
 {
@@ -58,6 +81,8 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 	if ( !gameLocal.persistentLevelInfo.GetInt( currentShopIDString ) ) // If this is the first time the payer has 'been' to this shop then store its contents in the persistent dictionary
 	{
+		gameLocal.Printf( "LoadActiveShop new shop = %s\n", currentShopIDString.c_str() );
+
 		itemCount = 0;
 
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
@@ -83,7 +108,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 	/******************************************************************************/
 
 	// Load the shop into the dictionaries
-	shopSlotItem_Class->Clear();
+	shopSlotItem_Dict->Clear();
 	itemCount = 0;
 
 	for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
@@ -113,19 +138,19 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
 			{
 				// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
-				shopSlotItem_Class->Set( va( "shop_item_class_%i", itemCount ), result );
-				shopSlotItem_Class->Set( va( "shop_item_icon_%i", itemCount ), shop_item_icon.c_str() );
-				shopSlotItem_Class->Set( va( "shop_item_name_%i", itemCount ), shop_item_name.c_str() );
-				shopSlotItem_Class->Set( va( "shop_item_value_%i", itemCount ), shop_item_value.c_str() );
-				shopSlotItem_Class->Set( va( "shop_item_count_%i", itemCount ), "1" );
+				shopSlotItem_Dict->Set( va( "shop_item_class_%i", itemCount ), result );
+				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", itemCount ), shop_item_icon.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_name_%i", itemCount ), shop_item_name.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_value_%i", itemCount ), shop_item_value.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_count_%i", itemCount ), "1" );
 
 				itemCount ++;
 			}
 			else
 			{
 				// We already have one of these in the shop and we can stack / group it.
-				int itemGroupCount = shopSlotItem_Class->GetInt( va( "shop_item_count_%i", existingShopItemIndex ), "0" ) + 1;
-				shopSlotItem_Class->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
+				int itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", existingShopItemIndex ), "0" ) + 1;
+				shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
 			}
 
 			//REMOVEME
@@ -141,22 +166,67 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 }
 
+void idArxShop::AddShopItem( const char *className )
+{
+
+	int existingShopItemIndex = -1;
+	idStr shop_item_icon;
+    idStr shop_item_name;
+    idStr shop_item_value;
+	const idDeclEntityDef *shopItemDef = NULL;
+
+	// Get the .def for the item the shop is buying
+	shopItemDef = gameLocal.FindEntityDef( className, false );
+	
+	if ( shopItemDef ) {
+
+		// Load data for shop from item defs
+		shopItemDef->dict.GetString( "inv_icon", "guis/assets/icons/404_icon.tga", shop_item_icon ); // Hopefully people with 'get' that 404 image = inv_icon is not set for this item! 
+		shopItemDef->dict.GetString( "inv_name", "name = 404", shop_item_name ); // Hopefully people with 'get' that name = 404  = inv_name is not set for this item! 
+		shopItemDef->dict.GetString( "shop_item_value", "404", shop_item_value ); // Hopefully people with 'get' that 404 gold coins = shop_item_value is not set for this item! 
+
+		// Do we have one of these items already?
+		existingShopItemIndex = FindShopItem( className );
+
+		//REMOVEME
+		gameLocal.Printf( "AddShopItem %i = %s\n", totalUsedShopSlots, className );	
+
+		if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
+		{
+			// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
+			shopSlotItem_Dict->Set( va( "shop_item_class_%i", totalUsedShopSlots ), className );
+			shopSlotItem_Dict->Set( va( "shop_item_icon_%i", totalUsedShopSlots ), shop_item_icon.c_str() );
+			shopSlotItem_Dict->Set( va( "shop_item_name_%i", totalUsedShopSlots ), shop_item_name.c_str() );
+			shopSlotItem_Dict->Set( va( "shop_item_value_%i", totalUsedShopSlots ), shop_item_value.c_str() );
+			shopSlotItem_Dict->Set( va( "shop_item_count_%i", totalUsedShopSlots ), "1" );
+
+			// Add a new item
+			totalUsedShopSlots ++;
+		} else {
+			// Item already exists in the shop - increment its group count
+			int itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", existingShopItemIndex ), "0" ) + 1;
+			shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
+		}
+
+	}
+}
+
 void idArxShop::RemoveShopItem( int slotId )
 {
 	//REMOVEME
 	gameLocal.Printf( "RemoveShopItem( %i )\n", slotId );
 
-	idDict tempShopSlotItem_Class;
+	idDict tempshopSlotItem_Dict;
 	int itemGroupCount;
 
 	// Remove a shop item from the items count.
-	itemGroupCount = shopSlotItem_Class->GetInt( va( "shop_item_count_%i", slotId ), "0" );
+	itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", slotId ), "0" );
 
 	if ( itemGroupCount > 1 ) { // It is a stacked / grouped item
 
 		itemGroupCount --; // Reduce slot count, grouped or not.
 
-		shopSlotItem_Class->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
+		shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
 
 		totalUsedShopSlots = totalUsedShopSlots; // Serves no purpose - but shows the theory.
 
@@ -167,38 +237,38 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		itemGroupCount --; // Reduce slot count, grouped or not.
 
-		shopSlotItem_Class->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
+		shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", slotId ), itemGroupCount ); // Save new slot count.
 
 		// We are now removing a slot item ( 1 shot / inventory item square is a slot )
 		totalUsedShopSlots -= 1;
 
 		// Copy the shop into a temp dictionary.
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
-			tempShopSlotItem_Class.Set( va( "shop_item_class_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_class_%i", i ) ) );
-			tempShopSlotItem_Class.Set( va( "shop_item_icon_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_icon_%i", i ) ) );
-			tempShopSlotItem_Class.Set( va( "shop_item_name_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_name_%i", i ) ) );
-			tempShopSlotItem_Class.Set( va( "shop_item_value_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_value_%i", i ) ) );
-			tempShopSlotItem_Class.Set( va( "shop_item_count_%i", i ), shopSlotItem_Class->GetString( va( "shop_item_count_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_class_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_icon_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_name_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_name_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_value_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_value_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_count_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_count_%i", i ) ) );
 		}
 
 		// Clear the shop dictionary.
-		shopSlotItem_Class->Clear();
+		shopSlotItem_Dict->Clear();
 
 		// Copy back the items 1 by 1 ommitting the empty slots.
 		int slotIndex = 0;
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
 
 			//REMOVEME
-			gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempShopSlotItem_Class.GetString( va( "shop_item_class_%i", i ) ) );
-			gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempShopSlotItem_Class.GetString( va( "shop_item_count_%i", i ) ) );
+			gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
+			gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
 
-			if ( tempShopSlotItem_Class.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
+			if ( tempshopSlotItem_Dict.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
 
-				shopSlotItem_Class->Set( va( "shop_item_class_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_class_%i", i ) ) );
-				shopSlotItem_Class->Set( va( "shop_item_icon_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_icon_%i", i ) ) );
-				shopSlotItem_Class->Set( va( "shop_item_name_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_name_%i", i ) ) );
-				shopSlotItem_Class->Set( va( "shop_item_value_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_value_%i", i ) ) );
-				shopSlotItem_Class->Set( va( "shop_item_count_%i", slotIndex ), tempShopSlotItem_Class.GetString( va( "shop_item_count_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_class_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_icon_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_name_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_name_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_value_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_value_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_count_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
 
 				slotIndex ++;
 			}
@@ -213,7 +283,7 @@ int idArxShop::FindShopItem( const char *name ) {
 
 	for ( int i = 0; i < ARX_MAX_SHOP_SLOTS; i++ ) {
 
-		shop_item = shopSlotItem_Class->GetString( va( "shop_item_class_%i", i ) );
+		shop_item = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
 		 
 		if ( shop_item && *shop_item ) {
 
