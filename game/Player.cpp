@@ -4730,12 +4730,13 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 		//arxShopFunctions.AddShopItem( "item_arx_potion_health" );
 
-		if ( arxShopFunctions.totalUsedShopSlots < MAX_INVENTORY_ITEMS )
-		{
+		//*** This is for inventory sell
+		//if ( arxShopFunctions.totalUsedShopSlots < MAX_INVENTORY_ITEMS )
+		//{
 
 			if ( src->ReadToken( &token2 ) ) {
 
-				int itemPrice = atoi( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_value_%i", atoi( token2 ) ), "") );
+				int itemPrice = atoi( arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", atoi( token2 ) ), "") );
 
 				//REMOVEME
 				gameLocal.Printf( "itemPrice = %i\n", itemPrice );
@@ -4767,7 +4768,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 				{ StartSound( "snd_shop_fail", SND_CHANNEL_ANY, 0, false, NULL ); }
 			}
 
-		}
+		//}
 
 		return true;
 	}
@@ -7688,7 +7689,8 @@ void idPlayer::UpdateShoppingSystem( void )
 			shoppingSystem->SetStateString( va( "inv_name_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "inv_text_%i", j ), "" );
-			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), "0" ); // Solarsplace 24th Sep 2011 - Reset item groupings totals.
+			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), "0" );
+			shoppingSystem->SetStateString( va( "inv_shop_item_value_%i", j ), "" );
 		}
 
 		const idKeyValue *argPointer;
@@ -7707,7 +7709,7 @@ void idPlayer::UpdateShoppingSystem( void )
 
 				const char *iname = item->GetString( "inv_name" );
 				const char *iicon = item->GetString( "inv_icon" );
-				const char *itext = item->GetString( "inv_text" );
+				//const char *itext = item->GetString( "inv_text" );
 
 				idStr n1 = iname;
 				idStr n2 = va( "_%i", j );
@@ -7746,11 +7748,13 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			const char *iname = item->GetString( "inv_name" );
 			const char *iicon = item->GetString( "inv_icon" );
-			const char *itext = item->GetString( "inv_text" );
+			//const char *itext = item->GetString( "inv_text" );
+			const char *ivalue = item->GetString( "inv_shop_item_value" );
 
 			shoppingSystem->SetStateString( va( "inv_name_%i", j ), iname );
 			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), iicon );
-			shoppingSystem->SetStateString( va( "inv_text_%i", j ), itext );
+			//shoppingSystem->SetStateString( va( "inv_text_%i", j ), itext );
+			shoppingSystem->SetStateString( va( "inv_value_%i", j ), ivalue );
 
 			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
 		}
@@ -7774,7 +7778,7 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			const char *sicon = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", j ), "");
 			const char *sname = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_name_%i", j ), "");
-			const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_value_%i", j ), "");
+			const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", j ), "");
 			const char *scount = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_count_%i", j ), "0");
 
 			if ( atoi(scount) > 0 ) {

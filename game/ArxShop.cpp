@@ -64,7 +64,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 	const char *result;
 	idStr shop_item_icon;
     idStr shop_item_name;
-    idStr shop_item_value;
+    idStr inv_shop_item_value;
 	const idDeclEntityDef *shopItemDef = NULL;
 
 	int itemCount = 0;
@@ -127,7 +127,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			// Load data for shop from item defs
 			shopItemDef->dict.GetString( "inv_icon", "guis/assets/icons/404_icon.tga", shop_item_icon ); // Hopefully people with 'get' that 404 image = inv_icon is not set for this item! 
 			shopItemDef->dict.GetString( "inv_name", "name = 404", shop_item_name ); // Hopefully people with 'get' that name = 404  = inv_name is not set for this item! 
-			shopItemDef->dict.GetString( "shop_item_value", "404", shop_item_value ); // Hopefully people with 'get' that 404 gold coins = shop_item_value is not set for this item! 
+			shopItemDef->dict.GetString( "inv_shop_item_value", "404", inv_shop_item_value ); // Hopefully people with 'get' that 404 gold coins = inv_shop_item_value is not set for this item! 
 
 			// Grouping of identical items or not.
 			int existingShopItemIndex = FindShopItem( result );
@@ -141,7 +141,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 				shopSlotItem_Dict->Set( va( "shop_item_class_%i", itemCount ), result );
 				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", itemCount ), shop_item_icon.c_str() );
 				shopSlotItem_Dict->Set( va( "shop_item_name_%i", itemCount ), shop_item_name.c_str() );
-				shopSlotItem_Dict->Set( va( "shop_item_value_%i", itemCount ), shop_item_value.c_str() );
+				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", itemCount ), inv_shop_item_value.c_str() );
 				shopSlotItem_Dict->Set( va( "shop_item_count_%i", itemCount ), "1" );
 
 				itemCount ++;
@@ -172,7 +172,7 @@ void idArxShop::AddShopItem( const char *className )
 	int existingShopItemIndex = -1;
 	idStr shop_item_icon;
     idStr shop_item_name;
-    idStr shop_item_value;
+    idStr inv_shop_item_value;
 	const idDeclEntityDef *shopItemDef = NULL;
 
 	// Get the .def for the item the shop is buying
@@ -183,7 +183,7 @@ void idArxShop::AddShopItem( const char *className )
 		// Load data for shop from item defs
 		shopItemDef->dict.GetString( "inv_icon", "guis/assets/icons/404_icon.tga", shop_item_icon ); // Hopefully people with 'get' that 404 image = inv_icon is not set for this item! 
 		shopItemDef->dict.GetString( "inv_name", "name = 404", shop_item_name ); // Hopefully people with 'get' that name = 404  = inv_name is not set for this item! 
-		shopItemDef->dict.GetString( "shop_item_value", "404", shop_item_value ); // Hopefully people with 'get' that 404 gold coins = shop_item_value is not set for this item! 
+		shopItemDef->dict.GetString( "inv_shop_item_value", "404", inv_shop_item_value ); // Hopefully people with 'get' that 404 gold coins = inv_shop_item_value is not set for this item! 
 
 		// Do we have one of these items already?
 		existingShopItemIndex = FindShopItem( className );
@@ -197,7 +197,7 @@ void idArxShop::AddShopItem( const char *className )
 			shopSlotItem_Dict->Set( va( "shop_item_class_%i", totalUsedShopSlots ), className );
 			shopSlotItem_Dict->Set( va( "shop_item_icon_%i", totalUsedShopSlots ), shop_item_icon.c_str() );
 			shopSlotItem_Dict->Set( va( "shop_item_name_%i", totalUsedShopSlots ), shop_item_name.c_str() );
-			shopSlotItem_Dict->Set( va( "shop_item_value_%i", totalUsedShopSlots ), shop_item_value.c_str() );
+			shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", totalUsedShopSlots ), inv_shop_item_value.c_str() );
 			shopSlotItem_Dict->Set( va( "shop_item_count_%i", totalUsedShopSlots ), "1" );
 
 			// Add a new item
@@ -247,7 +247,7 @@ void idArxShop::RemoveShopItem( int slotId )
 			tempshopSlotItem_Dict.Set( va( "shop_item_class_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) ) );
 			tempshopSlotItem_Dict.Set( va( "shop_item_icon_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", i ) ) );
 			tempshopSlotItem_Dict.Set( va( "shop_item_name_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_name_%i", i ) ) );
-			tempshopSlotItem_Dict.Set( va( "shop_item_value_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_value_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "inv_shop_item_value_%i", i ), shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", i ) ) );
 			tempshopSlotItem_Dict.Set( va( "shop_item_count_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_count_%i", i ) ) );
 		}
 
@@ -267,7 +267,7 @@ void idArxShop::RemoveShopItem( int slotId )
 				shopSlotItem_Dict->Set( va( "shop_item_class_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
 				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_icon_%i", i ) ) );
 				shopSlotItem_Dict->Set( va( "shop_item_name_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_name_%i", i ) ) );
-				shopSlotItem_Dict->Set( va( "shop_item_value_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_value_%i", i ) ) );
+				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "inv_shop_item_value_%i", i ) ) );
 				shopSlotItem_Dict->Set( va( "shop_item_count_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
 
 				slotIndex ++;
