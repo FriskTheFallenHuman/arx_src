@@ -997,6 +997,39 @@ void idAnimated::Spawn( void ) {
 
 	spawnArgs.GetFloat( "wait", "-1", wait );
 
+	// **************************************************************
+	// **************************************************************
+	// *** Solarsplace - 22nd Dec 2011 - Make func_animated solid
+
+	idClipModel *clipModel = NULL;
+	idVec3 size;
+	idBounds bounds;
+	bool setClipModel = false;
+
+	if ( spawnArgs.GetVector( "arx_clip_size", NULL, size ) ) {
+
+		if ( ( size.x < 0.0f ) || ( size.y < 0.0f ) || ( size.z < 0.0f ) ) {
+			gameLocal.Error( "idAnimated::Spawn - Invalid size '%s' on entity '%s'", size.ToString(), name.c_str() );
+		}
+
+		bounds[0].Set( size.x * -0.5f, size.y * -0.5f, 0.0f );
+		bounds[1].Set( size.x * 0.5f, size.y * 0.5f, size.z );
+		setClipModel = true;
+	}
+
+	if ( setClipModel ) {
+
+		idTraceModel trm;
+		trm.SetupBox( bounds );
+		clipModel = new idClipModel( trm );
+	
+		GetPhysics()->SetClipModel( clipModel, 1.0f );
+		GetPhysics()->SetContents( CONTENTS_SOLID );
+	}
+
+	// **************************************************************
+	// **************************************************************
+
 	if ( wait >= 0 ) {
 		PostEventSec( &EV_Activate, wait, this );
 	}
