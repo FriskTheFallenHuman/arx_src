@@ -103,7 +103,7 @@ const int RAGDOLL_DEATH_TIME = 3000;
 const int MAX_PDAS = 64;
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
-const int MAX_INVENTORY_ITEMS = 3; //48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
+const int MAX_INVENTORY_ITEMS = 48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
 
 const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
@@ -5576,6 +5576,8 @@ void idPlayer::ProcessMagic()
 	const char *projectileName;
 	const char *customMagicName;
 	const char *customMagicAction;
+	idStr scriptAction;
+	float alertRadius;
 	const char *tmpValue;
 	int spellManaCost;
 
@@ -5641,7 +5643,7 @@ void idPlayer::ProcessMagic()
 				//REMOVEMEx
 				//gameLocal.Printf( "spellManaCost = %i\n", spellManaCost );
 
-				if ( playerCurrentMana < ( spellManaCost + ARX_MANA_BASE_COST ) )
+				if ( playerCurrentMana < ( spellManaCost ) ) //+ ARX_MANA_BASE_COST ) )
 				{
 					//REMOVEMEx
 					//gameLocal.Printf( "Not enough mana to cast spell\n" );
@@ -5681,7 +5683,19 @@ void idPlayer::ProcessMagic()
 				if ( strcmp( customMagicAction, "0" ) == 0 )
 				{
 					playerView.Flash( colorGreen, 500 );
+					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 					playerPoisoned = false;
+				}
+
+				// Script calls
+				
+				magicSpellCombo->dict.GetString( "script_action", "", scriptAction );
+				magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
+				if ( !strcmp( scriptAction, "" ) == 0 )
+				{
+					playerView.Flash( colorWhite, 500 );
+					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+					RadiusSpell( scriptAction, alertRadius );
 				}
 
 			} // if ( magicSpellCombo )
@@ -6871,7 +6885,9 @@ void idPlayer::PerformImpulse( int impulse ) {
 				/***********************************************************************/
 				gameLocal.Printf("IMPULSE_13\n");
 
+				//RadiusSpell();
 
+				/*
 				if ( playerInvisibleEndTime > gameLocal.time ) // Do not alert AI or set enemy if player invisible
 				{ break; };
 
@@ -6912,7 +6928,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 						
 					}
 				}
-
+				*/
 				/***********************************************************************/
 				/***********************************************************************/
 				/***********************************************************************/
@@ -8248,7 +8264,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			// Poison
 			if ( arg->GetKey() == "inv_poison" )
 			{
-				playerPoisoned = true;
+				if ( playerPoisoned )
+				{ playerPoisoned = false; }
+				else
+				{ playerPoisoned = true; }
 				gave = true;
 			}
 
@@ -8318,7 +8337,7 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 	for ( e = 0; e < numListedEntities; e++ ) {
 
 		ent = entityList[ e ];
-						
+
 		if ( ent->IsType( idAI::Type ) ) {
 
 			gameLocal.Printf("idAI is %s\n", ent->name.c_str());
@@ -8331,6 +8350,55 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 			static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( this ) );
 						
 		}
+	}
+}
+
+/*
+==============
+idPlayer::AlertAI
+==============
+*/
+void idPlayer::RadiusSpell( idStr scriptAction, float alertRadius ) {
+
+	int			e;
+	idEntity *	ent;
+	idEntity *	entityList[ MAX_GENTITIES ];
+	int			numListedEntities;
+	idBounds	bounds;
+
+	// Script functions
+	const function_t	*func;
+	idThread			*thread;
+
+	bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( alertRadius );
+
+	//const idActor *actor = static_cast<const idActor *>( this );
+
+	// Get all entities touching the bounds
+	numListedEntities = gameLocal.clip.EntitiesTouchingBounds( bounds, -1, entityList, MAX_GENTITIES );
+
+	for ( e = 0; e < numListedEntities; e++ ) {
+
+		ent = entityList[ e ];
+
+		func = ent->scriptObject.GetFunction( scriptAction.c_str() );
+
+		if ( func )
+		{
+			//REMOVEME
+			gameLocal.Printf( "Calling ignight on %s\n", ent->name.c_str() );
+
+			// create a thread and call the function
+			thread = new idThread();
+			thread->CallFunction( ent, func, true );
+			thread->Start();
+		}
+		else
+		{
+			//REMOVEME
+			gameLocal.Printf( "Not calling ignight on %s\n", ent->name.c_str() );
+		}
+
 	}
 }
 

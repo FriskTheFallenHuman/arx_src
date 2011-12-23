@@ -847,6 +847,9 @@ private:
 	// AI related
 	void					AlertAI( bool playerVisible, float alertRadius );
 
+	// Spell related
+	void					RadiusSpell( idStr scriptAction, float alertRadius );
+
 	/*
 	*** END - Solarsplace - Arx EOS - Private
 	*****************************************************************************************************

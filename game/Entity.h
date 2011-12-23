@@ -110,6 +110,9 @@ public:
 
 	int						health;					// FIXME: do all objects really need health?
 
+	// Solarsplace - Arx EOS - Thanks Hexen
+	int						onFire;
+
 	struct entityFlags_s {
 		bool				notarget			:1;	// if true never attack or target this entity
 		bool				noknockback			:1;	// if true no knockback from hits
@@ -124,6 +127,11 @@ public:
 		bool				hasAwakened			:1;	// before a monster has been awakened the first time, use full PVS for dormant instead of area-connected
 		bool				networkSync			:1; // if true the entity is synchronized over the network
 	} fl;
+
+// Solarsplace - Arx EOS - Thanks Hexen
+protected:
+	int					nextFlame;
+	int					fireJoint;
 
 public:
 	ABSTRACT_PROTOTYPE( idEntity );
@@ -485,6 +493,9 @@ public:
 	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
 	void					AddLocalDamageEffect( jointHandle_t jointNum, const idVec3 &localPoint, const idVec3 &localNormal, const idVec3 &localDir, const idDeclEntityDef *def, const idMaterial *collisionMaterial );
 	void					UpdateDamageEffects( void );
+
+	// Solarsplace - Arx EOS - Thanks Hexen
+	void					EmitFlames( void );
 
 	virtual bool			ClientReceiveEvent( int event, int time, const idBitMsg &msg );
 

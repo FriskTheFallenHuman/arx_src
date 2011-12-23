@@ -1020,6 +1020,12 @@ idAI::Think
 =====================
 */
 void idAI::Think( void ) {
+
+	// Solarsplace - Arx EOS - Thanks Hexen
+	if ( !AI_DEAD && gameLocal.time < onFire || onFire == -1 ) {
+		EmitFlames();
+	}
+
 	// if we are completely closed off from the player, don't do anything at all
 	if ( CheckDormant() ) {
 		return;

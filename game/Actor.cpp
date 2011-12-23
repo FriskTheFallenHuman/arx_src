@@ -2174,6 +2174,13 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
 	damage = GetDamageForLocation( damage, location );
 
+	// Solarsplace 20th Dec 2011 - Arx - End Of Sun - On Fire Damage effects
+	if ( damageDef->GetInt( "onFire" ) ) {
+		// Solarsplace - Arx EOS - Thanks Hexen
+		onFire =  gameLocal.time + 5000;
+	}
+
+
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );
 	if ( damage > 0 ) {

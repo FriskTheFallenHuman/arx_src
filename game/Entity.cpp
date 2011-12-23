@@ -434,6 +434,11 @@ void idEntity::Spawn( void ) {
 	const char			*classname;
 	const char			*scriptObjectName;
 
+	// Solarsplace - Arx EOS - Thanks Hexen
+	onFire = 0;
+	nextFlame = 0;
+	fireJoint = 0;
+
 	gameLocal.RegisterEntity( this );
 
 	spawnArgs.GetString( "classname", NULL, &classname );
@@ -670,6 +675,11 @@ void idEntity::Save( idSaveGame *savefile ) const {
 	}
 
 	savefile->WriteInt( mpGUIState );
+
+	// Solarsplace - Arx EOS - Thanks Hexen
+	savefile->WriteInt( nextFlame );
+	savefile->WriteInt( fireJoint );
+	savefile->WriteInt( onFire );
 }
 
 /*
@@ -768,6 +778,11 @@ void idEntity::Restore( idRestoreGame *savefile ) {
 		  if( modelDefHandlePost != -1 )
 		        modelDefHandlePost = gameRenderWorld->AddEntityDef( &post );
 	}
+
+	// Solarsplace - Arx EOS - Thanks Hexen
+	savefile->ReadInt( nextFlame );
+	savefile->ReadInt( fireJoint );
+	savefile->ReadInt( onFire );
 
 }
 
@@ -3608,6 +3623,57 @@ void idEntity::ActivateTargets( idEntity *activator ) const {
 	}
 }
 
+// Solarsplace - Arx EOS - Thanks Hexen
+void idAnimatedEntity::EmitFlames( void ) {
+
+	if ( gameLocal.time < nextFlame ) {
+		return;
+	}
+
+	particleEmitter_t pe;
+	idStr particleName = "arx_flames_yellow_damage";
+	idVec3 origin;
+	idMat3 axis;
+
+	idAnimator *anim=GetAnimator();
+	if ( anim == NULL ) {
+		return;
+	}
+
+	int numjoints=anim->NumJoints();
+	if ( numjoints <= 0 ) {
+		return;
+	}
+
+	//REMOVEME
+	gameLocal.Printf( "EmitFlames numjoints = %i\n", numjoints );
+
+	nextFlame += gameLocal.random.RandomFloat() * ( ( 40 / numjoints ) );
+
+	fireJoint++;
+
+	if ( fireJoint >= numjoints ) {
+		fireJoint = 0;
+	}
+
+	pe.joint = (jointHandle_t) fireJoint;
+
+	anim->GetJointTransform( pe.joint, gameLocal.time, origin, axis );
+	origin = renderEntity.origin + origin * renderEntity.axis;
+
+	BecomeActive( TH_UPDATEPARTICLES );
+	if ( !gameLocal.time ) {
+		// particles with time of 0 don't show, so set the time differently on the first frame
+		pe.time = 1;
+	} else {
+		pe.time = gameLocal.time;
+	}
+
+	pe.particle = static_cast<const idDeclParticle *>( declManager->FindType( DECL_PARTICLE, particleName ) );
+	gameLocal.smokeParticles->EmitSmoke( pe.particle, pe.time, gameLocal.random.CRandomFloat(), origin, axis );
+
+}
+
 /***********************************************************************
 
   Misc.
@@ -5017,6 +5083,13 @@ void idAnimatedEntity::Think( void ) {
 	UpdateAnimation();
 	Present();
 	UpdateDamageEffects();
+
+	// Solarsplace - Arx EOS - Thanks Hexen
+	if ( gameLocal.time < onFire ) {
+		if ( gameLocal.time >= nextFlame ) {
+			EmitFlames();
+		}
+	}
 }
 
 /*

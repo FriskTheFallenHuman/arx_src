@@ -89,6 +89,8 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 		{
 			shopItemClass = shopEntity->spawnArgs.GetString( va( "shopItem_%i", i ), "" ); // Get the class name for this shop item
 
+			gameLocal.Printf( "shopItem_%i = shopItemClass %s\n", i, shopItemClass.c_str() );
+
 			if ( idStr::Icmp( "", shopItemClass ) ) // Returns 0 if the text is equal
 			{ 
 				// Save the item in the persistent dictionary
@@ -117,6 +119,9 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 		currentShopSlotItem = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName + ARX_REC_SEP + va( ARX_PROP_SHOP_ITEM + "%i", i );
 		gameLocal.persistentLevelInfo.GetString( currentShopSlotItem, "", &result );
 
+		if ( idStr::Icmp( "", result ) == 0 )
+		{ continue; }
+
 		shopItemDef = gameLocal.FindEntityDef( result, false );
 
 		if ( shopItemDef )
@@ -131,9 +136,6 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 			// Grouping of identical items or not.
 			int existingShopItemIndex = FindShopItem( result );
-
-			//REMOVEME
-			gameLocal.Printf( "existingShopItemIndex( %s ) = %i\n", result , existingShopItemIndex );
 
 			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
 			{
@@ -153,9 +155,10 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 				shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
 			}
 
-			//REMOVEME
-			gameLocal.Printf( "shop_item_icon_%i = %s\n", itemCount, shop_item_icon.c_str() );
-			gameLocal.Printf( "shop_item_class_%i = %s\n", itemCount, result );	
+		}
+		else
+		{
+			gameLocal.Printf( "ERROR in shop '%s'. The entity def for '%s' could not be found.\n", currentShopName.c_str(), result );
 		}
 
 	}
@@ -287,21 +290,18 @@ int idArxShop::FindShopItem( const char *name ) {
 		 
 		if ( shop_item && *shop_item ) {
 
-			//REMOVEME
-			gameLocal.Printf( "(%i): name = %s and shop_item = %s\n", i, name, shop_item );
+			//gameLocal.Printf( "(%i): name = %s and shop_item = %s\n", i, name, shop_item );
 
 			if ( idStr::Icmp( name, shop_item ) == 0 ) {
 
-				//REMOVEME
-				gameLocal.Printf( "FindShopItem returns: %i\n", i );
+				//gameLocal.Printf( "FindShopItem returns: %i\n", i );
 
 				return i;
 			}
 		}
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "FindShopItem returns: -1\n" );
+	//gameLocal.Printf( "FindShopItem returns: -1\n" );
 
 	return -1;
 }
