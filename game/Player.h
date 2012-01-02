@@ -263,6 +263,7 @@ public:
 	// Solarsplace 2nd Nov 2011 - NPC GUI related
 	idUserInterface *		conversationSystem;
 	bool					conversationSystemOpen;
+	idStr					conversationWindowQuestId;
 
 	// Solarsplace 6th Nov 2011 - Shopping GUI related
 	idUserInterface *		shoppingSystem;
@@ -441,6 +442,7 @@ public:
 
 	// Solarsplace - 2nd July 2010 - Needed a slightly modified version of the above function
 	int						FindInventoryItemIndex( const char *name );
+	int						FindInventoryItemCount( const char *name );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
@@ -784,6 +786,9 @@ private:
 	void					Event_HudMessage( const char *message );							// 25th Sep 2011 - Solarsplace
 	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
 	void					Event_OpenCloseShop( const char *newState );						// 30th Nov 2011 - Solarsplace
+	void					Event_RemoveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
+	void					Event_GiveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
+	void					Event_FindInventoryItemCount( const char *name );					// 2nd Jan 2011 - Solarsplace
 
 	// Inventory Related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

@@ -64,6 +64,9 @@ const idEventDef EV_StopSpline( "stopSpline", NULL );
 const idEventDef EV_IsMoving( "isMoving", NULL, 'd' );
 const idEventDef EV_IsRotating( "isRotating", NULL, 'd' );
 
+const idEventDef EV_MoverBecomeSolid( "becomeSolid", NULL );
+const idEventDef EV_MoverBecomeNonSolid( "becomeNonSolid", NULL );
+
 CLASS_DECLARATION( idEntity, idMover )
 	EVENT( EV_FindGuiTargets,		idMover::Event_FindGuiTargets )
 	EVENT( EV_Thread_SetCallback,	idMover::Event_SetCallback )
@@ -104,6 +107,9 @@ CLASS_DECLARATION( idEntity, idMover )
 	EVENT( EV_Activate,				idMover::Event_Activate )
 	EVENT( EV_IsMoving,				idMover::Event_IsMoving )
 	EVENT( EV_IsRotating,			idMover::Event_IsRotating )
+
+	EVENT( EV_MoverBecomeSolid,			idMover::Event_MoverBecomeSolid )
+	EVENT( EV_MoverBecomeNonSolid,		idMover::Event_MoverBecomeNonSolid )
 END_CLASS
 
 /*
@@ -376,6 +382,50 @@ void idMover::Show( void ) {
 	}
 	SetPhysics( &physicsObj );
 }
+
+// Start - Solarsplace - Arx End Of Sun
+
+/*
+================
+idMover::BecomeNonSolid
+================
+*/
+void idMover::BecomeNonSolid( void ) {
+
+	physicsObj.SetContents( 0 );
+}
+
+/*
+================
+idMover::Event_BecomeNonSolid
+================
+*/
+void idMover::Event_MoverBecomeNonSolid( void ) {
+
+	BecomeNonSolid();
+}
+
+/*
+================
+idMover::BecomeSolid
+================
+*/
+void idMover::BecomeSolid( void ) {
+	
+	physicsObj.SetContents( CONTENTS_SOLID );
+	SetPhysics( &physicsObj );
+}
+
+/*
+================
+idMover::Event_BecomeSolid
+================
+*/
+void idMover::Event_MoverBecomeSolid( void ) {
+	BecomeSolid();
+}
+
+// End - Solarsplace - Arx End Of Sun
 
 /*
 ============

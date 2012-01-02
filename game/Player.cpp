@@ -62,6 +62,10 @@ const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint
 const idEventDef EV_HudMessage( "HudMessage", "s" );
 const idEventDef EV_PlayerMoney( "PlayerMoney", "d", 'd' );
 const idEventDef EV_OpenCloseShop( "OpenCloseShop", "s", NULL );
+const idEventDef EV_RemoveInventoryItem( "RemoveInventoryItem", "s", NULL );
+const idEventDef EV_GiveInventoryItem( "GiveInventoryItem", "s", NULL );
+const idEventDef EV_FindInventoryItemCount( "FindInventoryItemCount", "s", 'f' );
+
 //*****************************************************************
 //*****************************************************************
 
@@ -93,6 +97,10 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
 	EVENT( EV_PlayerMoney,						idPlayer::Event_PlayerMoney )
 	EVENT( EV_OpenCloseShop,					idPlayer::Event_OpenCloseShop )
+	EVENT( EV_RemoveInventoryItem,				idPlayer::Event_RemoveInventoryItem )
+	EVENT( EV_GiveInventoryItem,				idPlayer::Event_GiveInventoryItem )
+	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_FindInventoryItemCount )
+
 	//*****************************************************************
 	//*****************************************************************
 
@@ -134,6 +142,9 @@ const idStr ARX_PROP_CLASSNAME = "ARX_CLASSNAME";
 const idStr ARX_PROP_MAPENTRYPOINT = "ARX_MAPENTRYPOINT";
 const idStr ARX_PROP_MAP_ANY = "ARX_MAP_ANY";
 const idStr ARX_PROP_ENT_ANY = "ARX_ENT_ANY";
+
+// "ARX_CHAR_QUEST_WINDOW" = This length crashes the game. The engine will not load the .dll
+const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW"; // Must mirror in scripts too.
 
 //*****************************************************************
 //*****************************************************************
@@ -1588,6 +1599,7 @@ void idPlayer::Spawn( void ) {
 		// Solarsplace 2nd Nov 2011 - NPC GUI related
 		conversationSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
 		conversationSystemOpen = false;
+		conversationWindowQuestId = "";
 
 		// Solarsplace 11th June 2010 - Readable related
 		readableSystem = uiManager->FindGui( "guis/arx_inventory.gui", true, false, true );
@@ -1787,6 +1799,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteUserInterface( conversationSystem, false );
 	savefile->WriteBool( conversationSystemOpen );
+	savefile->WriteString( conversationWindowQuestId );
 
 	savefile->WriteUserInterface( shoppingSystem, false );
 	savefile->WriteBool( shoppingSystemOpen );
@@ -2047,6 +2060,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadUserInterface( conversationSystem );
 	savefile->ReadBool( conversationSystemOpen );
+	savefile->ReadString( conversationWindowQuestId );
 
 	savefile->ReadUserInterface( shoppingSystem );
 	savefile->ReadBool( shoppingSystemOpen );
@@ -3691,6 +3705,26 @@ idDict *idPlayer::FindInventoryItem( const char *name ) {
 
 /*
 ===============
+idPlayer::FindInventoryItemCount
+===============
+*/
+int idPlayer::FindInventoryItemCount( const char *name ) {
+
+	int itemCount = 0;
+
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+		const char *iname = inventory.items[i]->GetString( "inv_name" );
+		if ( iname && *iname ) {
+			if ( idStr::Icmp( name, iname ) == 0 ) {
+				itemCount ++;
+			}
+		}
+	}
+	return itemCount;
+}
+
+/*
+===============
 idPlayer::FindInventoryItemIndex - Solarsplace - 2nd July 2010
 ===============
 */
@@ -3719,6 +3753,16 @@ void idPlayer::RemoveInventoryItem( const char *name ) {
 	}
 }
 
+// Solarsplace - 29th Dec 2011 - Arx - End Of Sun
+void idPlayer::Event_RemoveInventoryItem( const char *name ) {
+
+	idStr message;
+	sprintf( message, "Inventory item %s removed", name );
+	ShowHudMessage( message );
+
+	RemoveInventoryItem( name );
+}
+
 /*
 ===============
 idPlayer::RemoveInventoryItem
@@ -3736,19 +3780,42 @@ idPlayer::GiveItem
 */
 void idPlayer::GiveItem( const char *itemname ) {
 
-	//REMOVED
-	//gameLocal.Printf( "Entered idPlayer::GiveItem( const char *itemname )" );
+	// Solarsplace - 29th Dec 2011 - Commented out.
 
+	/*
 	idDict args;
 
 	args.Set( "classname", itemname );
 	args.Set( "owner", name.c_str() );
-
-	//REMOVED
-	//gameLocal.Printf( "idPlayer::GiveItem - %s - %s.\n", itemname, name.c_str() );
-
+	gameLocal.SpawnEntityDef( args );
 	if ( hud ) {
 		hud->HandleNamedEvent( "itemPickup" );
+	}
+	*/
+}
+
+// Solarsplace - 29th Dec 2011 - Arx - End Of Sun
+void idPlayer::Event_GiveInventoryItem( const char *name ) {
+
+	const idDeclEntityDef *shopItemDef = NULL;
+	idDict args;
+	idStr invName;
+
+	shopItemDef = gameLocal.FindEntityDef( name, false );
+	args = shopItemDef->dict;
+
+	if ( args.GetString( "def_dropItem" ) )
+	{ args.Set( "inv_classname", args.GetString( "def_dropItem" ) ); }
+	else
+	{ args.Set( "inv_classname", args.GetString( "classname" ) ); }
+
+	GiveInventoryItem( &args );
+
+	if ( hud ) {
+		hud->HandleNamedEvent( "invPickup" );
+
+		args.GetString( "inv_name", "", invName );
+		ShowHudMessage( "Item " + invName + " received" );
 	}
 }
 
@@ -4270,8 +4337,8 @@ void idPlayer::Weapon_NPC( void ) {
 		{
 			conversationSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
 
-			//REMOVEME
-			gameLocal.Printf("ToggleConversationSystem(%s)\n", focusCharacter->spawnArgs.GetString( "characters_gui" ) );
+			// Get this characters quest id if they have one and store the id in variable conversationWindowQuestId
+			focusCharacter->spawnArgs.GetString( "character_quest_id", "0", conversationWindowQuestId );
 
 			ToggleConversationSystem();
 		}
@@ -5905,8 +5972,9 @@ void idPlayer::UpdateViewAngles( void ) {
 								idPlayer *pPlayer = static_cast<idPlayer *>( this );
 								if ( pPlayer && pPlayer->hud )
 								{
-									pPlayer->hud->SetStateString( "message", feedbackMagicDirection.c_str() );
-									pPlayer->hud->HandleNamedEvent( "Message" );
+									//pPlayer->hud->SetStateString( "message", feedbackMagicDirection.c_str() );
+									//pPlayer->hud->HandleNamedEvent( "Message" );
+									ShowHudMessage( feedbackMagicDirection );
 								}
 							}
 
@@ -7808,6 +7876,20 @@ void idPlayer::UpdateShoppingSystem( void )
 	}
 }
 
+void idPlayer::UpdateConversationSystem( void )
+{
+
+	if ( conversationSystem && conversationSystemOpen )
+	{
+		idStr questWindow;
+		gameLocal.persistentLevelInfo.GetString( ARX_CHAR_QUEST_WINDOW + ARX_REC_SEP + conversationWindowQuestId, "0", questWindow );
+
+		conversationSystem->SetStateString( "quest_visible_window", questWindow );
+
+	}
+
+}
+
 void idPlayer::UpdateInventoryGUI( void )
 {
 	// Solarsplace 14th April 2010 - Inventory related
@@ -8343,7 +8425,7 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 			gameLocal.Printf("idAI is %s\n", ent->name.c_str());
 
 			if ( playerVisible ) {
-				if ( !static_cast<idActor *>( ent )->CanSee(this, true) ) { return; }
+				if ( !static_cast<idActor *>( ent )->CanSee(this, true) ) { continue; }
 			}
 
 			gameLocal.AlertAI( this );
@@ -9687,7 +9769,8 @@ void idPlayer::Think( void ) {
 	UpdateJournalGUI();
 	UpdateInventoryGUI();
 	UpdateShoppingSystem();
-	
+	UpdateConversationSystem();
+
 	increaseManaOverTime();
 	healthDecreaseOverTime();
 
@@ -12009,10 +12092,22 @@ void idPlayer::Event_HudMessage( const char *message )
 {
 	if ( hud )
 	{
-		hud->SetStateString( "arx_MainMessageText", message );
+		if ( idStr::FindText( message, "#str_" ) == 0 )
+		{
+			hud->SetStateString( "arx_MainMessageText", common->GetLanguageDict()->GetString( message ) );
+		} else {
+			hud->SetStateString( "arx_MainMessageText", message );
+		}
+
 		hud->HandleNamedEvent( "arx_ShowMainMessage" );
 	}
 	gameLocal.Printf("%s\n", message);
+}
+
+void idPlayer::Event_FindInventoryItemCount( const char *name )
+{
+	int result = FindInventoryItemCount( name );
+	idThread::ReturnInt( result );
 }
 
 
@@ -12049,17 +12144,3 @@ void idPlayer::Event_OpenCloseShop( const char *newState )
 	gameLocal.Printf( "Event_OpenCloseShop\n" ); //REMOVEME
 	ToggleShoppingSystem();
 }
-
-/*
-//REMOVEME - HUD debugging
-idStr strHUDMessage;
-sprintf( strHUDMessage, "vecX(%f) vecY(%f) vX(%f) vY(%f)", vecX, vecY, vX, vY );
-hudMagicHelp += strHUDMessage;
-hudMagicHelp = strHUDMessage;
-idPlayer *pPlayer = static_cast<idPlayer *>( this );
-if ( pPlayer && pPlayer->hud )
-{
-pPlayer->hud->SetStateString( "message", hudMagicHelp.c_str( ) );
-pPlayer->hud->HandleNamedEvent( "Message" );
-}
-*/

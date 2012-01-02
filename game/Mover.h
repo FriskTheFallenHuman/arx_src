@@ -132,6 +132,13 @@ private:
 	void					VectorForDir( float dir, idVec3 &vec );
 	idCurve_Spline<idVec3> *GetSpline( idEntity *splineEntity ) const;
 
+	// Start - Solarsplace - Arx End Of Sun
+	void					BecomeNonSolid( void );
+	void					BecomeSolid( void );
+	void					Event_MoverBecomeNonSolid( void );
+	void					Event_MoverBecomeSolid( void );
+	// End - Solarsplace - Arx End Of Sun
+
 	void					Event_SetCallback( void );	
 	void					Event_TeamBlocked( idEntity *blockedPart, idEntity *blockingEntity );
 	void					Event_StopMoving( void );
