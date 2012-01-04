@@ -62,10 +62,6 @@ private:
 	void				SingleView( idUserInterface *hud, const renderView_t *view );
 	void				DoubleVision( idUserInterface *hud, const renderView_t *view, int offset );
 	void				BerserkVision( idUserInterface *hud, const renderView_t *view );
-
-	// Solarsplace 25th May 2010 - Poison related
-	void				PoisonVision( idUserInterface *hud, const renderView_t *view );
-
 	void				InfluenceVision( idUserInterface *hud, const renderView_t *view );
 	void				ScreenFade();
 
@@ -81,76 +77,15 @@ private:
 
 	bool				bfgVision;			// 
 
-	// jcd
-	#ifdef _DENTONMOD
-		int					m_iScreenHeight;
-		int					m_iScreenWidth;
-		float				m_fShiftScale_x;
-		float				m_fShiftScale_y;
-
-		class dnImageWrapper
-		{
-		private:	
-			const idStr	m_strImage;
-			const idMaterial *m_matImage;
-	// 		const idMaterial *m_matImageGenerator;
-
-		public:
-			dnImageWrapper( const char *a_strImage ) : 
-			m_matImage			( declManager->FindMaterial(a_strImage) ),
-			m_strImage			( a_strImage )
-			{
-			}
-			operator const char * () const
-			{
-				return m_strImage.c_str();
-			}
-			operator const idMaterial *() const
-			{
-				return m_matImage;
-			}
-
-		};
-
-		dnImageWrapper m_imageCurrentRender;
-		dnImageWrapper m_imageCurrentRender8x8DownScaled;
-		dnImageWrapper m_imageLuminance64x64;
-		dnImageWrapper m_imageluminance4x4;
-		dnImageWrapper m_imageAdaptedLuminance1x1;
-		dnImageWrapper m_imageBloom;
-		dnImageWrapper m_imageHalo;
-		
-		const idMaterial *m_matAvgLuminance64x;
-		const idMaterial *m_matAvgLumSample4x4;
-		const idMaterial *m_matAdaptLuminance;
-		const idMaterial *m_matBrightPass;
-		const idMaterial *m_matGaussBlurX;
-		const idMaterial *m_matGaussBlurY;
-		const idMaterial *m_matHalo;
-		const idMaterial *m_matGaussBlurXHalo;
-		const idMaterial *m_matGaussBlurYHalo;
-		const idMaterial *m_matFinalScenePass;
-
-		// For debug renders
-		const idMaterial *m_matDecodedLumTexture64x64;
-		const idMaterial *m_matDecodedLumTexture4x4;
-		const idMaterial *m_matDecodedAdaptLuminance;
-
-	#endif
+	// ---> Arx - Solarsplace
+	const idMaterial *	poisonMaterial;			// Player poisoned effect
+	const idMaterial *	justLeftWaterMaterial;	// Player poisoned effect
+	const idMaterial *	blurMaterial;			// Player poisoned effect
+	// <--- Arx
 
 	const idMaterial *	tunnelMaterial;		// health tunnel vision
 	const idMaterial *	armorMaterial;		// armor damage view effect
 	const idMaterial *	berserkMaterial;	// berserk effect
-
-	// Solarsplace 25th May 2005 - Poison related
-	const idMaterial *	poisonMaterial;				// Player poisoned effect
-
-	// Solarsplace 3rd June 2010 - Water related
-	const idMaterial *	justLeftWaterMaterial;		// Player poisoned effect
-
-	// Solarsplace 5th June 2010 - Water related
-	const idMaterial *	blurMaterial;		// Player poisoned effect
-
 	const idMaterial *	irGogglesMaterial;	// ir effect
 	const idMaterial *	bloodSprayMaterial; // blood spray
 	const idMaterial *	bfgMaterial;		// when targeted with BFG

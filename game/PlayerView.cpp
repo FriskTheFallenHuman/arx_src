@@ -6,13 +6,14 @@
 
 #include "Game_local.h"
 
-// jcd
+// ---> Arx - Unknown
 static int MakePowerOfTwo( int num ) {
 	int		pot;
 	for (pot = 1 ; pot < num ; pot<<=1) {
 	}
 	return pot;
 }
+// <--- Arx
 
 const int IMPULSE_DELAY = 150;
 /*
@@ -22,61 +23,27 @@ idPlayerView::idPlayerView
 */
 idPlayerView::idPlayerView() 
 
-	//jcd
-	#ifdef _DENTONMOD
-	: 
-	m_imageCurrentRender				( "_currentRender"			),
-	m_imageCurrentRender8x8DownScaled	( "_RTtoTextureScaled64x"	),
-	m_imageLuminance64x64				( "_luminanceTexture64x64"	),
-	m_imageluminance4x4					( "_luminanceTexture4x4"	),
-	m_imageAdaptedLuminance1x1			( "_adaptedLuminance"		),
-	m_imageBloom						( "_bloomImage"				),
-	m_imageHalo							( "_haloImage"				),
-
-	m_matAvgLuminance64x	( declManager->FindMaterial( "postprocess/averageLum64" )	), 
-	m_matAvgLumSample4x4	( declManager->FindMaterial( "postprocess/averageLum4" )	),
-	m_matAdaptLuminance		( declManager->FindMaterial( "postprocess/adaptLum" )		),
-	m_matBrightPass			( declManager->FindMaterial( "postprocess/brightPass" )		),
-	m_matGaussBlurX			( declManager->FindMaterial( "postprocess/blurx" )			),
-	m_matGaussBlurY			( declManager->FindMaterial( "postprocess/blury" )			),
-	m_matHalo				( declManager->FindMaterial(  "postprocess/halo" )			),
-	m_matGaussBlurXHalo		( declManager->FindMaterial( "postprocess/blurx_halo" )		),
-	m_matGaussBlurYHalo		( declManager->FindMaterial( "postprocess/blury_halo" )		),
-	m_matFinalScenePass		( declManager->FindMaterial( "postprocess/finalScenePass" )	),
-
-	// Materials for debugging intermediate textures
-	m_matDecodedLumTexture64x64	( declManager->FindMaterial( "postprocess/decode_luminanceTexture64x64" )	), 
-	m_matDecodedLumTexture4x4	( declManager->FindMaterial( "postprocess/decode_luminanceTexture4x4" )		),
-	m_matDecodedAdaptLuminance	( declManager->FindMaterial( "postprocess/decode_adaptedLuminance" )		)
-	#endif
-
 	{
 	memset( screenBlobs, 0, sizeof( screenBlobs ) );
 	memset( &view, 0, sizeof( view ) );
 	player = NULL;
+
+	// ---> Arx - Solarsplace
+	poisonMaterial = declManager->FindMaterial( "textures/arx/decals/poisoned" );
+	justLeftWaterMaterial = declManager->FindMaterial( "textures/arx/water/screen" );
+	blurMaterial = declManager->FindMaterial( "textures/arx/sfx/blur" );
+	// <--- Arx
+
 	dvMaterial = declManager->FindMaterial( "_scratch" );
 	tunnelMaterial = declManager->FindMaterial( "textures/decals/tunnel" );
 	armorMaterial = declManager->FindMaterial( "armorViewEffect" );
 	berserkMaterial = declManager->FindMaterial( "textures/decals/berserk" );
-
-	// Solarsplace 25th May 2010 - Poison related
-	poisonMaterial = declManager->FindMaterial( "textures/arx/decals/poisoned" );
-
-	// Solarsplace 3rd June 2010 - Water related
-	justLeftWaterMaterial = declManager->FindMaterial( "textures/arx/water/screen" );
-
-	// Solarsplace 5th June 2010 - Water related
-	blurMaterial = declManager->FindMaterial( "textures/arx/sfx/blur" );
-
 	irGogglesMaterial = declManager->FindMaterial( "textures/decals/irblend" );
 	bloodSprayMaterial = declManager->FindMaterial( "textures/decals/bloodspray" );
 	bfgMaterial = declManager->FindMaterial( "textures/decals/bfgvision" );
 	lagoMaterial = declManager->FindMaterial( LAGO_MATERIAL, false );
-	bfgVision = false;
 
-#ifdef _DENTONMOD
-	m_iScreenHeight = m_iScreenWidth = 0;
-#endif
+	bfgVision = false;
 
 	dvFinishTime = 0;
 	kickFinishTime = 0;
@@ -495,7 +462,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 	renderView_t	hackedView = *view;
 	hackedView.viewaxis = hackedView.viewaxis * ShakeAxis();
 
-	//neuro start
+	// ---> neuro start
 	//gameRenderWorld->RenderScene( &hackedView );
 
         if ( gameLocal.portalSkyEnt.GetEntity() && gameLocal.IsPortalSkyAcive() && g_enablePortalSky.GetBool() ) {
@@ -529,7 +496,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 	}
 
 	gameRenderWorld->RenderScene( &hackedView ); //was fxManager->Process( &hackedView );
-    //neuro end
+    // <--- neuro end
 
 	if ( player->spectating ) {
 		return;
@@ -570,7 +537,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 
 
 	// draw screen blobs
-	//	if ( !pm_thirdPerson.GetBool() && !g_skipViewEffects.GetBool() ) {
+	if ( !pm_thirdPerson.GetBool() && !g_skipViewEffects.GetBool() ) {
 		for ( int i = 0 ; i < MAX_SCREEN_BLOBS ; i++ ) {
 			screenBlob_t	*blob = &screenBlobs[i];
 			if ( blob->finishTime <= gameLocal.time ) {
@@ -589,40 +556,36 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			}
 		}
 
-		// jcd
-		/* player->DrawHUD( hud ); */
+		player->DrawHUD( hud );
 
-		/* Solarsplace 30th June 2010 - Commented this out for the jcd mod
 		//******************************************************************************************************
 		//******************************************************************************************************
 		// Begin - Solarsplace - Arx End Of Sun
 
-		// Solarsplace 11th June 2010 - Inventory related
-		// Re-positioned this if block here so we still render the world.
-		// Re-positioned this code again... to allow for posioned effects using same system as beserk effects.
 		if ( player->inventorySystemOpen ) {
 			player->inventorySystem->Redraw( gameLocal.time );
-			//return;
 		}
 
-		// Solarsplace 6th May 2010 - Journal related
-		// Re-positioned this if block here so we still render the world.
 		if ( player->journalSystemOpen ) {
 			player->journalSystem->Redraw( gameLocal.time );
-			//return;
 		}
 
-		// Solarsplace 11th June 2010 - Readable related
-		// Re-positioned this if block here so we still render the world.
 		if ( player->readableSystemOpen ) {
 			player->readableSystem->Redraw( gameLocal.time );
-			//return;
+		}
+
+		if ( player->conversationSystemOpen ) {
+			player->conversationSystem->Redraw( gameLocal.time );
+		}
+
+		if ( player->shoppingSystemOpen ) {
+			player->shoppingSystem->Redraw( gameLocal.time );
 		}
 
 		// End - Solarsplace - Arx End Of Sun
 		//******************************************************************************************************
 		//******************************************************************************************************
-		*/
+
 		// armor impulse feedback
 		float	armorPulse = ( gameLocal.time - player->lastArmorPulse ) / 250.0f;
 
@@ -666,9 +629,8 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
 		}
 
-//	}
+	}
 
-	/* Solarsplace - Comment out this code to avoid confusion.
 	// test a single material drawn over everything
 	if ( g_testPostProcess.GetString()[0] ) {
 		const idMaterial *mtr = declManager->FindMaterial( g_testPostProcess.GetString(), false );
@@ -676,14 +638,10 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			common->Printf( "Material not found.\n" );
 			g_testPostProcess.SetString( "" );
 		} else {
-	//insert this line of code to enable shading of GUI features 6th venom
-            renderSystem->CaptureRenderToImage( "_currentRender" );
-	//insert end
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, mtr );
 		}
 	}
-	*/
 }
 
 /*
@@ -736,32 +694,6 @@ void idPlayerView::BerserkVision( idUserInterface *hud, const renderView_t *view
 	renderSystem->UnCrop();
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, dvMaterial );
-}
-/*
-===================
-idPlayerView::PoisonVision - Solarsplace 26th May 2010 - Poison related
-===================
-*/
-void idPlayerView::PoisonVision( idUserInterface *hud, const renderView_t *view ) {
-
-	/*
-	// Make poisoned players view turn more and more green the lower the health gets.
-	//float colour = player->health / 100.0f;
-
-	renderSystem->CropRenderSize( 512, 256, true );
-	SingleView( hud, view );
-	renderSystem->CaptureRenderToImage( "_scratch" );
-	renderSystem->UnCrop();
-	
-	// 27th May 2010 - The double vision effect is too much!
-	//renderSystem->SetColor4( colour, 1.0f, colour, 1.0f );
-	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, dvMaterial );
-	*/
-
-	// Solarsplace - 27th May 2010 - Removed final overlay effects as was just too much effect!
-
-	SingleView( hud, view );
-
 }
 
 /*
@@ -877,42 +809,9 @@ idPlayerView::RenderPlayerView
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	const renderView_t *view = player->GetRenderView();
 
-	// jcd
-	static const float fBloomImageDownScale = 2.0f;
-	static const float fHaloImageDownScale = 8.0f;
-	static const float fBackbufferLumDownScale = 8.0f;
-
 	if ( g_skipViewEffects.GetBool() ) {
 		SingleView( hud, view );
 	} else {
-
-	// jcd
-	#ifdef _DENTONMOD
-		// This condition makes sure that, the 2 loops inside run once only when resolution changes or map starts.
-		if( m_iScreenHeight != renderSystem->GetScreenHeight() || m_iScreenWidth !=renderSystem->GetScreenWidth() )
-		{
-			int width = 256, height = 256;	
-
-			// m_iScreenHeight	= renderSystem->GetScreenHeight();
-			// m_iScreenWidth	= renderSystem->GetScreenWidth();
-
-			// This should probably fix the ATI issue...
-			renderSystem->GetGLSettings( m_iScreenWidth, m_iScreenHeight );
-
-			//assert( iScreenWidth != 0 && iScreenHeight != 0 );
-
-			while( width < m_iScreenWidth ) {
-				width <<= 1;
-			}
-			while( height < m_iScreenHeight ) {
-				height <<= 1;
-			}
-			m_fShiftScale_x = m_iScreenWidth  / (float)width;
-			m_fShiftScale_y = m_iScreenHeight / (float)height;
-		}
-	#endif
-
-		/* Render the standard view */
 
 		if ( player->GetInfluenceMaterial() || player->GetInfluenceEntity() ) {
 			InfluenceVision( hud, view );
@@ -920,176 +819,11 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 			DoubleVision( hud, view, dvFinishTime - gameLocal.time );
 		} else if ( player->PowerUpActive( BERSERK ) ) {
 			BerserkVision( hud, view );
-		} else if ( player->playerPoisoned ) { // Solarsplace - 26th May 2010 - Poison related
-			PoisonVision ( hud, view ); 
 		} else {
 			SingleView( hud, view );
 		}
 
-		// jcd
-		#ifdef _DENTONMOD
-		/* Perform HDR postprocess */
-		const int iPostProcessType = r_HDR_postProcess.GetInteger();
-		if (iPostProcessType != 0 && !player->objectiveSystemOpen) {
-
-			renderSystem->CaptureRenderToImage( m_imageCurrentRender );
-
-			//-------------------------------------------------
-			// Downscale 
-			//-------------------------------------------------
-			renderSystem->CropRenderSize(m_iScreenWidth/fBackbufferLumDownScale, m_iScreenHeight/fBackbufferLumDownScale, true);
-
-			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, m_fShiftScale_y, m_fShiftScale_x, 0, m_imageCurrentRender );
-			renderSystem->CaptureRenderToImage( m_imageCurrentRender8x8DownScaled );
-			renderSystem->UnCrop();
-			// 			//---------------------
-			renderSystem->CropRenderSize(64, 64, true);
-			renderSystem->SetColor4( 1.0f/min( 192.0f, m_iScreenWidth/fBackbufferLumDownScale), 1.0f, 1.0f, 1.0f );			 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matAvgLuminance64x );
-			renderSystem->CaptureRenderToImage( m_imageLuminance64x64 );
-			renderSystem->UnCrop();
-			//---------------------
-			renderSystem->CropRenderSize(4, 4, true);
-			renderSystem->SetColor4( 1.0f/16.0f, 1.0f, 1.0f, 1.0f );			 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matAvgLumSample4x4 );
-			renderSystem->CaptureRenderToImage( m_imageluminance4x4 );
-			renderSystem->UnCrop();
-			//---------------------
-			renderSystem->CropRenderSize(1, 1, true);
-			renderSystem->SetColor4( float( gameLocal.time - gameLocal.previousTime )/(1000.0f * r_HDR_eyeAdjustmentDelay.GetFloat() ), r_HDR_max_luminance.GetFloat(), 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matAdaptLuminance );
-			renderSystem->CaptureRenderToImage( m_imageAdaptedLuminance1x1 );
-			renderSystem->UnCrop();
-			//---------------------
-
-			//---------------------
-			renderSystem->CropRenderSize(m_iScreenWidth/fBloomImageDownScale, m_iScreenHeight/fBloomImageDownScale, true);
-
-			renderSystem->SetColor4( r_HDR_middleGray.GetFloat(), r_HDR_min_luminance.GetFloat(), r_HDR_brightPassThreshold.GetFloat(), r_HDR_brightPassOffset.GetFloat() );
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matBrightPass );
-
-			renderSystem->CaptureRenderToImage( m_imageBloom );
-
-			renderSystem->SetColor4( fBloomImageDownScale/m_iScreenWidth, 1.0f, 1.0f, 1.0f );			 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matGaussBlurX );
-			renderSystem->CaptureRenderToImage( m_imageBloom );
-			renderSystem->SetColor4( fBloomImageDownScale/m_iScreenHeight, 1.0f, 1.0f, 1.0f );		 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matGaussBlurY );
-
-			renderSystem->CaptureRenderToImage( m_imageBloom );
-			renderSystem->UnCrop();
-			//---------------------
-
-			renderSystem->CropRenderSize(m_iScreenWidth/fHaloImageDownScale, m_iScreenHeight/fHaloImageDownScale, true);
-
-			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matHalo );
-			renderSystem->CaptureRenderToImage( m_imageHalo );
-
-			renderSystem->SetColor4( fHaloImageDownScale/m_iScreenWidth, 1.0f, 1.0f, 1.0f );			 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matGaussBlurXHalo );
-			renderSystem->CaptureRenderToImage( m_imageHalo );
-			renderSystem->SetColor4( fHaloImageDownScale/m_iScreenHeight, 1.0f, 1.0f, 1.0f );		 
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, m_matGaussBlurYHalo );
-
-			renderSystem->CaptureRenderToImage( m_imageHalo );
-			renderSystem->UnCrop();
-
-			//---------------------
-			const float fMaxColorIntensity = max( r_HDR_maxColorIntensity.GetFloat(), 0.00001f );
-			renderSystem->SetColor4( r_HDR_middleGray.GetFloat(), r_HDR_min_luminance.GetFloat(), r_HDR_colorCurveBias.GetFloat(), 1.0f/fMaxColorIntensity );
-			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, m_fShiftScale_y, m_fShiftScale_x, 0, m_matFinalScenePass );
-
-			const int iDebugMode = r_HDR_enableDebugMode.GetInteger();
-
-			if( 1 == iDebugMode )
-			{
-				renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-				renderSystem->DrawStretchPic( 0,				0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_imageCurrentRender8x8DownScaled );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH/5,	0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_imageLuminance64x64 );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*2/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_imageluminance4x4 );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*3/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_imageAdaptedLuminance1x1 );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*4/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, m_fShiftScale_y, m_fShiftScale_x, 0, m_imageBloom );
-
-			}
-			else if ( 2 == iDebugMode )
-			{
-				renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-				renderSystem->DrawStretchPic( 0,				0, SCREEN_WIDTH/6,		SCREEN_HEIGHT/6, 0, 1, 1, 0, m_imageCurrentRender8x8DownScaled );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH/5,	0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_matDecodedLumTexture64x64 );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*2/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_matDecodedLumTexture4x4 );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*3/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, 1, 1, 0, m_matDecodedAdaptLuminance );
-				renderSystem->DrawStretchPic( SCREEN_WIDTH*4/5, 0, SCREEN_WIDTH/6,	SCREEN_HEIGHT/6, 0, m_fShiftScale_y, m_fShiftScale_x, 0, m_imageBloom );
-			}
-
-			const int iDebugTexture = r_HDR_debugTextureIndex.GetInteger();
-			if( 0!= iDebugMode && 0 < iDebugTexture && 4 > iDebugTexture ) 
-			{
-				const dnImageWrapper *arrImages[2] = { &m_imageBloom, &m_imageHalo };
-				if( 1 == iDebugTexture )
-					renderSystem->DrawStretchPic( 0, SCREEN_WIDTH * .2f, SCREEN_WIDTH * 0.6f, SCREEN_HEIGHT * 0.6f, 0, 1, 1, 0, m_imageCurrentRender8x8DownScaled );
-				else
-					renderSystem->DrawStretchPic( 0, SCREEN_WIDTH * .2f, SCREEN_WIDTH * 0.6f, SCREEN_HEIGHT * 0.6f, 0, m_fShiftScale_y, m_fShiftScale_x, 0, *arrImages[iDebugTexture-2] );
-			}
-		}	
-
-		#endif
-
 		ScreenFade();
-
-		// jcd
-		/* Render the hud on top of everything */
-		if ( !pm_thirdPerson.GetBool() && !g_skipViewEffects.GetBool() && !player->objectiveSystemOpen && !player->spectating ) {
-			player->DrawHUD( hud );
-		}
-
-		// Solarsplace - 30th June 2010 - Moved this here due to jcd mod
-		//******************************************************************************************************
-		//******************************************************************************************************
-		// Begin - Solarsplace - Arx End Of Sun
-
-		// Solarsplace 11th June 2010 - Inventory related
-		// Re-positioned this if block here so we still render the world.
-		// Re-positioned this code again... to allow for posioned effects using same system as beserk effects.
-		if ( player->inventorySystemOpen ) {
-			player->inventorySystem->Redraw( gameLocal.time );
-			//return;
-		}
-
-		// Solarsplace 6th May 2010 - Journal related
-		// Re-positioned this if block here so we still render the world.
-		if ( player->journalSystemOpen ) {
-			player->journalSystem->Redraw( gameLocal.time );
-			//return;
-		}
-
-		// Solarsplace 11th June 2010 - Readable related
-		// Re-positioned this if block here so we still render the world.
-		if ( player->readableSystemOpen ) {
-			player->readableSystem->Redraw( gameLocal.time );
-			//return;
-		}
-
-		// Solarsplace 3rd Nov 2011 - NPC GUI related
-		// Re-positioned this if block here so we still render the world.
-		if ( player->conversationSystemOpen ) {
-			player->conversationSystem->Redraw( gameLocal.time );
-			//return;
-		}
-
-		// Solarsplace 3rd Nov 2011 - NPC GUI related
-		// Re-positioned this if block here so we still render the world.
-		if ( player->shoppingSystemOpen ) {
-			player->shoppingSystem->Redraw( gameLocal.time );
-			//return;
-		}
-
-		// End - Solarsplace - Arx End Of Sun
-		//******************************************************************************************************
-		//******************************************************************************************************
-
-
 	}
 
 	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {
