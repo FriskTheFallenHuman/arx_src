@@ -12061,6 +12061,81 @@ bool idPlayer::NeedsIcon( void ) {
 	return entityNumber != gameLocal.localClientNum && ( isLagged || isChatting );
 }
 
+// sikk---> Depth Render
+/*
+==================
+idPlayer::ToggleSuppression
+==================
+*/
+/* CHECKME - Solarsplace
+void idPlayer::ToggleSuppression( bool bSuppress ) {
+	int headHandle							= head.GetEntity()->GetModelDefHandle();
+	int weaponHandle						= weapon.GetEntity()->GetModelDefHandle();
+	int weaponWorldHandle					= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetModelDefHandle();
+	renderEntity_t *headRenderEntity		= head.GetEntity()->GetRenderEntity();
+	renderEntity_t *weaponRenderEntity		= weapon.GetEntity()->GetRenderEntity();
+	renderEntity_t *weaponWorldRenderEntity	= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetRenderEntity();
+
+	if ( bSuppress ) {
+		if ( modelDefHandle != -1 ) {
+// sikk---> First Person Body
+			if ( !g_showFirstPersonBody.GetBool() ) {
+				// suppress body in DoF render view
+				renderEntity.suppressSurfaceInViewID = -8;
+				gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
+			}
+// <---sikk
+			if ( head.GetEntity() && headHandle != -1 ) {
+				// suppress head in DoF render view
+				headRenderEntity->suppressSurfaceInViewID = -8;
+				gameRenderWorld->UpdateEntityDef( headHandle, headRenderEntity );
+			}
+
+			if ( weaponEnabled && weapon.GetEntity() && weaponHandle != -1 ) {
+				// allow weapon view model in DoF render view
+				weaponRenderEntity->allowSurfaceInViewID = -8;
+				gameRenderWorld->UpdateEntityDef( weaponHandle, weaponRenderEntity );
+
+				if ( weaponWorldHandle != -1 ) {
+					// suppress weapon world model in DoF render view
+					weaponWorldRenderEntity->suppressSurfaceInViewID = -8;
+					gameRenderWorld->UpdateEntityDef( weaponWorldHandle, weaponWorldRenderEntity );
+				}
+			}
+		}
+
+		bViewModelsModified = true;
+	} else {
+		if ( modelDefHandle != -1 ) {
+			// restore suppression of body
+			renderEntity.suppressSurfaceInViewID = entityNumber + 1;
+			gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
+
+			if ( head.GetEntity() && headHandle != -1 ) {
+				// restore suppression of head
+				headRenderEntity->suppressSurfaceInViewID = entityNumber + 1;
+				gameRenderWorld->UpdateEntityDef( headHandle, headRenderEntity );
+			}
+
+			if ( weaponEnabled && weapon.GetEntity() && weaponHandle != -1  ) {
+				// restore allowance of weapon view model
+				weaponRenderEntity->allowSurfaceInViewID = entityNumber + 1;
+				gameRenderWorld->UpdateEntityDef( weaponHandle, weaponRenderEntity );
+				
+				if ( weaponWorldHandle != -1 ) {
+					// restore suppression of weapon world model
+					weaponWorldRenderEntity->suppressSurfaceInViewID = entityNumber + 1;
+					gameRenderWorld->UpdateEntityDef( weaponWorldHandle, weaponWorldRenderEntity );
+				}
+			}
+		}
+
+		bViewModelsModified = false;
+	}
+}
+// <---sikk
+*/
+
 /*
 ================
 2nd Jan 2010 - Solarsplace
