@@ -1362,6 +1362,48 @@ void idPlayer::Init( void ) {
 	talkCursor				= 0;
 	focusVehicle			= NULL;
 
+	fSpreadModifier			= 0.0f;		// sikk - Weapon Management: Handling
+
+	focusMoveableTimer		= 0;		// sikk - Object Manipulation
+
+	focusItem				= NULL;		// sikk - Manual Item Pickup
+
+	searchTimer				= 0;		// sikk - Searchable Corpses
+
+	adrenalineAmount		= 0;		// sikk - Adrenaline Pack System
+
+	bViewModelsModified		= false;	// sikk - Depth Render
+
+	v3CrosshairPos.Zero();				// sikk - Crosshair Positioning
+
+	bAmbientLightOn			= false;	// sikk - Global Ambient Light
+
+	nScreenFrostAlpha		= 0;		// sikk - Screen Frost
+
+// sikk---> Depth of Field PostProcess
+	bIsZoomed				= false;
+	focusDistance			= 0.0f;
+// <---sikk
+
+	// sikk---> Health Management System
+	healthPackAmount		= 0;
+	healthPackTimer			= 0;
+	nextHealthRegen			= 0;
+	prevHeatlh				= health;
+// <---sikk
+
+// sikk--> Infrared Goggles/Headlight PostProcess
+	bIRGogglesOn			= false;
+	bHeadlightOn			= false;
+	nIRGogglesTime			= 0;
+	nHeadlightTime			= 0;
+	nBattery				= 100;
+	fIntensity				= 1.0f;
+// <---sikk
+
+	// CHECKME
+	//gameLocal.randomEnemyTime = gameLocal.time + g_randomEncountersMinTime.GetInteger() * 1000;	// sikk - Random Encounters System
+
 	// remove any damage effects
 	playerView.ClearEffects();
 
