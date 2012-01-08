@@ -554,39 +554,6 @@ void idPlayerView::SingleView( const renderView_t *view ) {
 
 	gameRenderWorld->RenderScene( &hackedView );
 
-
-	//******************************************************************************************************
-	//******************************************************************************************************
-	// Begin - Solarsplace - Arx End Of Sun
-
-	// May take further some day, but messing with RGB and alpha here seems to make no noticable difference.
-
-	if ( player->playerPoisoned ) {
-		renderSystem->CaptureRenderToImage( "_currentRender" );
-		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, poisonMaterial );
-	}
-
-	// Solarsplace 4th June 2010 - Water related - Show drops on screen after getting out of the water
-	if ( player->waterScreenFinishTime >= gameLocal.time )
-	{
-		// Solarsplace 5th June 2010 - The water does not actually fade because of the material.
-		float waterFade = 1.0f - ( (float)gameLocal.time / (float)player->waterScreenFinishTime );
-		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, waterFade );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, justLeftWaterMaterial );
-	}
-
-	// Solarsplace 26th July 2010 - Water related - Full screen blur effect when underwater.
-	if ( player->playerUnderWater )
-	{
-		renderSystem->CaptureRenderToImage( "_currentRender" );	// Added 26th July 2010
-		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, blurMaterial );
-	}
-
-	// End - Solarsplace - Arx End Of Sun
-	//******************************************************************************************************
-	//******************************************************************************************************
 }
 
 /*
@@ -675,6 +642,51 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	// if the objective system is up, don't draw hud
 	if ( !player->objectiveSystemOpen )
 		player->DrawHUD( hud );
+
+	// Solarsplace - 30th June 2010 - Moved this here due to jcd mod
+		//******************************************************************************************************
+		//******************************************************************************************************
+		// Begin - Solarsplace - Arx End Of Sun
+
+		// Solarsplace 11th June 2010 - Inventory related
+		// Re-positioned this if block here so we still render the world.
+		// Re-positioned this code again... to allow for posioned effects using same system as beserk effects.
+		if ( player->inventorySystemOpen ) {
+			player->inventorySystem->Redraw( gameLocal.time );
+			//return;
+		}
+
+		// Solarsplace 6th May 2010 - Journal related
+		// Re-positioned this if block here so we still render the world.
+		if ( player->journalSystemOpen ) {
+			player->journalSystem->Redraw( gameLocal.time );
+			//return;
+		}
+
+		// Solarsplace 11th June 2010 - Readable related
+		// Re-positioned this if block here so we still render the world.
+		if ( player->readableSystemOpen ) {
+			player->readableSystem->Redraw( gameLocal.time );
+			//return;
+		}
+
+		// Solarsplace 3rd Nov 2011 - NPC GUI related
+		// Re-positioned this if block here so we still render the world.
+		if ( player->conversationSystemOpen ) {
+			player->conversationSystem->Redraw( gameLocal.time );
+			//return;
+		}
+
+		// Solarsplace 3rd Nov 2011 - NPC GUI related
+		// Re-positioned this if block here so we still render the world.
+		if ( player->shoppingSystemOpen ) {
+			player->shoppingSystem->Redraw( gameLocal.time );
+			//return;
+		}
+
+		// End - Solarsplace - Arx End Of Sun
+		//******************************************************************************************************
+		//******************************************************************************************************
 
 	if ( fadeTime )
 		ScreenFade();
@@ -783,6 +795,39 @@ void idPlayerView::DoPostFX() {
 
 	if ( player->PowerUpActive( BERSERK ) )
 		PostFX_BerserkVision();
+
+	//******************************************************************************************************
+	//******************************************************************************************************
+	// Begin - Solarsplace - Arx End Of Sun
+
+	// May take further some day, but messing with RGB and alpha here seems to make no noticable difference.
+
+	if ( player->playerPoisoned ) {
+		renderSystem->CaptureRenderToImage( "_currentRender" );
+		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, poisonMaterial );
+	}
+
+	// Solarsplace 4th June 2010 - Water related - Show drops on screen after getting out of the water
+	if ( player->waterScreenFinishTime >= gameLocal.time )
+	{
+		// Solarsplace 5th June 2010 - The water does not actually fade because of the material.
+		float waterFade = 1.0f - ( (float)gameLocal.time / (float)player->waterScreenFinishTime );
+		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, waterFade );
+		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, justLeftWaterMaterial );
+	}
+
+	// Solarsplace 26th July 2010 - Water related - Full screen blur effect when underwater.
+	if ( player->playerUnderWater )
+	{
+		renderSystem->CaptureRenderToImage( "_currentRender" );	// Added 26th July 2010
+		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, blurMaterial );
+	}
+
+	// End - Solarsplace - Arx End Of Sun
+	//******************************************************************************************************
+	//******************************************************************************************************
 
 	// test a single material drawn over everything
 	if ( g_testPostProcess.GetString()[0] && !player->spectating ) {
