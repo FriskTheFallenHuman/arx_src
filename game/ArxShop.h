@@ -6,14 +6,13 @@
 Created on 8th Nov 2011 by Solarsplace
 */
 
-class idArxShop {
+//class idArxShop {
 
-//class idArxShop : public idClass {
-//{
-
-	//CLASS_PROTOTYPE( idArxShop );
-
+class idArxShop : public idClass
+{
 	public:
+
+		CLASS_PROTOTYPE( idArxShop );
 
 		idArxShop();
 		~idArxShop();

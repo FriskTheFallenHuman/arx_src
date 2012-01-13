@@ -5,8 +5,8 @@
 
 #include "Game_local.h"
 
-//CLASS_DECLARATION(idClass, idArxShop)
-//END_CLASS
+CLASS_DECLARATION( idClass, idArxShop )
+END_CLASS
 
 /************************************************************************/
 /************************************************************************/
@@ -36,7 +36,6 @@ const idStr ARX_REC_SEP = "<@@@ARX@@@>";
 const idStr ARX_PROP_SHOP = "ARX_ENT_SHOP";
 const idStr ARX_PROP_SHOP_ITEM = "ARX_ENT_SHOP_ITEM_";
 
-/* NOT implemented properly yet!
 void idArxShop::Save( idSaveGame *savefile ) const {
 
 	//REMOVEME
@@ -54,7 +53,6 @@ void idArxShop::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( totalUsedShopSlots );
 	savefile->ReadDict( shopSlotItem_Dict );
 }
-*/
 
 void idArxShop::LoadActiveShop( idEntity *shopEntity )
 {
