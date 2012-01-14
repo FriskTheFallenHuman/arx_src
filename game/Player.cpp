@@ -1362,48 +1362,6 @@ void idPlayer::Init( void ) {
 	talkCursor				= 0;
 	focusVehicle			= NULL;
 
-	fSpreadModifier			= 0.0f;		// sikk - Weapon Management: Handling
-
-	focusMoveableTimer		= 0;		// sikk - Object Manipulation
-
-	focusItem				= NULL;		// sikk - Manual Item Pickup
-
-	searchTimer				= 0;		// sikk - Searchable Corpses
-
-	adrenalineAmount		= 0;		// sikk - Adrenaline Pack System
-
-	bViewModelsModified		= false;	// sikk - Depth Render
-
-	v3CrosshairPos.Zero();				// sikk - Crosshair Positioning
-
-	bAmbientLightOn			= false;	// sikk - Global Ambient Light
-
-	nScreenFrostAlpha		= 0;		// sikk - Screen Frost
-
-// sikk---> Depth of Field PostProcess
-	bIsZoomed				= false;
-	focusDistance			= 0.0f;
-// <---sikk
-
-	// sikk---> Health Management System
-	healthPackAmount		= 0;
-	healthPackTimer			= 0;
-	nextHealthRegen			= 0;
-	prevHeatlh				= health;
-// <---sikk
-
-// sikk--> Infrared Goggles/Headlight PostProcess
-	bIRGogglesOn			= false;
-	bHeadlightOn			= false;
-	nIRGogglesTime			= 0;
-	nHeadlightTime			= 0;
-	nBattery				= 100;
-	fIntensity				= 1.0f;
-// <---sikk
-
-	// CHECKME
-	//gameLocal.randomEnemyTime = gameLocal.time + g_randomEncountersMinTime.GetInteger() * 1000;	// sikk - Random Encounters System
-
 	// remove any damage effects
 	playerView.ClearEffects();
 
@@ -2050,6 +2008,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	int	  i;
 	int	  num;
 	float set;
+
+	// REMOVEME
+	gameLocal.Printf( " idPlayer::Restore\n" );
 
 	savefile->ReadUsercmd( usercmd );
 	playerView.Restore( savefile );
@@ -12102,81 +12063,6 @@ bool idPlayer::NeedsIcon( void ) {
 	// local clients don't render their own icons... they're only info for other clients
 	return entityNumber != gameLocal.localClientNum && ( isLagged || isChatting );
 }
-
-// sikk---> Depth Render
-/*
-==================
-idPlayer::ToggleSuppression
-==================
-*/
-/* CHECKME - Solarsplace
-void idPlayer::ToggleSuppression( bool bSuppress ) {
-	int headHandle							= head.GetEntity()->GetModelDefHandle();
-	int weaponHandle						= weapon.GetEntity()->GetModelDefHandle();
-	int weaponWorldHandle					= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetModelDefHandle();
-	renderEntity_t *headRenderEntity		= head.GetEntity()->GetRenderEntity();
-	renderEntity_t *weaponRenderEntity		= weapon.GetEntity()->GetRenderEntity();
-	renderEntity_t *weaponWorldRenderEntity	= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetRenderEntity();
-
-	if ( bSuppress ) {
-		if ( modelDefHandle != -1 ) {
-// sikk---> First Person Body
-			if ( !g_showFirstPersonBody.GetBool() ) {
-				// suppress body in DoF render view
-				renderEntity.suppressSurfaceInViewID = -8;
-				gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
-			}
-// <---sikk
-			if ( head.GetEntity() && headHandle != -1 ) {
-				// suppress head in DoF render view
-				headRenderEntity->suppressSurfaceInViewID = -8;
-				gameRenderWorld->UpdateEntityDef( headHandle, headRenderEntity );
-			}
-
-			if ( weaponEnabled && weapon.GetEntity() && weaponHandle != -1 ) {
-				// allow weapon view model in DoF render view
-				weaponRenderEntity->allowSurfaceInViewID = -8;
-				gameRenderWorld->UpdateEntityDef( weaponHandle, weaponRenderEntity );
-
-				if ( weaponWorldHandle != -1 ) {
-					// suppress weapon world model in DoF render view
-					weaponWorldRenderEntity->suppressSurfaceInViewID = -8;
-					gameRenderWorld->UpdateEntityDef( weaponWorldHandle, weaponWorldRenderEntity );
-				}
-			}
-		}
-
-		bViewModelsModified = true;
-	} else {
-		if ( modelDefHandle != -1 ) {
-			// restore suppression of body
-			renderEntity.suppressSurfaceInViewID = entityNumber + 1;
-			gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
-
-			if ( head.GetEntity() && headHandle != -1 ) {
-				// restore suppression of head
-				headRenderEntity->suppressSurfaceInViewID = entityNumber + 1;
-				gameRenderWorld->UpdateEntityDef( headHandle, headRenderEntity );
-			}
-
-			if ( weaponEnabled && weapon.GetEntity() && weaponHandle != -1  ) {
-				// restore allowance of weapon view model
-				weaponRenderEntity->allowSurfaceInViewID = entityNumber + 1;
-				gameRenderWorld->UpdateEntityDef( weaponHandle, weaponRenderEntity );
-				
-				if ( weaponWorldHandle != -1 ) {
-					// restore suppression of weapon world model
-					weaponWorldRenderEntity->suppressSurfaceInViewID = entityNumber + 1;
-					gameRenderWorld->UpdateEntityDef( weaponWorldHandle, weaponWorldRenderEntity );
-				}
-			}
-		}
-
-		bViewModelsModified = false;
-	}
-}
-// <---sikk
-*/
 
 /*
 ================

@@ -3608,13 +3608,6 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 		radius = 1;
 	}
 
-// sikk---> Explosion FX PostProcess
-	explosionOrigin = origin;
-	explosionRadius = radius;
-	explosionDamage = damage;
-	explosionTime = time + g_explosionFXTime.GetInteger() * 1000;
-// <---sikk
-
 	bounds = idBounds( origin ).Expand( radius );
 
 	// get all entities touching the bounds

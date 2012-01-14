@@ -288,19 +288,13 @@ public:
 	idEntityPtr<idEntity>	lastGUIEnt;				// last entity with a GUI, used by Cmd_NextGUI_f
 	int						lastGUI;				// last GUI on the lastGUIEnt
 
-	//neuro start
-	idEntityPtr<idEntity>	portalSkyEnt;
+        //neuro start
+        idEntityPtr<idEntity>	                portalSkyEnt;
 	bool					portalSkyActive;
+
 	void					SetPortalSkyEnt( idEntity *ent );
 	bool					IsPortalSkyAcive();
 	//neuro end
-
-	// sikk---> Explosion FX PostProcess
-	idVec3					explosionOrigin;
-	int						explosionRadius;
-	int						explosionDamage;
-	int						explosionTime;
-	// <---sikk
 
 
 	// ---------------------- Public idGame Interface -------------------
