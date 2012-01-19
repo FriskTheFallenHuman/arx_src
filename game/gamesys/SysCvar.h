@@ -234,18 +234,8 @@ extern const char *ui_skinArgs[];
 extern idCVar	g_enablePortalSky;
 //neuro end
 
-// jcd
-extern idCVar r_HDR_postProcess;				
-extern idCVar r_HDR_middleGray;			
-extern idCVar r_HDR_brightPassThreshold;
-extern idCVar r_HDR_brightPassOffset;	
-extern idCVar r_HDR_min_luminance;	
-extern idCVar r_HDR_max_luminance;	
-extern idCVar r_HDR_colorCurveBias;
-extern idCVar r_HDR_enableDebugMode;
-extern idCVar r_HDR_debugTextureIndex;
-extern idCVar r_HDR_eyeAdjustmentDelay;
-extern idCVar r_HDR_maxColorIntensity;
-extern idCVar r_HDR_bloomIntensity;
+// ---> Arx
+extern idCVar	g_levelFog;
+// <--- Arx
 
 #endif /* !__SYS_CVAR_H__ */

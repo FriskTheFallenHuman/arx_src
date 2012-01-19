@@ -327,4 +327,8 @@ idCVar r_HDR_debugTextureIndex		( "r_HDR_debugTextureIndex",	"0",			CVAR_GAME | 
 
 //neuro start 
 idCVar g_enablePortalSky			( "g_enablePortalSky",			"1",			CVAR_GAME | CVAR_BOOL, "enables the portal sky" );
-//neuro end 
+//neuro end
+
+// ---> Arx
+idCVar g_levelFog					( "g_levelFog",					"1",			CVAR_GAME | CVAR_BOOL, "Enables level fog if level has fog" );
+// <--- Arx
