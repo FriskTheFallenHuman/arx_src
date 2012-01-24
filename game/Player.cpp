@@ -7676,7 +7676,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	{ return; }
 
 	// Solarsplace 17th Mar 2010
-	// Do not attempt to consume an inventory item whose index is greater than the number of inventory items held.
+	// Do not attempt to drop an inventory item whose index is greater than the number of inventory items held.
 	if ( invItemIndex > inventory.items.Num() )
 	{ return; }
 
@@ -7687,6 +7687,24 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	float playerItemDropFromHeight = 50.0f;		// You need this so, one can see when standing straight the item being dropped.
 	float playerItemDropForwardForce = 35.0f;	// This seems good. One can drop stuff on tables OK.
 	float playerItemDropUpwardForce = 120.0f;	// Seems OK too.
+
+	playerOrigin = GetPhysics()->GetOrigin(); // Get the players current world origin
+	viewAngles.ToVectors( &forward, NULL, &up ); // Get players forward and up view direction
+
+	// Solarsplace 24th Jan 2012 - Try to make sure we do not drop an item into into a brick wall or out of the level or something equally silly.
+	trace_t trace;
+	idPlayer * player = gameLocal.GetLocalPlayer();
+	idVec3 startPosition = player->GetEyePosition();
+	idVec3 endPosition = playerOrigin + (playerItemDropFromHeight * up) + ( forward * 96.0f ); // Make it a bit bigger than the 64.0f below to account for origin in middle of model.
+	
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+
+	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
+	{
+		// Play a sound to indicate drop not possible here
+		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+		return;
+	}
 
 	// Solarsplace - 4th Oct 2010 - Level Transition related - changed from 'classname' to 'inv_classname' which is persisted through level changes.
 	args.Set( "classname", inventory.items[invItemIndex]->GetString( "inv_classname" ) );
@@ -7700,9 +7718,6 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 	if ( spawnedItem )
 	{
-
-		playerOrigin = GetPhysics()->GetOrigin(); // Get the players current world origin
-		viewAngles.ToVectors( &forward, NULL, &up ); // Get players forward and up view direction
 
 		// Force, with which to launch object
 		throwVector = (playerItemDropForwardForce * forward) + (playerItemDropUpwardForce * up); // Solarsplace - TBH, throwVector = experimental
