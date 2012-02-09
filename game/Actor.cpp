@@ -2180,6 +2180,15 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		onFire =  gameLocal.time + 5000;
 	}
 
+	idPlayer * player = gameLocal.GetLocalPlayer();
+	if ( attacker == player )
+	{
+		if ( CanSee(player, true) )
+		{
+			damage = 2 * damage;
+			player->ShowHudMessage( "Double damage !" );
+		}
+	}
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );
