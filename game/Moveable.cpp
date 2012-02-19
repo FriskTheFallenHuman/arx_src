@@ -127,7 +127,7 @@ void idMoveable::Spawn( void ) {
 	physicsObj.SetBouncyness( bouncyness );
 	physicsObj.SetFriction( 0.6f, 0.6f, friction );
 	physicsObj.SetGravity( gameLocal.GetGravity() );
-	physicsObj.SetContents( CONTENTS_SOLID );
+	physicsObj.SetContents( CONTENTS_SOLID);
 	physicsObj.SetClipMask( MASK_SOLID | CONTENTS_BODY | CONTENTS_CORPSE | CONTENTS_MOVEABLECLIP );
 	SetPhysics( &physicsObj );
 
@@ -284,6 +284,7 @@ idMoveable::Killed
 ============
 */
 void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
+
 	if ( unbindOnDeath ) {
 		Unbind();
 	}
@@ -305,6 +306,20 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 	ActivateTargets( this );
 
 	fl.takedamage = false;
+}
+
+/*
+================
+idMoveable::Pain
+================
+*/
+bool idMoveable::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
+
+	// Added - Arx EOS - Solarsplace - 19th Feb 2012
+
+	StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+
+	return true;
 }
 
 /*
@@ -393,8 +408,13 @@ idMoveable::Think
 ================
 */
 void idMoveable::Think( void ) {
+
+	// Arx EOS - Solarsplace - 19th Feb 2012
+	TouchTriggers();
+
 	if ( thinkFlags & TH_THINK ) {
 		if ( !FollowInitialSplinePath() ) {
+
 			BecomeInactive( TH_THINK );
 		}
 	}

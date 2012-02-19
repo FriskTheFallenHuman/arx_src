@@ -2180,10 +2180,11 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		onFire =  gameLocal.time + 5000;
 	}
 
+	// Solarsplace 9th Feb 2012 - Arx - End Of Sun - Do double damage if surprise attack
 	idPlayer * player = gameLocal.GetLocalPlayer();
 	if ( attacker == player )
 	{
-		if ( CanSee(player, true) )
+		if ( !CanSee(player, true) && health > 0 )
 		{
 			damage = 2 * damage;
 			player->ShowHudMessage( "Double damage !" );

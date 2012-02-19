@@ -990,6 +990,14 @@ idEntity::BecomeInactive
 ================
 */
 void idEntity::BecomeInactive( int flags ) {
+
+	if ( spawnArgs.GetBool("inv_arx_inventory_item") && spawnArgs.GetBool("dropped") )
+	{
+		// Arx - Solarsplace
+		// Don't want dropped inventory items to stop thinking.
+		return;
+	}
+
 	if ( ( flags & TH_PHYSICS ) ) {
 		// may only disable physics on a team master if no team members are running physics or bound to a joints
 		if ( teamMaster == this ) {
@@ -1014,7 +1022,7 @@ void idEntity::BecomeInactive( int flags ) {
 		if ( teamMaster && teamMaster != this ) {
 			// if the team master is at rest
 			if ( teamMaster->IsAtRest() ) {
-				teamMaster->BecomeInactive( TH_PHYSICS );
+					teamMaster->BecomeInactive( TH_PHYSICS );
 			}
 		}
 	}
@@ -3028,6 +3036,10 @@ inflictor, attacker, dir, and point can be NULL for environmental effects
 */
 void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, 
 					  const char *damageDefName, const float damageScale, const int location ) {
+
+	//REMOVEME
+	gameLocal.Printf ( "idEntity::Damage(%s)\n", name.c_str() );
+
 	if ( !fl.takedamage ) {
 		return;
 	}

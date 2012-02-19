@@ -5512,7 +5512,7 @@ void idPlayer::TraceUsables()
 	idVec3 startPosition = player->GetEyePosition();
 	idVec3 endPosition = startPosition + player->viewAngles.ToForward() * ARX_MAX_ITEM_PICKUP_DISTANCE;
 
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_PLAYERSOLID, player ); // Make sure we ignore the player.
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
@@ -7529,7 +7529,11 @@ void idPlayer::LoadTransitionInfo( void )
 					gameLocal.Printf( "Hiding entity\n" ); //REMOVEME
 
 					if ( gameLocal.persistentLevelInfo.GetBool( keyText ) )
-					{ ent->Hide();}
+					{
+						//ent->Hide();
+						ent->PostEventMS( &EV_Remove, 0 );
+					
+					}
 				}
 
 				/****************************************************************************
@@ -7685,7 +7689,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	idEntity *spawnedItem;
 	
 	float playerItemDropFromHeight = 50.0f;		// You need this so, one can see when standing straight the item being dropped.
-	float playerItemDropForwardForce = 35.0f;	// This seems good. One can drop stuff on tables OK.
+	float playerItemDropForwardForce = 50.0f;	// This seems good. One can drop stuff on tables OK.
 	float playerItemDropUpwardForce = 120.0f;	// Seems OK too.
 
 	playerOrigin = GetPhysics()->GetOrigin(); // Get the players current world origin
@@ -7695,9 +7699,9 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
 	idVec3 startPosition = player->GetEyePosition();
-	idVec3 endPosition = playerOrigin + (playerItemDropFromHeight * up) + ( forward * 96.0f ); // Make it a bit bigger than the 64.0f below to account for origin in middle of model.
+	idVec3 endPosition = playerOrigin + (playerItemDropFromHeight * up) + ( forward * 24.0f ); // Make it a bit bigger than the 64.0f below to account for origin in middle of model.
 	
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_PLAYERSOLID, player ); // Make sure we ignore the player.
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
@@ -7722,7 +7726,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// Force, with which to launch object
 		throwVector = (playerItemDropForwardForce * forward) + (playerItemDropUpwardForce * up); // Solarsplace - TBH, throwVector = experimental
 
-		spawnedItem->GetPhysics()->SetOrigin( playerOrigin + (playerItemDropFromHeight * up) + ( forward * 64.0f ) );
+		spawnedItem->GetPhysics()->SetOrigin( playerOrigin + (playerItemDropFromHeight * up) + ( forward * 16.0f ) );
 
 		spawnedItem->GetPhysics()->SetAxis( spawnedItem->GetPhysics()->GetAxis() ); // Solarsplace - TBH, not 100% on this at the moment, but seems to be working OK.
 
@@ -8520,7 +8524,7 @@ void idPlayer::GetEntityByViewRay( void )
 	idStr entityClassName;
 	idStr requiredItemInvName;
 
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_PLAYERSOLID, player ); // Make sure we ignore the player.
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
