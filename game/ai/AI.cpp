@@ -3373,20 +3373,19 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 
 	// This must be before setting script to state_Killed as we set spawn args here that are checked in the ai_monster_base.script
 
-	//REMOVEME
-	gameLocal.Printf("ARX - idAI %s was killed by inflictor %s.\n", this->name.c_str(),  inflictor->name.c_str() );
+	//gameLocal.Printf("ARX - idAI %s was killed by inflictor %s.\n", this->name.c_str(),  inflictor->name.c_str() );
 
-	if ( inflictor->spawnArgs.GetBool( "cooked_enemy", "0" ) )
+	if ( inflictor->spawnArgs.GetBool( "arx_cooked_enemy", "0" ) )
 	{
-		gameLocal.Printf("Spawning cooked body parts.\n" );
-
-		spawnArgs.SetFloat( "arx_dinner_is_ready", 1 );
+		// Here we would spawn for example a cooked chicken or cooked rat ribs
+		spawnArgs.SetFloat( "arx_spawned_cooked_food", 1 );
 		PostEventSec( &AI_SpawnItemCooked, 1, "def_cooked_drops" );
 	}
 	else
 	{
-		//REMOVEME
-		gameLocal.Printf("Not spawning cooked body parts.\n" );
+		// Here we would spawn for example a raw chicken or raw rat ribs
+		spawnArgs.SetFloat( "arx_spawned_raw_food", 1 );
+		PostEventSec( &AI_SpawnItemCooked, 1, "def_raw_drops" );
 	}
 	
 	// Spawn death drop items on a delay, so they are not affected by the physics of fire ball blasts etc.
