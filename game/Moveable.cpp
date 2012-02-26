@@ -303,6 +303,23 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 		renderEntity.gui[ 0 ] = NULL;
 	}
 
+	//REMOVEME //FIXME - Arx - Solarsplace
+	if ( this->spawnArgs.GetBool( "inv_arx_food_raw" ) )
+	{
+		idDict args;
+		idEntity *spawnedItem;
+
+		args.Set( "classname", this->spawnArgs.GetString( "def_cooked" ) );
+		args.Set( "dropped", "1" );
+		args.Set( "nodrop", "1" );
+		gameLocal.SpawnEntityDef( args, &spawnedItem );
+
+		spawnedItem->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
+		spawnedItem->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
+
+		PostEventMS( &EV_Remove, 0 );
+	}
+
 	ActivateTargets( this );
 
 	fl.takedamage = false;
@@ -316,9 +333,30 @@ idMoveable::Pain
 bool idMoveable::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
 
 	// Added - Arx EOS - Solarsplace - 19th Feb 2012
+	/*
+	if ( inflictor ) {
+	
+		//REMOVEME
+		gameLocal.Printf( "idMoveable::Pain inflictor is %s\n", inflictor->name.c_str() );
+		gameLocal.Printf( "idMoveable::Pain attacker is %s\n", attacker->name.c_str() );
 
-	StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+		const idDeclEntityDef *damageDef = gameLocal.FindEntityDef( attacker->spawnArgs.GetString("def_damage"), false );
+		
+		if ( damageDef ) {
 
+			//REMOVEME
+			gameLocal.Printf( "idMoveable::Pain def_damage is %s\n", damageDef->GetName() );
+
+			if ( damageDef->dict.GetBool( "burn", "0" ) )
+			{
+				if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) )
+				{
+					StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+				}
+			}
+		}
+	}
+	*/
 	return true;
 }
 
@@ -410,12 +448,16 @@ idMoveable::Think
 void idMoveable::Think( void ) {
 
 	// Arx EOS - Solarsplace - 19th Feb 2012
+	//if ( health > 0 )
+	//{  }
+
 	TouchTriggers();
 
 	if ( thinkFlags & TH_THINK ) {
 		if ( !FollowInitialSplinePath() ) {
 
-			BecomeInactive( TH_THINK );
+			//REMOVEME //FIXME
+			//BecomeInactive( TH_THINK );
 		}
 	}
 	idEntity::Think();

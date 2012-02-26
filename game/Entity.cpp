@@ -3069,8 +3069,32 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 				health = -999;
 			}
 
+			//REMOVEME
+			gameLocal.Printf( "idEntity::Damage entity %s is killed now\n", name.c_str() );
+
 			Killed( inflictor, attacker, damage, dir, location );
 		} else {
+
+			// ******************************************************************
+
+			if ( damageDef ) {
+
+			//REMOVEME
+			gameLocal.Printf( "idEntity::Damage def_damage is %s\n", damageDefName );
+
+			if ( damageDef->GetBool( "burn", "0" ) )
+			{
+				if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) )
+				{
+					StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+				}
+			}
+		}
+
+
+			// ******************************************************************
+
+
 			Pain( inflictor, attacker, damage, dir, location );
 		}
 	}
@@ -3657,8 +3681,7 @@ void idAnimatedEntity::EmitFlames( void ) {
 		return;
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "EmitFlames numjoints = %i\n", numjoints );
+	//gameLocal.Printf( "EmitFlames numjoints = %i\n", numjoints );
 
 	nextFlame += gameLocal.random.RandomFloat() * ( ( 40 / numjoints ) );
 
@@ -3742,6 +3765,9 @@ bool idEntity::TouchTriggers( void ) const {
 		if ( !GetPhysics()->ClipContents( cm ) ) {
 			continue;
 		}
+
+		//REMOVEME
+		gameLocal.Printf( "idEntity::TouchTriggers #3 %i, %s, %s\n", i, ent->name.c_str(), name.c_str() );
 
 		numEntities++;
 

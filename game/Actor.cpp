@@ -3414,7 +3414,7 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 		{
 			item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
 			item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
-			item->GetPhysics()->SetLinearVelocity( idVec3( 0, 0, 1 ) * 500 ); //( vec3_origin );
+			item->GetPhysics()->SetLinearVelocity( idVec3( 0, 0, 1 ) * 150 ); //( vec3_origin );
 			item->UpdateVisuals();
 		}
 		
