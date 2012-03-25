@@ -3037,8 +3037,7 @@ inflictor, attacker, dir, and point can be NULL for environmental effects
 void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, 
 					  const char *damageDefName, const float damageScale, const int location ) {
 
-	//REMOVEME
-	gameLocal.Printf ( "idEntity::Damage(%s)\n", name.c_str() );
+	//gameLocal.Printf ( "idEntity::Damage(%s)\n", name.c_str() );
 
 	if ( !fl.takedamage ) {
 		return;
@@ -3069,31 +3068,26 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 				health = -999;
 			}
 
-			//REMOVEME
-			gameLocal.Printf( "idEntity::Damage entity %s is killed now\n", name.c_str() );
-
-			Killed( inflictor, attacker, damage, dir, location );
-		} else {
-
-			// ******************************************************************
-
-			if ( damageDef ) {
-
-			//REMOVEME
-			gameLocal.Printf( "idEntity::Damage def_damage is %s\n", damageDefName );
-
-			if ( damageDef->GetBool( "burn", "0" ) )
-			{
-				if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) )
-				{
-					StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+			// Arx - Solarsplace
+			if ( damageDef->GetBool( "burn", "0" ) ) {
+				if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) ) {
+					this->spawnArgs.Set( "inv_arx_food_cooked", "1" );
 				}
 			}
-		}
 
+			Killed( inflictor, attacker, damage, dir, location );
 
-			// ******************************************************************
+		} else {
 
+			// Arx - Solarsplace
+			if ( damageDef ) {
+
+				if ( damageDef->GetBool( "burn", "0" ) ) {
+					if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) ) {
+						StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
+					}
+				}
+			}
 
 			Pain( inflictor, attacker, damage, dir, location );
 		}
@@ -3766,8 +3760,7 @@ bool idEntity::TouchTriggers( void ) const {
 			continue;
 		}
 
-		//REMOVEME
-		gameLocal.Printf( "idEntity::TouchTriggers #3 %i, %s, %s\n", i, ent->name.c_str(), name.c_str() );
+		//gameLocal.Printf( "idEntity::TouchTriggers #3 %i, %s, %s\n", i, ent->name.c_str(), name.c_str() );
 
 		numEntities++;
 

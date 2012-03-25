@@ -48,6 +48,9 @@ idMoveable::idMoveable( void ) {
 	unbindOnDeath		= false;
 	allowStep			= false;
 	canDamage			= false;
+
+	// Arx - Solarsplace
+	isRawFood			= false;
 }
 
 /*
@@ -151,6 +154,9 @@ void idMoveable::Spawn( void ) {
 
 	allowStep = spawnArgs.GetBool( "allowStep", "1" );
 
+	// Arx - Solarsplace
+	isRawFood = spawnArgs.GetBool( "inv_arx_food_raw", "0" );
+
 	PostEventMS( &EV_SetOwnerFromSpawnArgs, 0 );
 }
 
@@ -177,6 +183,9 @@ void idMoveable::Save( idSaveGame *savefile ) const {
 	savefile->WriteVec3( initialSplineDir );
 
 	savefile->WriteStaticObject( physicsObj );
+
+	// Arx - Solarsplace
+	savefile->WriteBool( isRawFood );
 }
 
 /*
@@ -209,6 +218,10 @@ void idMoveable::Restore( idRestoreGame *savefile ) {
 	}
 
 	savefile->ReadStaticObject( physicsObj );
+
+	// Arx - Solarsplace
+	savefile->ReadBool( isRawFood );
+
 	RestorePhysics( &physicsObj );
 }
 
@@ -303,9 +316,11 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 		renderEntity.gui[ 0 ] = NULL;
 	}
 
-	//REMOVEME //FIXME - Arx - Solarsplace
-	if ( this->spawnArgs.GetBool( "inv_arx_food_raw" ) )
+	// Arx - Solarsplace
+	if ( isRawFood && this->spawnArgs.GetBool( "inv_arx_food_cooked", "0" ) )
 	{
+		isRawFood = false;
+
 		idDict args;
 		idEntity *spawnedItem;
 
@@ -332,31 +347,6 @@ idMoveable::Pain
 */
 bool idMoveable::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
 
-	// Added - Arx EOS - Solarsplace - 19th Feb 2012
-	/*
-	if ( inflictor ) {
-	
-		//REMOVEME
-		gameLocal.Printf( "idMoveable::Pain inflictor is %s\n", inflictor->name.c_str() );
-		gameLocal.Printf( "idMoveable::Pain attacker is %s\n", attacker->name.c_str() );
-
-		const idDeclEntityDef *damageDef = gameLocal.FindEntityDef( attacker->spawnArgs.GetString("def_damage"), false );
-		
-		if ( damageDef ) {
-
-			//REMOVEME
-			gameLocal.Printf( "idMoveable::Pain def_damage is %s\n", damageDef->GetName() );
-
-			if ( damageDef->dict.GetBool( "burn", "0" ) )
-			{
-				if ( this->spawnArgs.GetBool( "inv_arx_food_raw", "0" ) )
-				{
-					StartSound( "snd_cook", SND_CHANNEL_ANY, 0, false, NULL );
-				}
-			}
-		}
-	}
-	*/
 	return true;
 }
 
@@ -447,19 +437,23 @@ idMoveable::Think
 */
 void idMoveable::Think( void ) {
 
-	// Arx EOS - Solarsplace - 19th Feb 2012
-	//if ( health > 0 )
-	//{  }
-
-	TouchTriggers();
+	// Arx - Solarsplace
+	if ( isRawFood )
+	{
+		TouchTriggers();
+	}
 
 	if ( thinkFlags & TH_THINK ) {
 		if ( !FollowInitialSplinePath() ) {
 
-			//REMOVEME //FIXME
-			//BecomeInactive( TH_THINK );
+			// Arx - Solarsplace - Don't become inactive if is arx raw food.
+			if ( !isRawFood )
+			{
+				BecomeInactive( TH_THINK );
+			}
 		}
 	}
+
 	idEntity::Think();
 }
 

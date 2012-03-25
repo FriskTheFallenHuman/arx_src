@@ -149,7 +149,7 @@ const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW"; // Must mirror in scripts 
 //*****************************************************************
 //*****************************************************************
 
-const float ARX_MAX_ITEM_PICKUP_DISTANCE = 80.0f;	// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
+const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;	// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
 
 //*****************************************************************
 //*****************************************************************
@@ -5507,12 +5507,20 @@ void idPlayer::TraceUsables()
 	//*** Solarsplace 7th June 2010
 
 	trace_t trace;
-	
+
+	/*
 	idPlayer * player = gameLocal.GetLocalPlayer();
 	idVec3 startPosition = player->GetEyePosition();
 	idVec3 endPosition = startPosition + player->viewAngles.ToForward() * ARX_MAX_ITEM_PICKUP_DISTANCE;
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+	*/
 
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_PLAYERSOLID, player ); // Make sure we ignore the player.
+	// New trace code based on weapon melee - Solars - 25th Mar 2012
+	idVec3 start = firstPersonViewOrigin;
+	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
+
+	// Solarsplace - We must have MASK_SHOT_RENDERMODEL | MASK_ALL because models and things like triggers for doors must be detected.
+	gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL | MASK_ALL, gameLocal.GetLocalPlayer() );
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
@@ -8518,13 +8526,23 @@ void idPlayer::GetEntityByViewRay( void )
 
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
+
+	/*
 	idVec3 startPosition = player->GetEyePosition();
 	idVec3 endPosition = startPosition + player->viewAngles.ToForward() * ARX_MAX_ITEM_PICKUP_DISTANCE;
+	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
+	*/
+	
 	idDict *inventoryItem;
 	idStr entityClassName;
 	idStr requiredItemInvName;
 
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_PLAYERSOLID, player ); // Make sure we ignore the player.
+	// New trace code based on weapon melee - Solars - 25th Mar 2012
+	idVec3 start = firstPersonViewOrigin;
+	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
+
+	// Solarsplace - We must have MASK_SHOT_RENDERMODEL | MASK_ALL because models and things like triggers for doors must be detected.
+	gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL | MASK_ALL, player );
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{

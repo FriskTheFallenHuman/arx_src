@@ -64,6 +64,9 @@ protected:
 	void					InitInitialSpline( int startTime );
 	bool					FollowInitialSplinePath( void );
 
+	// Arx - Solarsplace
+	bool					isRawFood;					// Only touch triggers it the item is cookable food.
+
 	void					Event_Activate( idEntity *activator );
 	void					Event_BecomeNonSolid( void );
 	void					Event_SetOwnerFromSpawnArgs( void );
