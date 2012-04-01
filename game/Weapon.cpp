@@ -304,6 +304,7 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteJoint( ejectJointView );
 	savefile->WriteJoint( guiLightJointView );
 	savefile->WriteJoint( ventLightJointView );
+	savefile->WriteJoint( headJointView );		// doomtrinity
 
 	savefile->WriteJoint( flashJointWorld );
 	savefile->WriteJoint( barrelJointWorld );
@@ -458,6 +459,7 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 	savefile->ReadJoint( ejectJointView );
 	savefile->ReadJoint( guiLightJointView );
 	savefile->ReadJoint( ventLightJointView );
+	savefile->ReadJoint( headJointView );		// doomtrinity
 
 	savefile->ReadJoint( flashJointWorld );
 	savefile->ReadJoint( barrelJointWorld );
@@ -645,6 +647,7 @@ void idWeapon::Clear( void ) {
 	ejectJointView		= INVALID_JOINT;
 	guiLightJointView	= INVALID_JOINT;
 	ventLightJointView	= INVALID_JOINT;
+	headJointView		= INVALID_JOINT;		// doomtrinity
 
 	barrelJointWorld	= INVALID_JOINT;
 	flashJointWorld		= INVALID_JOINT;
@@ -816,6 +819,7 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	ejectJointView = animator.GetJointHandle( "eject" );
 	guiLightJointView = animator.GetJointHandle( "guiLight" );
 	ventLightJointView = animator.GetJointHandle( "ventLight" );
+	headJointView = animator.GetJointHandle( "head" );		// doomtrinity
 
 	// get the projectile
 	projectileDict.Clear();
@@ -1191,6 +1195,27 @@ bool idWeapon::GetGlobalJointTransform( bool viewModel, const jointHandle_t join
 	offset = viewWeaponOrigin;
 	axis = viewWeaponAxis;
 	return false;
+}
+
+/*
+================
+idWeapon::GetHeadAngle		// doomtrinity
+
+returns the orientation of the joint in local space
+================
+*/
+idAngles idWeapon::GetHeadAngle( void ) {// was idVec3
+	idVec3 offset;
+	idMat3 axis;
+
+	if ( !animator.GetJointTransform( headJointView, gameLocal.time, offset, axis ) ) {
+		gameLocal.Warning( "Joint # %d out of range on entity '%s'",  headJointView, name.c_str() );
+	}
+
+	idAngles ang = axis.ToAngles();
+	return ang;
+	//idVec3 vec( ang[ 0 ], ang[ 1 ], ang[ 2 ] );
+	//return vec;
 }
 
 /*
@@ -1650,6 +1675,20 @@ bool idWeapon::BloodSplat( float size ) {
 	gameRenderWorld->ProjectOverlay( modelDefHandle, localPlane, mtr );
 
 	return true;
+}
+
+/*
+================
+idWeapon::HasHeadJoint		// doomtrinity
+================
+*/
+bool idWeapon::HasHeadJoint( void ) {
+	
+	if ( headJointView != INVALID_JOINT ) {
+		return true;
+	}
+
+	return false;
 }
 
 

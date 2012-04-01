@@ -1116,6 +1116,7 @@ idPlayer::idPlayer() {
 
 	firstPersonViewOrigin	= vec3_zero;
 	firstPersonViewAxis		= mat3_identity;
+	firstPersonViewWeaponAxis		= mat3_identity;		// doomtrinity
 
 	hipJoint				= INVALID_JOINT;
 	chestJoint				= INVALID_JOINT;
@@ -1857,6 +1858,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteVec3( firstPersonViewOrigin );
 	savefile->WriteMat3( firstPersonViewAxis );
+	savefile->WriteMat3( firstPersonViewWeaponAxis );			// doomtrinity
 
 	// don't bother saving dragEntity since it's a dev tool
 
@@ -2125,6 +2127,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadVec3( firstPersonViewOrigin );
 	savefile->ReadMat3( firstPersonViewAxis );
+	savefile->ReadMat3( firstPersonViewWeaponAxis );			// doomtrinity
 
 	// don't bother saving dragEntity since it's a dev tool
 	dragEntity.Clear();
@@ -10659,7 +10662,10 @@ void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
 
 	// CalculateRenderView must have been called first
 	const idVec3 &viewOrigin = firstPersonViewOrigin;
-	const idMat3 &viewAxis = firstPersonViewAxis;
+	//const idMat3 &viewAxis = firstPersonViewAxis;		// doomtrinity - commented out.
+														// Actually, if we use "firstPersonViewAxis", the weapon will follow the player view pos while animating the bone "head".
+														// Since this is not the way meant to be, we use "firstPersonViewWeaponAxis", which doesn't take care of the head orientation.
+	const idMat3 &viewAxis = firstPersonViewWeaponAxis;			// doomtrinity
 
 	// these cvars are just for hand tweaking before moving a value to the weapon def
 	idVec3	gunpos( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
@@ -10804,6 +10810,7 @@ idPlayer::GetViewPos
 */
 void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 	idAngles angles;
+	idAngles headAnimAngle;		// doomtrinity
 
 	// if dead, fix the angle and don't add any kick
 	if ( health <= 0 ) {
@@ -10814,13 +10821,48 @@ void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 		origin = GetEyePosition();
 	} else {
 		origin = GetEyePosition() + viewBob;
-		angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+		//angles = viewAngles + viewBobAngles + playerView.AngleOffset();	// doomtrinity - commented out
+// doomtrinity -->			// Check in the viewmodel if the bone "head" is present, if true take care of its orientation.
+		if ( weapon.GetEntity()->HasHeadJoint() ) {
+			headAnimAngle = weapon.GetEntity()->GetHeadAngle();
+			angles = viewAngles + viewBobAngles + headAnimAngle + playerView.AngleOffset();
+			//gameLocal.Printf( "calculate head anim\n" );
+		} else {
+			angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+			//gameLocal.Printf( "DO NOT calculate head anim\n" );
+		}		
+// <-- doomtrinity
 
 		axis = angles.ToMat3() * physicsObj.GetGravityAxis();
 
 		// adjust the origin based on the camera nodal distance (eye distance from neck)
 		origin += physicsObj.GetGravityNormal() * g_viewNodalZ.GetFloat();
 		origin += axis[0] * g_viewNodalX.GetFloat() + axis[2] * g_viewNodalZ.GetFloat();
+	}
+}
+
+/*
+===============
+idPlayer::GetViewWeaponAxis			// doomtrinity
+===============
+*/
+void idPlayer::GetViewWeaponAxis( idMat3 &axis ) const {
+	idAngles angles;
+	
+	// if dead, fix the angle and don't add any kick
+	if ( health <= 0 ) {
+		angles.yaw = viewAngles.yaw;
+		angles.roll = 40;
+		angles.pitch = -15;
+		axis = angles.ToMat3();
+		
+	} else {
+		
+		angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+
+		axis = angles.ToMat3() * physicsObj.GetGravityAxis();
+
+		
 	}
 }
 
@@ -10852,6 +10894,7 @@ void idPlayer::CalculateFirstPersonView( void ) {
 		firstPersonViewAxis = firstPersonViewAxis * playerView.ShakeAxis();
 #endif
 	}
+	GetViewWeaponAxis( firstPersonViewWeaponAxis );			// doomtrinity
 }
 
 /*

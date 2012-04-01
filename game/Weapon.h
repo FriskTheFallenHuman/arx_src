@@ -105,6 +105,8 @@ public:
 	void					GetWeaponAngleOffsets( int *average, float *scale, float *max );
 	void					GetWeaponTimeOffsets( float *time, float *scale );
 	bool					BloodSplat( float size );
+	bool					HasHeadJoint( void );		// doomtrinity
+	idAngles				GetHeadAngle( void );		// doomtrinity //was idVec3
 
 	// Ammo
 	static ammo_t			GetAmmoNumForName( const char *ammoname );
@@ -241,6 +243,7 @@ private:
 	jointHandle_t			ejectJointView;
 	jointHandle_t			guiLightJointView;
 	jointHandle_t			ventLightJointView;
+	jointHandle_t			headJointView;		// doomtrinity
 
 	jointHandle_t			flashJointWorld;
 	jointHandle_t			barrelJointWorld;

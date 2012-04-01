@@ -348,6 +348,7 @@ public:
 	// if a third person view is used
 	idVec3					firstPersonViewOrigin;
 	idMat3					firstPersonViewAxis;
+	idMat3					firstPersonViewWeaponAxis;		// doomtrinity
 
 	idDragEntity			dragEntity;
 
@@ -427,6 +428,7 @@ public:
 	void					CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis );
 	idVec3					GetEyePosition( void ) const;
 	void					GetViewPos( idVec3 &origin, idMat3 &axis ) const;
+	void					GetViewWeaponAxis( idMat3 &axis ) const;		// doomtrinity
 	void					OffsetThirdPersonView( float angle, float range, float height, bool clip );
 
 	bool					Give( const char *statname, const char *value );
