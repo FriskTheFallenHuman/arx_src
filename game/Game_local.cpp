@@ -4444,6 +4444,16 @@ void idGameLocal::SwitchTeam( int clientNum, int team ) {
 	}
 }
 
+const char * idGameLocal::GetSafeLanguageMessage( const char *message )
+{
+	if ( idStr::FindText( message, "#str_" ) == 0 )
+	{
+		return common->GetLanguageDict()->GetString( message );
+	} else {
+		return message;
+	}
+}
+
 /*
 ===============
 idGameLocal::GetMapLoadingGUI    6th venom

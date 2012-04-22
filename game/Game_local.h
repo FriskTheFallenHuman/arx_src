@@ -455,6 +455,9 @@ public:
 
 	bool					NeedRestart();
 
+	// Solarsplace - Arx EOS
+	const char *			GetSafeLanguageMessage( const char *message );
+
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
 

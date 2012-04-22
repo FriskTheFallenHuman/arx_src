@@ -438,6 +438,7 @@ void idEntity::Spawn( void ) {
 	onFire = 0;
 	nextFlame = 0;
 	fireJoint = 0;
+	nextFireDamage = 0;
 
 	gameLocal.RegisterEntity( this );
 
@@ -680,6 +681,9 @@ void idEntity::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( nextFlame );
 	savefile->WriteInt( fireJoint );
 	savefile->WriteInt( onFire );
+
+	// Arx EOS : Solarsplace
+	savefile->WriteInt( nextFireDamage );
 }
 
 /*
@@ -783,6 +787,9 @@ void idEntity::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( nextFlame );
 	savefile->ReadInt( fireJoint );
 	savefile->ReadInt( onFire );
+
+	// Arx EOS : Solarsplace
+	savefile->ReadInt( nextFireDamage );
 
 }
 

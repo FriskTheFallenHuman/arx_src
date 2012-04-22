@@ -1024,6 +1024,17 @@ void idAI::Think( void ) {
 	// Solarsplace - Arx EOS - Thanks Hexen
 	if ( !AI_DEAD && gameLocal.time < onFire || onFire == -1 ) {
 		EmitFlames();
+
+		// Arx EOS : Solarsplace - Extra interval damage
+		const int fireDamageRate = 1000;
+		if ( gameLocal.time >= nextFireDamage )
+		{
+			nextFireDamage = gameLocal.time + fireDamageRate;
+			if (spawnArgs.GetBool( "allow_onFireDamage", "1" ) ) {
+				Damage( NULL, NULL, vec3_origin, "damage_arx_fire_interval", 1.0f, INVALID_JOINT );
+			}
+		}
+
 	}
 
 	// if we are completely closed off from the player, don't do anything at all

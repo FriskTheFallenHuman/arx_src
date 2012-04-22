@@ -132,6 +132,7 @@ public:
 protected:
 	int					nextFlame;
 	int					fireJoint;
+	int					nextFireDamage;			// Solarsplace - Arx - Do additional damage at intervals when onFire;
 
 public:
 	ABSTRACT_PROTOTYPE( idEntity );

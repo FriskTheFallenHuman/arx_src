@@ -5552,7 +5552,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", target->spawnArgs.GetString( "inv_name" ) );
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
 			}	
 		}
