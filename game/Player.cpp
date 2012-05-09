@@ -54,6 +54,12 @@ const idEventDef EV_Player_LevelTrigger( "levelTrigger" );
 const idEventDef EV_SpectatorTouch( "spectatorTouch", "et" );
 const idEventDef EV_Player_GetIdealWeapon( "getIdealWeapon", NULL, 's' );
 
+//ivan start
+const idEventDef EV_Player_ForceUpdateNpcStatus( "forceUpdateNpcStatus" );
+const idEventDef EV_Player_SetCommonEnemy( "setCommonEnemy", "E" );
+const idEventDef EV_Player_GetCommonEnemy( "getCommonEnemy", NULL, 'e' );
+//ivan end
+
 //*****************************************************************
 //*****************************************************************
 // Arx EOS Events
@@ -88,7 +94,11 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_LevelTrigger,			idPlayer::Event_LevelTrigger )
 	EVENT( EV_Gibbed,						idPlayer::Event_Gibbed )
 	EVENT( EV_Player_GetIdealWeapon,		idPlayer::Event_GetIdealWeapon )
-
+	//ivan start
+	EVENT( EV_Player_ForceUpdateNpcStatus,  idPlayer::Event_ForceUpdateNpcStatus)
+	EVENT( EV_Player_SetCommonEnemy,		idPlayer::Event_SetCommonEnemy)
+	EVENT( EV_Player_GetCommonEnemy,		idPlayer::Event_GetCommonEnemy) 
+	//ivan end
 	//*****************************************************************
 	//*****************************************************************
 	// Arx EOS Events
@@ -1999,6 +2009,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 		hud->SetStateString( "message", common->GetLanguageDict()->GetString( "#str_02916" ) );
 		hud->HandleNamedEvent( "Message" );
 	}
+	friendsCommonEnemy.Save( savefile ); //ivan
 }
 
 /*
@@ -2256,6 +2267,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( lastSpectateChange );
 	savefile->ReadInt( lastTeleFX );
 
+	friendsCommonEnemy.Restore( savefile ); //ivan
 	// set the pm_ cvars
 	const idKeyValue	*kv;
 	kv = spawnArgs.MatchPrefix( "pm_", NULL );
@@ -5195,12 +5207,26 @@ void idPlayer::UpdateFocus( void ) {
 
 	if ( oldChar != focusCharacter && hud ) {
 		if ( focusCharacter ) {
+			//ivan start
+			if(focusCharacter->spawnArgs.GetBool( "showStatus", "0" )){  //ff1.1
+				hud->SetStateString( "npc", "Status:" );
+				hud->SetStateString( "npc_action", focusCharacter->spawnArgs.GetString( "shownState", "Inactive" ) );
+			}else{
+				hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "Joe" ) ); 
+				hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ) );
+			}
+			//ivan end
+			/*
+			//ivan - commented out start 
 			hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "Joe" ) );
+			//ivan - commented out end 
+			*/
 			hud->HandleNamedEvent( "showNPC" );
 			// HideTip();
 			// HideObjective();
 		} else {
 			hud->SetStateString( "npc", "" );
+			hud->SetStateString( "npc_action", "" );
 			hud->HandleNamedEvent( "hideNPC" );
 
 			// SP - Arx EOS - NPC GUI
@@ -10271,6 +10297,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	idVec3		damage_from;
 	idVec3		localDamageVector;	
 	float		attackerPushScale;
+	float		playerDamageScale; //ivan
 
 	// damage is only processed on server
 	if ( gameLocal.isClient ) {
@@ -10308,7 +10335,17 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		return;
 	}
 
-	CalcDamagePoints( inflictor, attacker, &damageDef->dict, damageScale, location, &damage, &armorSave );
+	//ivan start
+	if(damageDef->dict.GetBool( "ignore_friends" )){
+		if(team == attacker->spawnArgs.GetInt("team","0")){
+			return;
+		}
+	}
+
+	playerDamageScale = damageDef->dict.GetFloat( "playerDamageScale","1");
+	//ivan end
+
+	CalcDamagePoints( inflictor, attacker, &damageDef->dict, damageScale*playerDamageScale , location, &damage, &armorSave ); //ivan: added *playerDamageScale
 
 	// determine knockback
 	damageDef->dict.GetInt( "knockback", "20", knockback );
@@ -12227,3 +12264,56 @@ void idPlayer::Event_OpenCloseShop( const char *newState )
 	gameLocal.Printf( "Event_OpenCloseShop\n" ); //REMOVEME
 	ToggleShoppingSystem();
 }
+
+//ivan start
+/*
+===============
+idPlayer::Event_ForceUpdateNpcStatus
+==============
+*/
+void idPlayer::Event_ForceUpdateNpcStatus( void ) { //ff1.1
+	if ( focusCharacter && hud ) {
+		if(focusCharacter->spawnArgs.GetBool( "showStatus", "0" )){  
+			hud->SetStateString( "npc", "Status:" );
+			hud->SetStateString( "npc_action", focusCharacter->spawnArgs.GetString( "shownState", "Inactive" ) );
+		}
+	}
+}
+
+/*
+===============
+idPlayer::Event_SetCommonEnemy
+==============
+*/
+void idPlayer::Event_SetCommonEnemy( idEntity *enemy ) { 
+	if ( enemy && enemy->IsType( idActor::Type ) ) {
+		friendsCommonEnemy = static_cast<idActor *>( enemy );
+	}else{
+		friendsCommonEnemy = NULL;
+	}
+}
+
+/*
+===============
+idPlayer::Event_GetCommonEnemy
+==============
+*/
+void idPlayer::Event_GetCommonEnemy( void ) { 
+	idActor *ent = friendsCommonEnemy.GetEntity();
+	if ( ent && ent->health <= 0 ) {
+		friendsCommonEnemy = NULL;
+		ent = NULL;
+
+		//gameLocal.Printf("CommonEnemy Health <= 0!\n");
+	}
+
+	/*
+	else if ( !ent ){ //test only
+		gameLocal.Printf("CommonEnemy not valid!\n");
+	}
+	*/
+
+	idThread::ReturnEntity( ent );
+}
+
+//ivan end

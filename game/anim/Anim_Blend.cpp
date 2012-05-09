@@ -526,7 +526,13 @@ const char *idAnim::AddFrameCommand( const idDeclModelDef *modelDef, int framenu
 		}
 		fc.type = FC_LAUNCHMISSILE;
 		fc.string = new idStr( token );
-	} else if ( token == "fire_missile_at_target" ) {
+	} 
+	//ivan start
+	else if ( token == "fire_weapon" ) { 
+		fc.type = FC_FIREWEAPON;
+	}
+	//ivan end
+	else if ( token == "fire_missile_at_target" ) {
 		if( !src.ReadTokenOnLine( &token ) ) {
 			return "Unexpected end of line";
 		}
@@ -831,6 +837,12 @@ void idAnim::CallFrameCommands( idEntity *ent, int from, int to ) const {
 					ent->ProcessEvent( &AI_AttackMissile, command.string->c_str() );
 					break;
 				}
+				//ivan start
+				case FC_FIREWEAPON: {
+					ent->ProcessEvent( &AI_Bot_FireWeapon );
+					break;
+				}
+				//ivan end					   
 				case FC_FIREMISSILEATTARGET: {
 					ent->ProcessEvent( &AI_FireMissileAtTarget, modelDef->GetJointName( command.index ), command.string->c_str() );
 					break;
@@ -4408,6 +4420,19 @@ idAnimator::GetJointTransform>	gamex86.dll!idAnimator::ForceUpdate()  Line 4268	
 */
 bool idAnimator::GetJointTransform( jointHandle_t jointHandle, int currentTime, idVec3 &offset, idMat3 &axis ) {
 	if ( !modelDef || ( jointHandle < 0 ) || ( jointHandle >= modelDef->NumJoints() ) ) {
+		//test
+		if ( !modelDef ) {
+			gameLocal.Printf("!modelDef\n");
+		}
+
+		if ( jointHandle < 0 ) {
+			gameLocal.Printf("jointHandle < 0 \n");
+		}
+		
+		if ( jointHandle >= modelDef->NumJoints() ) {
+			gameLocal.Printf("jointHandle >= modelDef->NumJoints()\n");
+		}
+
 		return false;
 	}
 

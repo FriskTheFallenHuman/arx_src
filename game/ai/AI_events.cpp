@@ -2406,7 +2406,8 @@ void idAI::Event_LocateEnemy( void ) {
 	}
 
 	enemyEnt->GetAASLocation( aas, lastReachableEnemyPos, areaNum );
-	SetEnemyPosition();
+	idAI::SetEnemyPosition(); //ivan - force call to idAI:: to avoid updating the lastVisibleEnemyTime value
+	//was SetEnemyPosition();
 	UpdateEnemyPosition();
 }
 

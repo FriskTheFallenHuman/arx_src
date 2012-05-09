@@ -716,6 +716,8 @@ private:
 
 	bool					selfSmooth;
 
+	idEntityPtr<idActor>	friendsCommonEnemy; //ivan
+
 	void					LookAtKiller( idEntity *inflictor, idEntity *attacker );
 
 	void					StopFiring( void );
@@ -774,6 +776,12 @@ private:
 	void					Event_LevelTrigger( void );
 	void					Event_Gibbed( void );
 	void					Event_GetIdealWeapon( void );
+
+	//ivan start
+	void					Event_ForceUpdateNpcStatus( void ); 
+	void					Event_SetCommonEnemy( idEntity *enemy ); 
+	void					Event_GetCommonEnemy( void );
+	//ivan end
 
 	/*
 	*****************************************************************************************************

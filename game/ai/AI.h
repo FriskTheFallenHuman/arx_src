@@ -129,6 +129,12 @@ extern const idEventDef AI_DisableGravity;
 extern const idEventDef AI_TriggerParticles;
 extern const idEventDef AI_RandomPath;
 
+//ivan start - added so that idAI_bot can redefine them
+extern const idEventDef AI_CanHitEnemyFromAnim;
+extern const idEventDef AI_LaunchMissile;
+extern const idEventDef AI_CanHitEnemyFromJoint;
+//ivan end
+
 class idPathCorner;
 
 typedef struct particleEmitter_s {
@@ -216,7 +222,7 @@ public:
 	CLASS_PROTOTYPE( idAI );
 
 							idAI();
-							~idAI();
+	virtual					~idAI(); //ivan - virtual added
 
 	void					Save( idSaveGame *savefile ) const;
 	void					Restore( idRestoreGame *savefile );
@@ -227,7 +233,7 @@ public:
 	void					TalkTo( idActor *actor );
 	talkState_t				GetTalkState( void ) const;
 
-	bool					GetAimDir( const idVec3 &firePos, idEntity *aimAtEnt, const idEntity *ignore, idVec3 &aimDir ) const;
+	virtual bool			GetAimDir( const idVec3 &firePos, idEntity *aimAtEnt, const idEntity *ignore, idVec3 &aimDir ) const; //ivan - virtual added
 
 	void					TouchedByFlashlight( idActor *flashlight_owner );
 
@@ -403,12 +409,12 @@ protected:
 	bool					CheckForEnemy( void );
 	void					EnemyDead( void );
 	virtual bool			CanPlayChatterSounds( void ) const;
-	void					SetChatSound( void );
-	void					PlayChatter( void );
+	virtual void			SetChatSound( void ); //ivan - virtual added 
+	virtual	void			PlayChatter( void ); //ivan - virtual added
 	virtual void			Hide( void );
 	virtual void			Show( void );
 	idVec3					FirstVisiblePointOnPath( const idVec3 origin, const idVec3 &target, int travelFlags ) const;
-	void					CalculateAttackOffsets( void );
+	virtual void			CalculateAttackOffsets( void ); //ivan - virtual added
 	void					PlayCinematic( void );
 
 	// movement
@@ -474,16 +480,16 @@ protected:
 	// enemy management
 	void					ClearEnemy( void );
 	bool					EnemyPositionValid( void ) const;
-	void					SetEnemyPosition( void );
+	virtual void			SetEnemyPosition( void ); //ivan - virtual added
 	void					UpdateEnemyPosition( void );
 		
 	//void					SetEnemy( idActor *newEnemy ); // Solarsplace 13th Oct 2011 - Arx EOS - Moved to public
 
 	// attacks
-	void					CreateProjectileClipModel( void ) const;
-	idProjectile			*CreateProjectile( const idVec3 &pos, const idVec3 &dir );
+	virtual void			CreateProjectileClipModel( void ) const; //ivan - virtual added
+	virtual idProjectile	*CreateProjectile( const idVec3 &pos, const idVec3 &dir ); //ivan - virtual added
 	void					RemoveProjectile( void );
-	idProjectile			*LaunchProjectile( const char *jointname, idEntity *target, bool clampToAttackCone );
+	virtual idProjectile	*LaunchProjectile( const char *jointname, idEntity *target, bool clampToAttackCone ); //ivan - virtual added
 	virtual void			DamageFeedback( idEntity *victim, idEntity *inflictor, int &damage );
 	void					DirectDamage( const char *meleeDefName, idEntity *ent );
 	bool					TestMelee( void ) const;
@@ -493,10 +499,10 @@ protected:
 	void					PushWithAF( void );
 
 	// special effects
-	void					GetMuzzle( const char *jointname, idVec3 &muzzle, idMat3 &axis );
-	void					InitMuzzleFlash( void );
-	void					TriggerWeaponEffects( const idVec3 &muzzle );
-	void					UpdateMuzzleFlash( void );
+	virtual void			GetMuzzle( const char *jointname, idVec3 &muzzle, idMat3 &axis ); //ivan - virtual added
+	virtual	void			InitMuzzleFlash( void ); //ivan - virtual added
+	virtual void			TriggerWeaponEffects( const idVec3 &muzzle ); //ivan - virtual added
+	virtual	void			UpdateMuzzleFlash( void ); //ivan - virtual added
 	virtual bool			UpdateAnimationControllers( void );
 	void					UpdateParticles( void );
 	void					TriggerParticles( const char *jointName );

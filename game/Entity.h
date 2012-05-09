@@ -450,6 +450,16 @@ private:
 	void					Event_SetNeverDormant( int enable );
 	void					Event_GetMass( int body );
 	void					Event_IsInLiquid( void );
+	//ivan start
+	void					Event_GetRandomTargetTypePrefix( const char *typePrefix, const char *ignoreType );
+	void					Event_GetClosestTargetTypePrefix( const char *typePrefix, const char *ignoreType );
+	void					Event_GuiNamedEvent(int guiNum, const char *event);
+	void					Event_StartRandomSound( const char *soundBaseName, int channel, int netSync );
+	void					Event_AddSoundSkin( const char *soundSkinName );
+
+	void					AddSoundSkin( const char *soundSkinName );
+	void					SetDefaultSoundSkin( void );
+	//ivan end
 };
 
 /*

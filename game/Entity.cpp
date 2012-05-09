@@ -82,6 +82,13 @@ const idEventDef EV_CallFunction( "callFunction", "s" );
 const idEventDef EV_SetNeverDormant( "setNeverDormant", "d" );
 const idEventDef EV_GetMass("getMass","d",'f');
 const idEventDef EV_IsInLiquid("isInLiquid",NULL,'d');
+//ivan start
+const idEventDef EV_GetClosestTargetTypePrefix( "getClosestTargetTypePrefix", "ss", 'e' );
+const idEventDef EV_GetRandomTargetTypePrefix( "getRandomTargetTypePrefix", "ss", 'e' );
+const idEventDef EV_GuiNamedEvent ( "guiNamedEvent", "ds" );
+const idEventDef EV_StartRandomSound( "startRandomSound", "sdd", 'f' );
+const idEventDef EV_AddSoundSkin( "addSoundSkin", "s" );
+//ivan end
 
 ABSTRACT_DECLARATION( idClass, idEntity )
 	EVENT( EV_GetName,				idEntity::Event_GetName )
@@ -149,6 +156,13 @@ ABSTRACT_DECLARATION( idClass, idEntity )
 	EVENT( EV_SetNeverDormant,		idEntity::Event_SetNeverDormant )
 	EVENT( EV_GetMass,				idEntity::Event_GetMass )
 	EVENT( EV_IsInLiquid,			idEntity::Event_IsInLiquid )
+	//ivan start
+	EVENT( EV_GetClosestTargetTypePrefix,	idEntity::Event_GetClosestTargetTypePrefix )
+	EVENT( EV_GetRandomTargetTypePrefix,	idEntity::Event_GetRandomTargetTypePrefix )
+	EVENT( EV_GuiNamedEvent,				idEntity::Event_GuiNamedEvent )
+	EVENT( EV_StartRandomSound,				idEntity::Event_StartRandomSound )
+	EVENT( EV_AddSoundSkin,					idEntity::Event_AddSoundSkin )
+	//ivan end
 END_CLASS
 
 /*
@@ -539,6 +553,9 @@ void idEntity::Spawn( void ) {
 		PostEventMS( &EV_SpawnBind, 0 );
 	}
 
+	//ivan start
+	SetDefaultSoundSkin();
+	//ivan end
 	// auto-start a sound on the entity
 	if ( refSound.shader && !refSound.waitfortrigger ) {
 		StartSoundShader( refSound.shader, SND_CHANNEL_ANY, 0, false, NULL );
@@ -5562,3 +5579,150 @@ void idAnimatedEntity::Event_GetJointAngle( jointHandle_t jointnum ) {
 	idVec3 vec( ang[ 0 ], ang[ 1 ], ang[ 2 ] );
 	idThread::ReturnVector( vec );
 }
+
+//ivan start
+/*
+=====================
+idEntity::Event_GetClosestTargetTypePrefix
+=====================
+*/
+void idEntity::Event_GetClosestTargetTypePrefix( const char *typePrefix, const char *ignoreType  ) {
+	int	i;
+	float dist;
+	float bestDist;
+	int	prefixLenght;
+	int	ignoreLenght;
+	idEntity *ent;
+	idEntity *bestEnt;
+
+	prefixLenght = idStr::Length( typePrefix );
+	ignoreLenght = idStr::Length( ignoreType );
+	bestDist = idMath::INFINITY;
+	bestEnt = NULL;
+
+	for( i = 0; i < targets.Num(); i++ ) {
+		ent = targets[ i ].GetEntity();		
+		if( ent ){
+			if ( (ignoreLenght > 0) && (idStr::Cmp( ent->GetEntityDefName(), ignoreType ) == 0) ) {
+				continue;
+			}
+			if ( idStr::Cmpn( ent->GetEntityDefName(), typePrefix, prefixLenght ) == 0 ) {		
+				dist = ( GetPhysics()->GetOrigin() - ent->GetPhysics()->GetOrigin() ).LengthFast();
+				if( dist < bestDist ){
+					bestDist = dist;
+					bestEnt = ent;
+				}
+			}
+		}
+	}
+
+	idThread::ReturnEntity( bestEnt );
+}
+
+/*
+=====================
+idEntity::Event_GetRandomTargetTypePrefix
+=====================
+*/
+void idEntity::Event_GetRandomTargetTypePrefix( const char *typePrefix, const char *ignoreType ) {
+	int	i;
+	int	num;
+	int which;
+	int	prefixLenght;
+	int	ignoreLenght;
+	idEntity *ent;
+	idEntity *ents[ MAX_GENTITIES ];
+
+	prefixLenght = idStr::Length( typePrefix );
+	ignoreLenght = idStr::Length( ignoreType );
+
+	num = 0;
+	for( i = 0; i < targets.Num(); i++ ) {
+		ent = targets[ i ].GetEntity();		
+		if( ent ){
+			if ( (ignoreLenght > 0) && (idStr::Cmp( ent->GetEntityDefName(), ignoreType ) == 0) ) {
+				continue;
+			}
+			if ( idStr::Cmpn( ent->GetEntityDefName(), typePrefix, prefixLenght ) == 0 ) {		
+				ents[ num++ ] = ent;
+				if ( num >= MAX_GENTITIES ) {
+					break;
+				}
+			}
+		}
+	}
+
+	if ( !num ) {
+		idThread::ReturnEntity( NULL );
+		return;
+	}
+
+	which = gameLocal.random.RandomInt( num );
+	idThread::ReturnEntity( ents[ which ] );
+}
+
+/*
+================
+idEntity::Event_GuiNamedEvent
+================
+*/
+void idEntity::Event_GuiNamedEvent(int guiNum, const char *event) {
+	if(renderEntity.gui[guiNum-1]) {
+		renderEntity.gui[guiNum-1]->HandleNamedEvent(event);
+	}
+}
+
+/*
+================
+idEntity::Event_StartRandomSound
+================
+*/
+void idEntity::Event_StartRandomSound( const char *soundBaseName, int channel, int netSync ) {
+	int length;
+	const char *rnd_sndName = spawnArgs.RandomPrefix( soundBaseName, gameLocal.random );
+
+	gameLocal.Printf("Chosen shader: '%s' \n", rnd_sndName );
+
+	StartSoundShader( declManager->FindSound( rnd_sndName ), (s_channelType)channel, 0, ( netSync != 0 ), &length );
+	idThread::ReturnFloat( MS2SEC( length ) );
+}
+
+
+/*
+=====================
+idEntity::Event_AddSoundSkin
+=====================
+*/
+void idEntity::Event_AddSoundSkin( const char *soundSkinName ) {  
+	AddSoundSkin( soundSkinName );
+}
+
+
+/*
+=====================
+idEntity::AddSoundSkin
+=====================
+*/
+void idEntity::AddSoundSkin( const char *soundSkinName ) {
+	
+	const idDeclEntityDef *soundSkinDef = gameLocal.FindEntityDef( soundSkinName, false );	
+	if ( !soundSkinDef ) { return; }
+
+	// copy the sounds from the skin def into our spawnargs
+	const idKeyValue *kv = soundSkinDef->dict.MatchPrefix( "snd_" );
+	while( kv ) {
+		//gameLocal.Printf("Key copied: '%s' \n", kv->GetValue().c_str() );
+		spawnArgs.Set( kv->GetKey(), kv->GetValue() );
+		kv = soundSkinDef->dict.MatchPrefix( "snd_", kv );
+	}
+}
+
+/*
+=====================
+idEntity::SetDefaultSoundSkin
+=====================
+*/
+void idEntity::SetDefaultSoundSkin( void ) {
+	AddSoundSkin( spawnArgs.GetString( "def_sound_skin" ) );
+}
+//ivan end

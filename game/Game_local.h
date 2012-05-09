@@ -731,6 +731,7 @@ const int	CINEMATIC_SKIP_DELAY	= SEC2MS( 2.0f );
 #include "BrittleFracture.h"
 
 #include "ai/AI.h"
+#include "ai/AI_bot.h" //ivan
 #include "anim/Anim_Testmodel.h"
 
 #include "script/Script_Compiler.h"

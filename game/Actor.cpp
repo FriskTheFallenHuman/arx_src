@@ -2171,6 +2171,14 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		gameLocal.Error( "Unknown damageDef '%s'", damageDefName );
 	}
 
+	//ivan start
+	if(damageDef->GetBool( "ignore_friends" )){
+		if(team == attacker->spawnArgs.GetInt("team","0")){
+			return;
+		}
+	}
+	//ivan end
+
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
 	damage = GetDamageForLocation( damage, location );
 
