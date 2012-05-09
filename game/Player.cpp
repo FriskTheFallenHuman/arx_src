@@ -5591,7 +5591,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", "" ) ; //TODO names for doors, chests etc.
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "arx_usable_item_helptext" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_usableItem" );
 			}
 		}
