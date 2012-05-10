@@ -5536,6 +5536,7 @@ void idPlayer::TraceUsables()
 	//*** Solarsplace 7th June 2010
 
 	trace_t trace;
+	idEntity * target;
 
 	/*
 	idPlayer * player = gameLocal.GetLocalPlayer();
@@ -5549,11 +5550,28 @@ void idPlayer::TraceUsables()
 	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
 
 	// Solarsplace - We must have MASK_SHOT_RENDERMODEL | MASK_ALL because models and things like triggers for doors must be detected.
-	gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL | MASK_ALL, gameLocal.GetLocalPlayer() );
+	gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_TRIG, gameLocal.GetLocalPlayer() ); // MASK_SHOT_RENDERMODEL | MASK_ALL
+
+	// Solarsplace 10th May 2012
+	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
+	{
+		target = gameLocal.entities[ trace.c.entityNum ];
+
+		if ( idEntity.IsType( idTrigger::Type ) )
+		{
+			// If idEntity is a trigger that does not have the bool spawn arg arx_usable_item set
+			// then we repeat the trace again with different masks so we see through the trigger
+			// this is so we can pickup up food from within a fire damage trigger for example.
+			if ( !idEntity.spawnArgs.GetBool( "arx_usable_item", "0" ) )
+			{
+				gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_NOTRIG, gameLocal.GetLocalPlayer() );
+			}
+		}
+	}
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
-		idEntity * target = gameLocal.entities[ trace.c.entityNum ];
+		target = gameLocal.entities[ trace.c.entityNum ];
 
 		if ( strcmp( target->name.c_str(), lastUsableName ) == 0 )
 		{ return; }
