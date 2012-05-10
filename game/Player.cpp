@@ -5549,7 +5549,7 @@ void idPlayer::TraceUsables()
 	idVec3 start = firstPersonViewOrigin;
 	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
 
-	// Solarsplace - We must have MASK_SHOT_RENDERMODEL | MASK_ALL because models and things like triggers for doors must be detected.
+		// Solarsplace 10th May 2012 - Changed mask type to custom for Arx
 	gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_TRIG, gameLocal.GetLocalPlayer() ); // MASK_SHOT_RENDERMODEL | MASK_ALL
 
 	// Solarsplace 10th May 2012
@@ -5557,12 +5557,12 @@ void idPlayer::TraceUsables()
 	{
 		target = gameLocal.entities[ trace.c.entityNum ];
 
-		if ( idEntity.IsType( idTrigger::Type ) )
+		if ( target->IsType( idTrigger::Type ) )
 		{
 			// If idEntity is a trigger that does not have the bool spawn arg arx_usable_item set
 			// then we repeat the trace again with different masks so we see through the trigger
 			// this is so we can pickup up food from within a fire damage trigger for example.
-			if ( !idEntity.spawnArgs.GetBool( "arx_usable_item", "0" ) )
+			if ( !target->spawnArgs.GetBool( "arx_usable_item", "0" ) )
 			{
 				gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_NOTRIG, gameLocal.GetLocalPlayer() );
 			}
@@ -8573,6 +8573,7 @@ void idPlayer::GetEntityByViewRay( void )
 
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
+	idEntity * target;
 
 	/*
 	idVec3 startPosition = player->GetEyePosition();
@@ -8588,12 +8589,29 @@ void idPlayer::GetEntityByViewRay( void )
 	idVec3 start = firstPersonViewOrigin;
 	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
 
-	// Solarsplace - We must have MASK_SHOT_RENDERMODEL | MASK_ALL because models and things like triggers for doors must be detected.
-	gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL | MASK_ALL, player );
+	// Solarsplace 10th May 2012 - Changed mask type to custom for Arx
+	gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_TRIG, player );
+
+	// Solarsplace 10th May 2012
+	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
+	{
+		target = gameLocal.entities[ trace.c.entityNum ];
+
+		if ( target->IsType( idTrigger::Type ) )
+		{
+			// If idEntity is a trigger that does not have the bool spawn arg arx_usable_item set
+			// then we repeat the trace again with different masks so we see through the trigger
+			// this is so we can pickup up food from within a fire damage trigger for example.
+			if ( !target->spawnArgs.GetBool( "arx_usable_item", "0" ) )
+			{
+				gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_NOTRIG, gameLocal.GetLocalPlayer() );
+			}
+		}
+	}
 
 	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
 	{
-		idEntity * target = gameLocal.entities[ trace.c.entityNum ];
+		target = gameLocal.entities[ trace.c.entityNum ];
 
 		// Solarsplace 2nd April 2010 - It is critical that the inv_ remains
 		if ( target->spawnArgs.GetBool( "inv_arx_inventory_item" ) && !target->IsHidden() )
