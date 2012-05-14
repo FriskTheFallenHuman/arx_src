@@ -3833,7 +3833,12 @@ void idPlayer::Event_GiveInventoryItem( const char *name ) {
 		hud->HandleNamedEvent( "invPickup" );
 
 		args.GetString( "inv_name", "", invName );
-		ShowHudMessage( "Item " + invName + " received" );
+
+		if ( idStr::FindText( invName, "#str_" ) == 0 ) {
+			invName = common->GetLanguageDict()->GetString( invName );
+		}
+		
+		ShowHudMessage( "Item " + invName + " received" );	
 	}
 }
 
