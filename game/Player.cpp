@@ -1600,7 +1600,7 @@ void idPlayer::Spawn( void ) {
 			cursor->Activate( true, gameLocal.time );
 		}
 
-		objectiveSystem = uiManager->FindGui( "guis/pda.gui", true, false, true );
+		objectiveSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
 		objectiveSystemOpen = false;
 
 		// Solarsplace 6th Nov 2011 - Shop GUI related
@@ -1608,12 +1608,12 @@ void idPlayer::Spawn( void ) {
 		shoppingSystemOpen = false;
 
 		// Solarsplace 2nd Nov 2011 - NPC GUI related
-		conversationSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
+		conversationSystem = uiManager->FindGui("guis/placeholder.gui", true, false, true );
 		conversationSystemOpen = false;
 		conversationWindowQuestId = "";
 
 		// Solarsplace 11th June 2010 - Readable related
-		readableSystem = uiManager->FindGui( "guis/arx_inventory.gui", true, false, true );
+		readableSystem = uiManager->FindGui( "guis/placeholder.gui", true, false, true );
 		readableSystemOpen = false;
 
 		// Solarsplace 11th April 2010 - Inventory related
@@ -1621,7 +1621,8 @@ void idPlayer::Spawn( void ) {
 		inventorySystemOpen = false;
 
 		// Solarsplace 6th May 2010 - Journal related
-		journalSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
+		// Solarsplace 18th May 2012 - Removed from use ATM
+		journalSystem = uiManager->FindGui( "guis/placeholder.gui", true, false, true );
 		journalSystemOpen = false;
 
 	}
@@ -4711,8 +4712,6 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	if ( token.Icmp( "close" ) == 0 ) {
 
-		// Solarsplace 11th April 2010 - Inventory related - THIS IS NEVER REACHED!!! 
-
 		if ( objectiveSystem && objectiveSystemOpen ) {
 			TogglePDA();
 		}
@@ -6796,6 +6795,9 @@ idPlayer::TogglePDA
 */
 void idPlayer::TogglePDA( void ) {
 
+	//REMOVEME
+	gameLocal.Printf("Entered TogglePDA\n" );
+
 	if ( objectiveSystem == NULL ) {
 		return;
 	}
@@ -6851,6 +6853,10 @@ void idPlayer::TogglePDA( void ) {
 		objectiveSystem->SetStateInt( "listPDAEmail_sel_0", inventory.selEMail );
 		UpdatePDAInfo( false );
 		UpdateObjectiveInfo();
+
+		//REMOVEME
+		gameLocal.Printf("TogglePDA objectiveSystem->Activate( true )\n" );
+
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
 		hud->HandleNamedEvent( "videoPickupHide" );
@@ -6859,6 +6865,10 @@ void idPlayer::TogglePDA( void ) {
 		inventory.selVideo = objectiveSystem->State().GetInt( "listPDAVideo_sel_0" );
 		inventory.selAudio = objectiveSystem->State().GetInt( "listPDAAudio_sel_0" );
 		inventory.selEMail = objectiveSystem->State().GetInt( "listPDAEmail_sel_0" );
+
+		//REMOVEME
+		gameLocal.Printf("TogglePDA objectiveSystem->Activate( false )\n" );
+
 		objectiveSystem->Activate( false, gameLocal.time );
 	}
 	objectiveSystemOpen ^= 1;
@@ -7170,49 +7180,114 @@ void idPlayer::PerformImpulse( int impulse ) {
 		}
 
 		case IMPULSE_20: { // Arx - Inventory
-			if ( !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				//!inventorySystemOpen &&	// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen &&		// 5
+				!objectiveSystemOpen		// 6
+				)
+
 				{ ToggleInventorySystem(); }
+
 			break;
 		}
 
 		case IMPULSE_21: { // Arx - Journal
-			if ( !inventorySystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				!inventorySystemOpen &&		// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen			// 5
+				//!objectiveSystemOpen		// 6
+				)
+
+				{ TogglePDA(); }
+
+			/*
+			if ( !inventorySystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen && !objectiveSystemOpen)
 				{ ToggleJournalSystem(); }
+			*/
+
 			break;
 		}
 		
 		case IMPULSE_22: { // Arx - Quick spell 1
-			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				!inventorySystemOpen &&		// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen			// 5
+				//!objectiveSystemOpen		// 6
+				)
+
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 0, 0 ); }
 				}
+
 			break;
 		}
 
 		case IMPULSE_23: { // Arx - Quick spell 2
-			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				!inventorySystemOpen &&		// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen			// 5
+				//!objectiveSystemOpen		// 6
+				)
+
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 1, 0 ); }
 				}
+
 			break;
 		}
 
 		case IMPULSE_24: { // Arx - Quick spell 3
-			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				!inventorySystemOpen &&		// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen			// 5
+				//!objectiveSystemOpen		// 6
+				)
+
 				{ 
 					if ( !magicModeActive )
 					{ FireMagicWeapon( "", 2, 0 ); }
 				}
+
 			break;
 		}
 
 		case IMPULSE_25: { // Arx - Weapon Empty (Magic Weapon)
-			if ( !inventorySystemOpen && !journalSystemOpen && !readableSystemOpen && !conversationSystemOpen && !shoppingSystemOpen)
+
+			if (
+				!inventorySystemOpen &&		// 1
+				!journalSystemOpen &&		// 2
+				!readableSystemOpen &&		// 3
+				!conversationSystemOpen &&	// 4
+				!shoppingSystemOpen			// 5
+				//!objectiveSystemOpen		// 6
+				)
+
 				{ 
 					SelectWeapon( ARX_MAGIC_WEAPON, true );
 				}
+
 			break;
 		}
 
@@ -8108,87 +8183,87 @@ void idPlayer::UpdateInventoryGUI( void )
 
 void idPlayer::UpdateJournalGUI( void )
 {
-	if ( journalSystem && journalSystemOpen )
+	if ( objectiveSystem && objectiveSystemOpen )
 	{
 		int totalMana; // Solarsplace 16th May 2010 - Journal related
 
 		// Solarsplace - 16th May 2010 - Poison related
 		if ( playerPoisoned )
-		{ journalSystem->SetStateString( "poisoned", "1" ); }
+		{ objectiveSystem->SetStateString( "poisoned", "1" ); }
 		else
-		{ journalSystem->SetStateString( "poisoned", "0" ); }
+		{ objectiveSystem->SetStateString( "poisoned", "0" ); }
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the mana total for the player
 		totalMana = GetPlayerManaAmount();
-		journalSystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
+		objectiveSystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
-		journalSystem->SetStateInt( "player_health", health );
+		objectiveSystem->SetStateInt( "player_health", health );
 
 		// Runes -- Not sure if this is efficient? suspect not.... Don't see the game doing it anywhere :(
 		const char *result;
 
 		gameLocal.persistentLevelInfo.GetString( "aam", "0", &result );
-		journalSystem->SetStateString( "amm", result );
+		objectiveSystem->SetStateString( "amm", result );
 
 		gameLocal.persistentLevelInfo.GetString( "nhi", "0", &result );
-		journalSystem->SetStateString( "nhi", result );
+		objectiveSystem->SetStateString( "nhi", result );
 
 		gameLocal.persistentLevelInfo.GetString( "mega", "0", &result );
-		journalSystem->SetStateString( "mega", result );
+		objectiveSystem->SetStateString( "mega", result );
 
 		gameLocal.persistentLevelInfo.GetString( "yok", "0", &result );
-		journalSystem->SetStateString( "yok", result );
+		objectiveSystem->SetStateString( "yok", result );
 
 		gameLocal.persistentLevelInfo.GetString( "taar", "0", &result );
-		journalSystem->SetStateString( "taar", result );
+		objectiveSystem->SetStateString( "taar", result );
 
 		gameLocal.persistentLevelInfo.GetString( "kaom", "0", &result );
-		journalSystem->SetStateString( "kaom", result );
+		objectiveSystem->SetStateString( "kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "vitae", "0", &result );
-		journalSystem->SetStateString( "vitae", result );
+		objectiveSystem->SetStateString( "vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "vista", "0", &result );
-		journalSystem->SetStateString( "vista", result );
+		objectiveSystem->SetStateString( "vista", result );
 
 		gameLocal.persistentLevelInfo.GetString( "stregum", "0", &result );
-		journalSystem->SetStateString( "stregum", result );
+		objectiveSystem->SetStateString( "stregum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "morte", "0", &result );
-		journalSystem->SetStateString( "morte", result );
+		objectiveSystem->SetStateString( "morte", result );
 
 		gameLocal.persistentLevelInfo.GetString( "cosum", "0", &result );
-		journalSystem->SetStateString( "cosum", result );
+		objectiveSystem->SetStateString( "cosum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "comunicatum", "0", &result );
-		journalSystem->SetStateString( "comunicatum", result );
+		objectiveSystem->SetStateString( "comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "movis", "0", &result );
-		journalSystem->SetStateString( "movis", result );
+		objectiveSystem->SetStateString( "movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "tempus", "0", &result );
-		journalSystem->SetStateString( "tempus", result );
+		objectiveSystem->SetStateString( "tempus", result );
 
 		gameLocal.persistentLevelInfo.GetString( "folgora", "0", &result );
-		journalSystem->SetStateString( "folgora", result );
+		objectiveSystem->SetStateString( "folgora", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spacium", "0", &result );
-		journalSystem->SetStateString( "spacium", result );
+		objectiveSystem->SetStateString( "spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "tera", "0", &result );
-		journalSystem->SetStateString( "tera", result );
+		objectiveSystem->SetStateString( "tera", result );
 
 		gameLocal.persistentLevelInfo.GetString( "cetrius", "0", &result );
-		journalSystem->SetStateString( "cetrius", result );
+		objectiveSystem->SetStateString( "cetrius", result );
 
 		gameLocal.persistentLevelInfo.GetString( "rhaa", "0", &result );
-		journalSystem->SetStateString( "rhaa", result );
+		objectiveSystem->SetStateString( "rhaa", result );
 
 		gameLocal.persistentLevelInfo.GetString( "fridd", "0", &result );
-		journalSystem->SetStateString( "fridd", result );
+		objectiveSystem->SetStateString( "fridd", result );
 
 
 		/*****************************************************************************
@@ -8197,151 +8272,151 @@ void idPlayer::UpdateJournalGUI( void )
 		 *****************************************************************************/
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_vista", "0", &result );
-		journalSystem->SetStateString( "spell_mega_vista", result );
+		objectiveSystem->SetStateString( "spell_mega_vista", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_taar", "0", &result );
-		journalSystem->SetStateString( "spell_aam_taar", result );
+		objectiveSystem->SetStateString( "spell_aam_taar", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok", "0", &result );
-		journalSystem->SetStateString( "spell_aam_yok", result );
+		objectiveSystem->SetStateString( "spell_aam_yok", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_yok", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_yok", result );
+		objectiveSystem->SetStateString( "spell_nhi_yok", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_mega_spacium", result );
+		objectiveSystem->SetStateString( "spell_mega_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_mega_vitae", result );
+		objectiveSystem->SetStateString( "spell_mega_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_morte_cosum_vista", "0", &result );
-		journalSystem->SetStateString( "spell_morte_cosum_vista", result );
+		objectiveSystem->SetStateString( "spell_morte_cosum_vista", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_kaom", "0", &result );
-		journalSystem->SetStateString( "spell_mega_kaom", result );
+		objectiveSystem->SetStateString( "spell_mega_kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_kaom", "0", &result );
-		journalSystem->SetStateString( "spell_rhaa_kaom", result );
+		objectiveSystem->SetStateString( "spell_rhaa_kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_rhaa_vitae", result );
+		objectiveSystem->SetStateString( "spell_rhaa_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_movis", "0", &result );
-		journalSystem->SetStateString( "spell_mega_movis", result );
+		objectiveSystem->SetStateString( "spell_mega_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_stregum_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_stregum_vitae", result );
+		objectiveSystem->SetStateString( "spell_nhi_stregum_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_taar", "0", &result );
-		journalSystem->SetStateString( "spell_aam_yok_taar", result );
+		objectiveSystem->SetStateString( "spell_aam_yok_taar", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_cosum_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_aam_cosum_vitae", result );
+		objectiveSystem->SetStateString( "spell_aam_cosum_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_fridd", "0", &result );
-		journalSystem->SetStateString( "spell_aam_yok_fridd", result );
+		objectiveSystem->SetStateString( "spell_aam_yok_fridd", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_stregum_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_mega_stregum_vitae", result );
+		objectiveSystem->SetStateString( "spell_mega_stregum_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_spacium", result );
+		objectiveSystem->SetStateString( "spell_nhi_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_yok_kaom", "0", &result );
-		journalSystem->SetStateString( "spell_yok_kaom", result );
+		objectiveSystem->SetStateString( "spell_yok_kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_spacium_comunicatum", "0", &result );
-		journalSystem->SetStateString( "spell_spacium_comunicatum", result );
+		objectiveSystem->SetStateString( "spell_spacium_comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_stregum_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_rhaa_stregum_vitae", result );
+		objectiveSystem->SetStateString( "spell_rhaa_stregum_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_fridd_kaom", "0", &result );
-		journalSystem->SetStateString( "spell_fridd_kaom", result );
+		objectiveSystem->SetStateString( "spell_fridd_kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_morte_cosum", "0", &result );
-		journalSystem->SetStateString( "spell_aam_morte_cosum", result );
+		objectiveSystem->SetStateString( "spell_aam_morte_cosum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_spacium_movis", "0", &result );
-		journalSystem->SetStateString( "spell_mega_spacium_movis", result );
+		objectiveSystem->SetStateString( "spell_mega_spacium_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_cetrius", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_cetrius", result );
+		objectiveSystem->SetStateString( "spell_nhi_cetrius", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_morte_kaom", "0", &result );
-		journalSystem->SetStateString( "spell_morte_kaom", result );
+		objectiveSystem->SetStateString( "spell_morte_kaom", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_taar_cetrius", "0", &result );
-		journalSystem->SetStateString( "spell_aam_taar_cetrius", result );
+		objectiveSystem->SetStateString( "spell_aam_taar_cetrius", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_morte_vitae", "0", &result );
-		journalSystem->SetStateString( "spell_aam_morte_vitae", result );
+		objectiveSystem->SetStateString( "spell_aam_morte_vitae", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_movis", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_movis", result );
+		objectiveSystem->SetStateString( "spell_nhi_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_kaom_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_aam_kaom_spacium", result );
+		objectiveSystem->SetStateString( "spell_aam_kaom_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_morte_cosum", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_morte_cosum", result );
+		objectiveSystem->SetStateString( "spell_nhi_morte_cosum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_movis", "0", &result );
-		journalSystem->SetStateString( "spell_rhaa_movis", result );
+		objectiveSystem->SetStateString( "spell_rhaa_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_vista_movis", "0", &result );
-		journalSystem->SetStateString( "spell_vista_movis", result );
+		objectiveSystem->SetStateString( "spell_vista_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_aam_yok_spacium", result );
+		objectiveSystem->SetStateString( "spell_aam_yok_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_folgora_taar", "0", &result );
-		journalSystem->SetStateString( "spell_aam_folgora_taar", result );
+		objectiveSystem->SetStateString( "spell_aam_folgora_taar", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_rhaa_vista", "0", &result );
-		journalSystem->SetStateString( "spell_rhaa_vista", result );
+		objectiveSystem->SetStateString( "spell_rhaa_vista", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_fridd_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_aam_fridd_spacium", result );
+		objectiveSystem->SetStateString( "spell_aam_fridd_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_vista", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_vista", result );
+		objectiveSystem->SetStateString( "spell_nhi_vista", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_stregum_movis", "0", &result );
-		journalSystem->SetStateString( "spell_stregum_movis", result );
+		objectiveSystem->SetStateString( "spell_stregum_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_aam_yok", "0", &result );
-		journalSystem->SetStateString( "spell_mega_aam_yok", result );
+		objectiveSystem->SetStateString( "spell_mega_aam_yok", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_stregum_cosum", "0", &result );
-		journalSystem->SetStateString( "spell_mega_stregum_cosum", result );
+		objectiveSystem->SetStateString( "spell_mega_stregum_cosum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_vitae_movis", "0", &result );
-		journalSystem->SetStateString( "spell_vitae_movis", result );
+		objectiveSystem->SetStateString( "spell_vitae_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_vitae_tera", "0", &result );
-		journalSystem->SetStateString( "spell_aam_vitae_tera", result );
+		objectiveSystem->SetStateString( "spell_aam_vitae_tera", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_stregum_spacium", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_stregum_spacium", result );
+		objectiveSystem->SetStateString( "spell_nhi_stregum_spacium", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_mega_yok", "0", &result );
-		journalSystem->SetStateString( "spell_aam_mega_yok", result );
+		objectiveSystem->SetStateString( "spell_aam_mega_yok", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_nhi_movis", "0", &result );
-		journalSystem->SetStateString( "spell_mega_nhi_movis", result );
+		objectiveSystem->SetStateString( "spell_mega_nhi_movis", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_aam_taar_folgora", "0", &result );
-		journalSystem->SetStateString( "spell_mega_aam_taar_folgora", result );
+		objectiveSystem->SetStateString( "spell_mega_aam_taar_folgora", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_movis_comunicatum", "0", &result );
-		journalSystem->SetStateString( "spell_movis_comunicatum", result );
+		objectiveSystem->SetStateString( "spell_movis_comunicatum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_nhi_tempus", "0", &result );
-		journalSystem->SetStateString( "spell_nhi_tempus", result );
+		objectiveSystem->SetStateString( "spell_nhi_tempus", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_aam_mega_yok", "0", &result );
-		journalSystem->SetStateString( "spell_mega_aam_mega_yok", result );
+		objectiveSystem->SetStateString( "spell_mega_aam_mega_yok", result );
 
 		/*****************************************************************************
 		 *****************************************************************************
