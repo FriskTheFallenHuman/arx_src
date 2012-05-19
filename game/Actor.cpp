@@ -2195,7 +2195,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		if ( !CanSee(player, true) && health > 0 )
 		{
 			damage = 2 * damage;
-			player->ShowHudMessage( "Double damage !" );
+			player->ShowHudMessage( "#str_general_00002" );
 		}
 	}
 

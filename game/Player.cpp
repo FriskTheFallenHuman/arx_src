@@ -2511,12 +2511,17 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 	// initialize animations and other things
 	Think();
 
-	//REMOVEME
-	gameLocal.Printf( "Arx EOS - idPlayer::SpawnToPoint.\n" );
+	//**************************************************
+	//<--- Arx - EOS - Solarsplace 
 
-	// Solarsplace 4th Oct 2010 - Level transition related.
-	// This may be a dumb place to put this call? Seems reasonable at the momement, lets test with it and see how it works?
 	LoadTransitionInfo();
+
+	if ( inventory.pdas.Num() == 0 ) {
+		GivePDA( "arx_default", NULL );
+	}
+
+	//---> Arx - EOS - Solarsplace
+	//**************************************************
 
 	respawning			= false;
 	lastManOver			= false;
@@ -3702,6 +3707,12 @@ void idPlayer::GivePDA( const char *pdaName, idDict *item )
 		if ( inventory.pdas.Num() > 1 && pda->GetNumVideos() > 0 && hud ) {
 			hud->HandleNamedEvent( "videoPickup" );
 		}
+	}
+
+	// Arx - EOS - Solarsplace - 19th May 2012
+	if ( inventory.pdas.Num() > 1 ) {
+		// Don't show the 'your journal was updated message' when we give the player his first PDA in code.
+		ShowHudMessage( "#str_general_00001" );
 	}
 }
 
@@ -6803,6 +6814,7 @@ void idPlayer::TogglePDA( void ) {
 	}
 
 	if ( inventory.pdas.Num() == 0 ) {
+
 		// 1st Jan 2010 - Solarsplace - Prevent this message window from being displayed.
 		//ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
 		return;
@@ -7948,7 +7960,7 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			if ( !item->GetBool( "inv_pda" ) ) {
 
-				const char *iname = item->GetString( "inv_name" );
+				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 				const char *iicon = item->GetString( "inv_icon" );
 				//const char *itext = item->GetString( "inv_text" );
 
@@ -7987,7 +7999,7 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
 
-			const char *iname = item->GetString( "inv_name" );
+			const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 			const char *iicon = item->GetString( "inv_icon" );
 			//const char *itext = item->GetString( "inv_text" );
 			const char *ivalue = item->GetString( "inv_shop_item_value" );
@@ -8018,7 +8030,7 @@ void idPlayer::UpdateShoppingSystem( void )
 		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
 
 			const char *sicon = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", j ), "");
-			const char *sname = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_name_%i", j ), "");
+			const char *sname = common->GetLanguageDict()->GetString( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_name_%i", j ), "") );
 			const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", j ), "");
 			const char *scount = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_count_%i", j ), "0");
 
@@ -9825,9 +9837,13 @@ void idPlayer::Think( void ) {
 		if ( objectiveSystemOpen && AI_PAIN ) {
 			TogglePDA();
 		}
+
+		// Solarsplace - Arx - 18th May 2012 - Allow movement to be consistent with other new Arx GUI's and like the original game.
+		/*
 		usercmd.forwardmove = 0;
 		usercmd.rightmove = 0;
 		usercmd.upmove = 0;
+		*/
 	}
 
 	// log movement changes for weapon bobbing effects
@@ -12331,13 +12347,14 @@ void idPlayer::Event_HudMessage( const char *message )
 		if ( idStr::FindText( message, "#str_" ) == 0 )
 		{
 			hud->SetStateString( "arx_MainMessageText", common->GetLanguageDict()->GetString( message ) );
+			gameLocal.Printf("%s\n", common->GetLanguageDict()->GetString( message ) );
 		} else {
 			hud->SetStateString( "arx_MainMessageText", message );
+			gameLocal.Printf("%s\n", message);
 		}
-
 		hud->HandleNamedEvent( "arx_ShowMainMessage" );
 	}
-	gameLocal.Printf("%s\n", message);
+	
 }
 
 void idPlayer::Event_FindInventoryItemCount( const char *name )

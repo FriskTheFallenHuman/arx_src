@@ -446,11 +446,14 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 	// place the sound origin for the player
 	gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
 
+	// Solarsplace - Arx - 18th May 2012
+	/*
 	// if the objective system is up, don't do normal drawing
 	if ( player->objectiveSystemOpen ) {
 		player->objectiveSystem->Redraw( gameLocal.time );
 		return;
 	}
+	*/
 
 	// hack the shake in at the very last moment, so it can't cause any consistency problems
 	renderView_t	hackedView = *view;
@@ -556,6 +559,10 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		//******************************************************************************************************
 		//******************************************************************************************************
 		// Begin - Solarsplace - Arx End Of Sun
+
+		if ( player->objectiveSystemOpen ) {
+			player->objectiveSystem->Redraw( gameLocal.time );
+		}
 
 		if ( player->inventorySystemOpen ) {
 			player->inventorySystem->Redraw( gameLocal.time );
