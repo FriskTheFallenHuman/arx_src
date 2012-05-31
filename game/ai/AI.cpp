@@ -3584,25 +3584,13 @@ idAI::TalkTo
 */
 void idAI::TalkTo( idActor *actor ) {
 	if ( talk_state != TALK_OK ) {
-
-		//REMOVEME
-		gameLocal.Printf("!TALK_OK returning\n");
-
 		return;
 	}
 
 	talkTarget = actor;
 	if ( actor ) {
-
-		//REMOVEME
-		gameLocal.Printf("AI_TALK = true\n");
-
 		AI_TALK = true;
 	} else {
-
-		//REMOVEME
-		gameLocal.Printf("AI_TALK = false\n");
-
 		AI_TALK = false;
 	}
 }

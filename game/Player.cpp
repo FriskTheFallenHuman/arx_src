@@ -5031,7 +5031,7 @@ void idPlayer::UpdateFocus( void ) {
 	// only update the focus character when attack button isn't pressed so players
 	// can still chainsaw NPC's
 	//if ( gameLocal.isMultiplayer || ( !focusCharacter && ( usercmd.buttons & BUTTON_ATTACK ) ) ) {
-	if ( gameLocal.isMultiplayer || !focusCharacter ) {
+	if ( gameLocal.isMultiplayer ) {
 		allowFocus = false;
 	} else {
 		allowFocus = true;
