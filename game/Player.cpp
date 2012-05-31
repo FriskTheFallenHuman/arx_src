@@ -4358,6 +4358,12 @@ idPlayer::Weapon_NPC
 ===============
 */
 void idPlayer::Weapon_NPC( void ) {
+
+	// Solarsplace - Arx End Of Sun - 31st May 2012
+	// Alter code so that 'use' button instigates NPC GUI and not fire button so we
+	// can still easily attack NPC's with GUI's if we want to
+
+	/*
 	if ( idealWeapon != currentWeapon ) {
 		Weapon_Combat();
 	}
@@ -4366,6 +4372,7 @@ void idPlayer::Weapon_NPC( void ) {
 
 	if ( ( usercmd.buttons & BUTTON_ATTACK ) && !( oldButtons & BUTTON_ATTACK ) ) {
 		buttonMask |= BUTTON_ATTACK;
+	*/
 
 		// SP - Arx EOS - NPC GUI
 		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
@@ -4379,7 +4386,7 @@ void idPlayer::Weapon_NPC( void ) {
 		}
 
 		focusCharacter->TalkTo( this );
-	}
+	//}
 }
 
 /*
@@ -4556,8 +4563,14 @@ void idPlayer::UpdateWeapon( void ) {
 	} else if ( ActiveGui() ) {
 		// gui handling overrides weapon use
 		Weapon_GUI();
+
+	// Solarsplace - Arx End Of Sun - 31st May 2012
+	// Functionality requires the 'use' key now.
+	/*
 	} else 	if ( focusCharacter && ( focusCharacter->health > 0 ) ) {
 		Weapon_NPC();
+	*/
+
 	} else {
 		Weapon_Combat();
 	}
@@ -5017,7 +5030,8 @@ void idPlayer::UpdateFocus( void ) {
 
 	// only update the focus character when attack button isn't pressed so players
 	// can still chainsaw NPC's
-	if ( gameLocal.isMultiplayer || ( !focusCharacter && ( usercmd.buttons & BUTTON_ATTACK ) ) ) {
+	//if ( gameLocal.isMultiplayer || ( !focusCharacter && ( usercmd.buttons & BUTTON_ATTACK ) ) ) {
+	if ( gameLocal.isMultiplayer || !focusCharacter ) {
 		allowFocus = false;
 	} else {
 		allowFocus = true;
@@ -5243,6 +5257,11 @@ void idPlayer::UpdateFocus( void ) {
 			hud->SetStateString( "npc", "" );
 			hud->SetStateString( "npc_action", "" );
 			hud->HandleNamedEvent( "hideNPC" );
+
+			// AP - Arx EOS - 31st May 2012
+			// Need to set script AI_TALK to false on the NPC the player
+			// was previously speaking to
+			oldChar->TalkTo( NULL );
 
 			// SP - Arx EOS - NPC GUI
 			if (conversationSystemOpen)
@@ -8611,6 +8630,8 @@ idPlayer::AlertAI
 */
 void idPlayer::RadiusSpell( idStr scriptAction, float alertRadius ) {
 
+	// Solarsplace - Arx End Of Sun - 31st May 2012
+
 	int			e;
 	idEntity *	ent;
 	idEntity *	entityList[ MAX_GENTITIES ];
@@ -8623,8 +8644,6 @@ void idPlayer::RadiusSpell( idStr scriptAction, float alertRadius ) {
 
 	bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( alertRadius );
 
-	//const idActor *actor = static_cast<const idActor *>( this );
-
 	// Get all entities touching the bounds
 	numListedEntities = gameLocal.clip.EntitiesTouchingBounds( bounds, -1, entityList, MAX_GENTITIES );
 
@@ -8636,20 +8655,11 @@ void idPlayer::RadiusSpell( idStr scriptAction, float alertRadius ) {
 
 		if ( func )
 		{
-			//REMOVEME
-			gameLocal.Printf( "Calling ignight on %s\n", ent->name.c_str() );
-
 			// create a thread and call the function
 			thread = new idThread();
 			thread->CallFunction( ent, func, true );
 			thread->Start();
 		}
-		else
-		{
-			//REMOVEME
-			gameLocal.Printf( "Not calling ignight on %s\n", ent->name.c_str() );
-		}
-
 	}
 }
 
@@ -8661,7 +8671,15 @@ idPlayer::GetEntityByViewRay
 
 void idPlayer::GetEntityByViewRay( void )
 {
-	// Solarsplace 4th Mar 2010
+	// Solarsplace 31st May 2012
+	// Require 'use' key to instigate NPC GUI
+	if ( focusCharacter && ( focusCharacter->health > 0 ) )
+	{
+		Weapon_NPC();
+		return;
+	}
+
+	// Solarsplace 4th Mar 2010 - Create date probably
 
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
