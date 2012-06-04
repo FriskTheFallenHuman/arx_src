@@ -255,6 +255,11 @@ public:
 	void					SetEnemy( idActor *newEnemy );
 
 protected:
+
+	// Solarsplace - Arx End Of Sun
+	bool					sendAlertSignals;
+	int						lastAlertSignal;
+
 	// navigation
 	idAAS *					aas;
 	int						travelFlags;

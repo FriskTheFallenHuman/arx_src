@@ -355,6 +355,10 @@ idAI::idAI() {
 	eyeFocusRate		= 0.0f;
 	headFocusRate		= 0.0f;
 	focusAlignTime		= 0;
+
+	// Solarsplace - Arx End Of Sun
+	sendAlertSignals = false;
+	lastAlertSignal = 0;
 }
 
 /*
@@ -502,6 +506,10 @@ void idAI::Save( idSaveGame *savefile ) const {
 	savefile->WriteJoint( flyTiltJoint );
 
 	savefile->WriteBool( GetPhysics() == static_cast<const idPhysics *>(&physicsObj) );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->WriteBool( sendAlertSignals);
+	savefile->WriteInt( lastAlertSignal );
 }
 
 /*
@@ -650,6 +658,10 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	savefile->ReadJoint( flyTiltJoint );
 
 	savefile->ReadBool( restorePhysics );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->ReadBool( sendAlertSignals);
+	savefile->ReadInt( lastAlertSignal );
 
 	// Set the AAS if the character has the correct gravity vector
 	idVec3 gravity = spawnArgs.GetVector( "gravityDir", "0 0 -1" );
@@ -1020,6 +1032,13 @@ idAI::Think
 =====================
 */
 void idAI::Think( void ) {
+
+	// Solarsplace - Arx End Of Sun - Alert AI every 1 second if pain inflicted by player.
+	if ( sendAlertSignals && ( gameLocal.time > lastAlertSignal ) )
+	{
+		lastAlertSignal = gameLocal.time + 1000;
+		gameLocal.GetLocalPlayer()->AlertAI( true, 1024 );
+	}
 
 	// Solarsplace - Arx EOS - Thanks Hexen
 	if ( !AI_DEAD && gameLocal.time < onFire || onFire == -1 ) {
@@ -3223,6 +3242,11 @@ bool idAI::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVe
 			if ( ReactionTo( actor ) & ATTACK_ON_DAMAGE ) {
 				gameLocal.AlertAI( actor );
 				SetEnemy( actor );
+
+				if ( actor == gameLocal.GetLocalPlayer() ) {
+					sendAlertSignals = true;
+				}
+
 			}
 		}
 	}

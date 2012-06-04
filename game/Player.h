@@ -282,6 +282,9 @@ public:
 	bool					lastMagicModeActive;
 	int						playerInvisibleEndTime;		// Solarsplace 6th June 2010
 
+	// AI related
+	void					AlertAI( bool playerVisible, float alertRadius );
+
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
 	*****************************************************************************************************
@@ -858,9 +861,6 @@ private:
 	void					DeleteTransitionInfoSpecific( idStr recordType, idStr entityName );
 	int						GetTransitionKeyIndex( idStr recordType, idStr entityName );
 	void					SpawnTransitionEntity( idStr entityName );
-
-	// AI related
-	void					AlertAI( bool playerVisible, float alertRadius );
 
 	// Spell related
 	void					RadiusSpell( idStr scriptAction, float alertRadius );

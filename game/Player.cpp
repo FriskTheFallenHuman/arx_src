@@ -8588,6 +8588,8 @@ idPlayer::AlertAI
 */
 void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 
+	// Solarsplace - Arx End Of Sun
+
 	int			e;
 	idEntity *	ent;
 	idEntity *	entityList[ MAX_GENTITIES ];
