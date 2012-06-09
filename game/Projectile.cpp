@@ -2127,6 +2127,7 @@ void idDebris::Launch( void ) {
 	idVec3		gravVec;
 	bool		randomVelocity;
 	idMat3		axis;
+	idVec3		newDir;
 
 	renderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = -MS2SEC( gameLocal.time );
 
@@ -2150,6 +2151,19 @@ void idDebris::Launch( void ) {
 		velocity.x *= gameLocal.random.RandomFloat() + 0.5f;
 		velocity.y *= gameLocal.random.RandomFloat() + 0.5f;
 		velocity.z *= gameLocal.random.RandomFloat() + 0.5f;
+	}
+
+	if ( 1 == 1 ) {
+		// set origin to random position inside moveable's bounds
+		newDir.x = gameLocal.random.RandomFloat() * (randomPosEnt->GetPhysics()->GetBounds()[1].x - randomPosEnt->GetPhysics()->GetBounds()[0].x);
+		newDir.x += randomPosEnt->GetPhysics()->GetBounds()[0].x;
+		newDir.y = gameLocal.random.RandomFloat() * (randomPosEnt->GetPhysics()->GetBounds()[1].y - randomPosEnt->GetPhysics()->GetBounds()[0].y);
+		newDir.y += randomPosEnt->GetPhysics()->GetBounds()[0].y;
+		newDir.z = gameLocal.random.RandomFloat() * (randomPosEnt->GetPhysics()->GetBounds()[1].z - randomPosEnt->GetPhysics()->GetBounds()[0].z);
+		newDir.z += randomPosEnt->GetPhysics()->GetBounds()[0].z;
+		newDir *= randomPosEnt->GetPhysics()->GetClipModel()->GetAxis();
+		newDir += randomPosEnt->GetPhysics()->GetOrigin();
+		GetPhysics()->SetOrigin( newDir );
 	}
 
 	if ( health ) {

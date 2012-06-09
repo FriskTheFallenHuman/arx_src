@@ -4,6 +4,8 @@
 #ifndef __GAME_PROJECTILE_H__
 #define __GAME_PROJECTILE_H__
 
+#include "Moveable.h"
+
 /*
 ===============================================================================
 
@@ -239,6 +241,10 @@ private:
 
 	void					Event_Explode( void );
 	void					Event_Fizzle( void );
+
+public:
+	//bool		randomPosInBounds;
+	idMoveable	*randomPosEnt;
 };
 
 #endif /* !__GAME_PROJECTILE_H__ */

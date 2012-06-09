@@ -312,6 +312,59 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 		}
 	}
 
+	// Thanks HEXEN
+	if ( spawnArgs.GetBool( "removeWhenBroken", "0" ) ) {
+
+		Hide();
+
+		//gameLocal.SetPersistentRemove(name.c_str());
+
+		physicsObj.PutToRest();
+		CancelEvents( &EV_Explode );
+		CancelEvents( &EV_Activate );
+
+		if ( spawnArgs.GetBool( "triggerTargets" ) ) {
+			ActivateTargets( this );
+		}
+
+		//PostEventMS( &EV_Remove, spawnArgs.GetFloat("fuse") );
+	}
+
+	// Thanks HEXEN
+	const idKeyValue *kv = spawnArgs.MatchPrefix( "def_debris" );
+	while ( kv ) {
+
+		const idDict *debris_args = gameLocal.FindEntityDefDict( kv->GetValue(), false );
+
+		if ( debris_args ) {
+
+			idEntity *ent;
+			idVec3 dir;
+			idDebris *debris;
+
+			dir = physicsObj.GetAxis()[1];
+			dir.x += gameLocal.random.CRandomFloat() * 4.0f;
+			dir.y += gameLocal.random.CRandomFloat() * 4.0f;
+
+			dir.Normalize();
+
+			gameLocal.SpawnEntityDef( *debris_args, &ent, false );
+			if ( !ent || !ent->IsType( idDebris::Type ) ) {
+				gameLocal.Error( "'def_debris' is not an idDebris type" );
+			}
+
+			debris = static_cast<idDebris *>(ent);
+			//debris->randomPosInBounds = true;
+			debris->randomPosEnt = this;
+			debris->Create( this, physicsObj.GetOrigin(), dir.ToMat3() );
+			debris->Launch();
+			debris->GetRenderEntity()->shaderParms[ SHADERPARM_TIME_OF_DEATH ] = ( gameLocal.time + 1500 ) * 0.001f;
+			debris->UpdateVisuals();
+			
+		}
+		kv = spawnArgs.MatchPrefix( "def_debris", kv );
+	}
+
 	if ( renderEntity.gui[ 0 ] ) {
 		renderEntity.gui[ 0 ] = NULL;
 	}
