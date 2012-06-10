@@ -313,6 +313,10 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 	}
 
 	// Thanks HEXEN
+	const idSoundShader *shader = declManager->FindSound( spawnArgs.GetString( "snd_break" ) );
+	this->StartSoundShader( shader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
+
+	// Thanks HEXEN
 	if ( spawnArgs.GetBool( "removeWhenBroken", "0" ) ) {
 
 		Hide();
