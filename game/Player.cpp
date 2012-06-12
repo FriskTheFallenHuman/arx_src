@@ -3745,8 +3745,16 @@ int idPlayer::FindInventoryItemCount( const char *name ) {
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
 		const char *iname = inventory.items[i]->GetString( "inv_name" );
 		if ( iname && *iname ) {
-			if ( idStr::Icmp( name, iname ) == 0 ) {
-				itemCount ++;
+		
+			if ( idStr::FindText( name, "#str_" ) == 0 )
+			{
+				if ( idStr::Icmp( common->GetLanguageDict()->GetString( name ), iname ) == 0 ) {
+					itemCount ++;
+				}
+			} else {
+				if ( idStr::Icmp( name, iname ) == 0 ) {
+					itemCount ++;
+				}
 			}
 		}
 	}
@@ -3777,7 +3785,14 @@ idPlayer::RemoveInventoryItem
 ===============
 */
 void idPlayer::RemoveInventoryItem( const char *name ) {
-	idDict *item = FindInventoryItem(name);
+
+	if ( idStr::FindText( message, "#str_" ) == 0 )
+	{
+		idDict *item = FindInventoryItem( common->GetLanguageDict()->GetString( name ) );
+	} else {
+		idDict *item = FindInventoryItem( name );
+	}
+	
 	if ( item ) {
 		RemoveInventoryItem( item );
 	}
