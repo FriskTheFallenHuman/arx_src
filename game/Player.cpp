@@ -3710,9 +3710,13 @@ void idPlayer::GivePDA( const char *pdaName, idDict *item )
 	}
 
 	// Arx - EOS - Solarsplace - 19th May 2012
+	// Don't show the 'your journal was updated message' when we give the player his first PDA in code.
 	if ( inventory.pdas.Num() > 1 ) {
-		// Don't show the 'your journal was updated message' when we give the player his first PDA in code.
+		
 		ShowHudMessage( "#str_general_00001" );
+
+		// Play a sound to indicate journal updated. Cached in player.def
+		StartSound( "snd_arx_journal_updated", SND_CHANNEL_ANY, 0, false, NULL );
 	}
 }
 
@@ -8983,6 +8987,15 @@ void idPlayer::GetEntityByViewRay( void )
 
 			target->Signal( SIG_TRIGGER );
 			return;
+		}
+		else if ( target->spawnArgs.GetBool( "inv_pda" ) && !target->IsHidden() ) 
+		{
+			// Solarsplace 13th June 2012 - Pickup journal PDA's
+
+			const char *str = target->spawnArgs.GetString( "pda_name" );
+			idDict &journalArgs = target->spawnArgs;
+			player->GivePDA( str, &journalArgs );
+
 		}
 		else
 		{
