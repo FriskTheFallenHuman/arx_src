@@ -3662,6 +3662,10 @@ void idPlayer::GivePDA( const char *pdaName, idDict *item )
 		return;
 	}
 
+	// Solarsplace - Arx End Of Sun - Don't update the journal / play sounds if player already has this journal.
+	if ( inventory.pdas.Find( pdaName ) )
+	{ return; }
+
 	if ( item ) {
 		inventory.pdaSecurity.AddUnique( item->GetString( "inv_name" ) );
 	}
@@ -3790,11 +3794,13 @@ idPlayer::RemoveInventoryItem
 */
 void idPlayer::RemoveInventoryItem( const char *name ) {
 
-	if ( idStr::FindText( message, "#str_" ) == 0 )
+	idDict *item;
+
+	if ( idStr::FindText( name, "#str_" ) == 0 )
 	{
-		idDict *item = FindInventoryItem( common->GetLanguageDict()->GetString( name ) );
+		item = FindInventoryItem( common->GetLanguageDict()->GetString( name ) );
 	} else {
-		idDict *item = FindInventoryItem( name );
+		item = FindInventoryItem( name );
 	}
 	
 	if ( item ) {
@@ -5668,7 +5674,7 @@ void idPlayer::TraceUsables()
 		}
 		/******************************************************************************************
 		*******************************************************************************************/
-		if ( target->spawnArgs.GetBool( "arx_readable_item" ) && !target->IsHidden() )
+		if ( ( target->spawnArgs.GetBool( "arx_readable_item" ) || target->spawnArgs.GetBool( "arx_journal_item" ) ) && !target->IsHidden() )
 		{
 			//NOWREMOVED
 			//gameLocal.Printf( "Looking at arx_usable_item - %s\n", target->name.c_str() );
@@ -8870,6 +8876,20 @@ void idPlayer::GetEntityByViewRay( void )
 		{
 			if ( target->spawnArgs.GetString( "target_gui" ) != "" )
 			{
+
+				// Solarsplace 13th June 2012 - Readable may add a journal / PDA
+				idStr journalDefTarget;
+				journalDefTarget = target->spawnArgs.GetString( "journal_pda_def", "" );
+
+				if ( journalDefTarget != "" )
+				{
+					idDict journalArgs;
+					const idDeclEntityDef *journalDef = gameLocal.FindEntityDef( journalDefTarget, false );
+					journalArgs = journalDef->dict;
+					const char *str = journalDef->dict.GetString( "pda_name" );
+					player->GivePDA( str, &journalArgs );
+				}
+
 				readableSystem = uiManager->FindGui( target->spawnArgs.GetString( "target_gui" ), true, false, true );
 				ToggleReadableSystem();
 			}

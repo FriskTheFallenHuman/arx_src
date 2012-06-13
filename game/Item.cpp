@@ -1225,11 +1225,17 @@ idMoveablePDAItem::GiveToPlayer
 ================
 */
 bool idMoveablePDAItem::GiveToPlayer(idPlayer *player) {
+
+	// Solarsplace - Arx End Of Sun - 13th June 2012
+	return false;
+
+	/*
 	const char *str = spawnArgs.GetString( "pda_name" );
 	if ( player ) {
 		player->GivePDA( str, &spawnArgs );
 	}
 	return true;
+	*/
 }
 
 /*
