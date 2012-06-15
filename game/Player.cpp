@@ -5604,9 +5604,9 @@ void idPlayer::TraceUsables()
 	float pickupDistance;
 
 	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
-		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
-	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+	} else {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
 	}
 
 	/*
@@ -5991,8 +5991,8 @@ void idPlayer::UpdateViewAngles( void ) {
 			if ( magicChange == true )
 			{
 				// Translate along the up & right axis
-				end += ( viewAxis[ 2 ] * ( magicMoveAmountVertical * movementAmount ) ) + ( viewAxis[ 1 ] * ( magicMoveAmountHorizontal * movementAmount ) );
-				trailEnd += ( viewAxis[ 2 ] * ( magicMoveAmountVertical * movementAmount ) ) + ( viewAxis[ 1 ] * ( magicMoveAmountHorizontal * movementAmount ) );
+				end += ( firstPersonViewAxis[ 2 ] * ( magicMoveAmountVertical * movementAmount ) ) + ( firstPersonViewAxis[ 1 ] * ( magicMoveAmountHorizontal * movementAmount ) );
+				trailEnd += ( firstPersonViewAxis[ 2 ] * ( magicMoveAmountVertical * movementAmount ) ) + ( firstPersonViewAxis[ 1 ] * ( magicMoveAmountHorizontal * movementAmount ) );
 
 				// Now position the magic artifact
 				magicWand->SetOrigin( end );
@@ -8727,9 +8727,9 @@ void idPlayer::GetEntityByViewRay( void )
 	idStr requiredItemInvName;
 
 	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
-		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
-	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+	} else {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
 	}
 
 	idVec3 start = firstPersonViewOrigin;
