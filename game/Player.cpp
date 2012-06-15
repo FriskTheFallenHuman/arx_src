@@ -118,16 +118,17 @@ END_CLASS
 
 const int MAX_RESPAWN_TIME = 10000;
 const int RAGDOLL_DEATH_TIME = 3000;
-const int MAX_PDAS = 64;
+const int MAX_PDAS = 256;							// Solarsplace - 15th JUne 2012 increased from 64
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
-const int MAX_INVENTORY_ITEMS = 48; // Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
+const int MAX_INVENTORY_ITEMS = 48;					// Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
 
 const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
 const int ARX_MANA_TYPE = 1;						// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "1"
 const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
-const int ARX_INVIS_TIME = 30 * 1000;				// Solarsplace - 6th June 2010 - Time invis potion lasts 
+const int ARX_INVIS_TIME = 60 * 1000;				// Solarsplace - 6th June 2010 - Time invis magic lasts 
+const int ARX_TELEKENESIS_TIME = 60 * 1000;			// Solarsplace - 15th June 2012 - Time telekenesis magic lasts 
 
 //*****************************************************************
 //*****************************************************************
@@ -159,7 +160,8 @@ const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW"; // Must mirror in scripts 
 //*****************************************************************
 //*****************************************************************
 
-const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;	// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
+const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;		// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
+const float ARX_MAX_ITEM_PICKUP_DISTANCE_TELE = 364;	// Solarsplace 15th June 2012  - The max trace distance for a pickup item with telekinesis 
 
 //*****************************************************************
 //*****************************************************************
@@ -922,12 +924,11 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 		// ignore these as they're handled elsewhere
 		return false;
 
-	} else if (!idStr::Icmp(statname, "arx_inventory_item" ) // Solarsplace 15th April 2010 - Inventory related
-			|| !idStr::Icmp( statname, "invis" )
-			|| !idStr::Icmp( statname, "poison" )
-			|| !idStr::Icmp( statname, "classname" )
-			|| !idStr::Icmp( statname, "wine" )
-			|| !idStr::Icmp( statname, "torch" ))
+	// Solarsplace - Arx End Of Sun - Inventory related. Note the inv_ is stripped
+	} else if (!idStr::Icmp(statname, "arx_inventory_item" ) 
+			|| !idStr::Icmp( statname, "arx_item_attribute" )
+			|| !idStr::Icmp( statname, "shop_item_value" )
+			|| !idStr::Icmp( statname, "classname" ))
 	{
 		// ignore these as they are at this time not important here, but are necessary to enable the item to be re-picked up.
 		return false;
@@ -1046,29 +1047,33 @@ idPlayer::idPlayer
 */
 idPlayer::idPlayer() {
 
-	// Solarsplace - Arx End Of Sun - Start
+	// *********************************************************************************
+	// *********************************************************************************
+	// *********************************************************************************
+	// Solarsplace - Arx End Of Sun
 
-	manaNextGiveTime		= 0;					// (Unknown)			Mana recharge over time
-	healthNextDecreaseTime	= 0;					// (16th May 2010)		Poison related
-	playerPoisoned			= false;				// (16th May 2010)		Poison related
-	magicWand				= NULL;					// (20th April 2010)	Spell casting related
-	magicWandTrail			= NULL;					// (24th April 2010)	Spell casting related
-	magicModeActive			= false;				// (27th April 2010)	Spell casting related
-	lastMagicModeActive		= false;				// (02nd July 2010)		Spell casting related
-	magicAttackInProgress	= false;				// (15th May 2010)		Spell casting related
-	magicDoingPreCastSpellProjectile	= false;	// (22nd Jul 2010)		Spell casting related			
+	manaNextGiveTime		= 0;					// Mana recharge over time
+	healthNextDecreaseTime	= 0;					// Poison related
+	playerPoisoned			= false;				// Poison related
+	magicWand				= NULL;					// Spell casting related
+	magicWandTrail			= NULL;					// Spell casting related
+	magicModeActive			= false;				// Spell casting related
+	lastMagicModeActive		= false;				// Spell casting related
+	magicAttackInProgress	= false;				// Spell casting related
+	magicDoingPreCastSpellProjectile	= false;	// Spell casting related			
 
-	// Solarsplace 24th Sep 2011
 	invItemGroupCount = new idDict();
 	invItemGroupPointer = new idDict();
 
-	// Solarsplace 3rd June 2010
 	waterScreenFinishTime = 0;
 	playerUnderWater = false;
-	// Solarsplace - Arx End Of Sun - End
 
-	// Solarsplace 6th June 2010
 	playerInvisibleEndTime = 0;
+	playerTelekinesisEndTime = 0;
+
+	// *********************************************************************************
+	// *********************************************************************************
+	// *********************************************************************************
 
 
 	memset( &usercmd, 0, sizeof( usercmd ) );
@@ -5596,6 +5601,13 @@ void idPlayer::TraceUsables()
 
 	trace_t trace;
 	idEntity * target;
+	float pickupDistance;
+
+	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
+	} else {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+	}
 
 	/*
 	idPlayer * player = gameLocal.GetLocalPlayer();
@@ -5606,7 +5618,7 @@ void idPlayer::TraceUsables()
 
 	// New trace code based on weapon melee - Solars - 25th Mar 2012
 	idVec3 start = firstPersonViewOrigin;
-	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
+	idVec3 end = start + firstPersonViewAxis[0] * ( pickupDistance );
 
 		// Solarsplace 10th May 2012 - Changed mask type to custom for Arx
 	gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_TRIG, gameLocal.GetLocalPlayer() ); // MASK_SHOT_RENDERMODEL | MASK_ALL
@@ -5759,7 +5771,8 @@ void idPlayer::ProcessMagic()
 	const char *currentRuneSound;
 	const char *projectileName;
 	const char *customMagicName;
-	const char *customMagicAction;
+	const char *customMagicSpell;
+	const char *customMagicScriptActionWorld;
 	idStr scriptAction;
 	float alertRadius;
 	const char *tmpValue;
@@ -5784,69 +5797,47 @@ void idPlayer::ProcessMagic()
 			currentRune = def->dict.GetString( magicCompassSequence );
 
 			// We need to now check if we have this rune and exit if we don't
-			//tmpValue = gameLocal.persistentLevelInfo.GetBool( currentRune );
-			//if ( strcmp(tmpValue, "1") != 0) { return; }
 			if ( !gameLocal.persistentLevelInfo.GetBool( currentRune ) )
 			{ return; }
-			
-			//REMOVEMEx
-			//gameLocal.Printf( "currentRune = %s\n", currentRune );
 
 			// Find out what sound to play for this rune and play it.
 			runeDef = gameLocal.FindEntityDef( va( "arx_magic_rune_%s", currentRune ), false );
 			if ( runeDef )
 			{
 				currentRuneSound = runeDef->dict.GetString( "snd_cast" );
-				//REMOVEMEx
-				//gameLocal.Printf( "currentRuneSound = %s\n", currentRuneSound );
 				StartSoundShader( declManager->FindSound( currentRuneSound ), SND_CHANNEL_ANY, 0, false, NULL );
 			}
 
 			// Need to concatonate a drawn sequence of runes and match to a whole spell.
-			// Solarsplace - Probably a more correct way to do this!
 			idStr tmpConcat;
 			sprintf( tmpConcat, "_%s", currentRune );
 			magicRuneSequence += tmpConcat;
 
-			//REMOVEMEx
-			//gameLocal.Printf( "magicRuneSequence = %s\n", magicRuneSequence.c_str() );
-
 			// OK, here we see if we have a complete spell.
-			//magicSpellCombo = gameLocal.FindEntityDef( "arx_magic_projectile_key", false );
 			magicSpellCombo = gameLocal.FindEntityDef( "magic" + magicRuneSequence, false );
 			if ( magicSpellCombo )
 			{
 	
+				// ****************************************************************************************
+				// Do we have enough mana to cast the spell? if not then leave
+
 				int playerCurrentMana = GetPlayerManaAmount();
-				//REMOVEMEx
-				//gameLocal.Printf( "playerCurrentMana = %i\n", playerCurrentMana );
-
-				//ARX_MANA_BASE_COST
-
 				spellManaCost = magicSpellCombo->dict.GetInt( "mana_cost", "0" );
-				//REMOVEMEx
-				//gameLocal.Printf( "spellManaCost = %i\n", spellManaCost );
 
 				if ( playerCurrentMana < ( spellManaCost ) ) //+ ARX_MANA_BASE_COST ) )
 				{
-					//REMOVEMEx
-					//gameLocal.Printf( "Not enough mana to cast spell\n" );
 					StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
 					return;
 				}
+				// ****************************************************************************************
 
-				//projectileName = magicSpellCombo->dict.GetString( magicRuneSequence.c_str() );
 				projectileName = magicSpellCombo->dict.GetString( "magic_projectile" );
 				if ( projectileName != "" )
 				{
 					if ( usercmd.buttons & BUTTON_6 )
 					{
 						// Store pre-cast spell
-						//REMOVEMEx
-						//gameLocal.Printf( "Now saving a pre-cast spell. Mana = %i Projectile = %s\n", spellManaCost, projectileName );
-
 						magicSaveSpell( spellManaCost, projectileName, magicSpellCombo->GetName() );
-
 					}
 					else
 					{
@@ -5861,25 +5852,37 @@ void idPlayer::ProcessMagic()
 				/****************************************************************************************
 				*****************************************************************************************
 				Solarsplace - 1st Aug 2010 - Now perform any custom spell actions. */
-				
-				// Cure posion
-				customMagicAction = magicSpellCombo->dict.GetString( "magic_self_poison" );
-				if ( strcmp( customMagicAction, "0" ) == 0 )
+	
+				customMagicSpell = magicSpellCombo->dict.GetString( "magic_spell" );
+				customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
+
+				// Cure Poison
+				if ( strcmp( customMagicSpell, "remove_poison" ) == 0 )
 				{
 					playerView.Flash( colorGreen, 500 );
 					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 					playerPoisoned = false;
 				}
 
-				// Script calls
-				
-				magicSpellCombo->dict.GetString( "script_action", "", scriptAction );
-				magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
-				if ( !strcmp( scriptAction, "" ) == 0 )
+				// Telekinesis
+				if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 )
 				{
-					playerView.Flash( colorWhite, 500 );
-					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-					RadiusSpell( scriptAction, alertRadius );
+					playerView.Flash( colorPurple, 500 );
+					playerTelekinesisEndTime = gameLocal.time + ARX_TELEKENESIS_TIME;
+				}
+
+				// Script calls
+				if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 )
+				{
+					magicSpellCombo->dict.GetString( "script_action", "", scriptAction );
+					magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
+
+					if ( !strcmp( scriptAction, "" ) == 0 )
+					{
+						playerView.Flash( colorWhite, 500 );
+						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+						RadiusSpell( scriptAction, alertRadius );
+					}
 				}
 
 			} // if ( magicSpellCombo )
@@ -8510,6 +8513,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	const idKeyValue	*arg;
 	bool				gave = false;
 	const char			*sound;
+	const char			*itemAttribute;
 
 	// Get the inv_name of the item
 	const char *iname = inventory.items[invItemIndex]->GetString( "inv_name" );
@@ -8546,49 +8550,56 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			//*********************************************************************************
 			//*********************************************************************************
 			//*********************************************************************************
-			// Solarsplace - 6th June 2010 - Special case functions.
+			// Solarsplace - Arx End Of Sun - Special case functions.
 
-			// Invis
-			if ( arg->GetKey() == "inv_invis" )
+			if ( arg->GetKey() == "inv_arx_item_attribute" )
 			{
-				playerInvisibleEndTime = gameLocal.time + ARX_INVIS_TIME;
-				GivePowerUp( 1, ARX_INVIS_TIME );
-				gave = true;
-			}
+				itemAttribute = arg->GetValue();
 
-			// Poison
-			if ( arg->GetKey() == "inv_poison" )
-			{
-				if ( playerPoisoned )
-				{ playerPoisoned = false; }
-				else
-				{ playerPoisoned = true; }
-				gave = true;
-			}
+				// Invisibility
+				if ( strcmp( itemAttribute, "add_invisibility" ) == 0 )
+				{
+					playerInvisibleEndTime = gameLocal.time + ARX_INVIS_TIME;
+					GivePowerUp( 1, ARX_INVIS_TIME );
+					gave = true;
+				}
 
-			// Wine
-			if ( arg->GetKey() == "inv_wine" && gave)
-			{
-				Damage( this, this, vec3_origin, "damage_arx_drunk", 1.0f, INVALID_JOINT );
-			}
-			// Wooden flame torch
-			if ( arg->GetKey() == "inv_torch" )
-			{
-				// Solarsplace 21st Jan 2011
-				// Spawn the hidden light entitiy. The entitiy script object will do the rest.
-				idDict args;
-				idEntity *spawnedItem;
-				args.Set( "classname", "arx_light_hidden_torch_timed" );
-				gameLocal.SpawnEntityDef( args, &spawnedItem );
+				// Telekenesis
+				if ( strcmp( itemAttribute, "add_telekinesis" ) == 0 )
+				{
+					playerTelekinesisEndTime = gameLocal.time + ARX_TELEKENESIS_TIME;
+					gave = true;
+				}
 
-				gave = true;
+				// Cure poison
+				if ( strcmp( itemAttribute, "remove_poison" ) == 0 )
+				{
+					playerPoisoned = false;
+					gave = true;
+				}
+
+				// Drink Wine
+				if ( strcmp( itemAttribute, "add_wine" ) == 0 )
+				{
+					// Health gain handled above in original 'Give'
+					Damage( this, this, vec3_origin, "damage_arx_drunk", 1.0f, INVALID_JOINT );
+				}
+
+				// Ignight Wooden flame torch
+				if ( strcmp( itemAttribute, "add_flametorch" ) == 0 )
+				{
+					// Spawn the hidden light entitiy. The entitiy script object will do the rest.
+					idDict args;
+					idEntity *spawnedItem;
+					args.Set( "classname", "arx_light_hidden_torch_timed" );
+					gameLocal.SpawnEntityDef( args, &spawnedItem );
+					gave = true;
+				}
 			}
 
 			//*********************************************************************************
 			//*********************************************************************************
 			//*********************************************************************************
-			// Solarsplace - 6th June 2010 - Special case functions.
-
 		}
 	}
 	else
@@ -8698,7 +8709,8 @@ idPlayer::GetEntityByViewRay
 
 void idPlayer::GetEntityByViewRay( void )
 {
-	// Solarsplace 31st May 2012
+	// Solarsplace - Arx End Of Sun
+
 	// Require 'use' key to instigate NPC GUI
 	if ( focusCharacter && ( focusCharacter->health > 0 ) )
 	{
@@ -8706,25 +8718,22 @@ void idPlayer::GetEntityByViewRay( void )
 		return;
 	}
 
-	// Solarsplace 4th Mar 2010 - Create date probably
-
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
 	idEntity * target;
-
-	/*
-	idVec3 startPosition = player->GetEyePosition();
-	idVec3 endPosition = startPosition + player->viewAngles.ToForward() * ARX_MAX_ITEM_PICKUP_DISTANCE;
-	gameLocal.clip.TracePoint( trace, startPosition, endPosition, MASK_ALL, player ); // Make sure we ignore the player.
-	*/
-	
+	float pickupDistance;
 	idDict *inventoryItem;
 	idStr entityClassName;
 	idStr requiredItemInvName;
 
-	// New trace code based on weapon melee - Solars - 25th Mar 2012
+	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
+	} else {
+		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+	}
+
 	idVec3 start = firstPersonViewOrigin;
-	idVec3 end = start + firstPersonViewAxis[0] * ( ARX_MAX_ITEM_PICKUP_DISTANCE );
+	idVec3 end = start + firstPersonViewAxis[0] * ( pickupDistance );
 
 	// Solarsplace 10th May 2012 - Changed mask type to custom for Arx
 	gameLocal.clip.TracePoint( trace, start, end, MASK_ARX_LEVEL_USE_TRIG, player );

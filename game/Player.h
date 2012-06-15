@@ -281,7 +281,7 @@ public:
 	bool					magicModeActive;
 	bool					lastMagicModeActive;
 	int						playerInvisibleEndTime;		// Solarsplace 6th June 2010
-
+	int						playerTelekinesisEndTime;		// Solarsplace 15th June 2012
 	// AI related
 	void					AlertAI( bool playerVisible, float alertRadius );
 
