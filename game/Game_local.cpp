@@ -4218,8 +4218,11 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 
 		if ( !spot.ent )
 		{
-			Error( "No info_player_start on map.\n" );
+			Error( "No info_player_start (%s) on map.\n", spawnPoint.c_str() ); // SP - Make error message more helpful.
 		}
+
+		// Solarsplace - 18th June 2012 - Clear the saved entry point now we have used it.
+		player->SetMapEntryPoint( "" );
 
 		return spot.ent;
 	}

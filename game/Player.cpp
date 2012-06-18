@@ -4404,6 +4404,12 @@ void idPlayer::Weapon_NPC( void ) {
 		buttonMask |= BUTTON_ATTACK;
 	*/
 
+		// SP - Arx EOS - Prevent talking to an AI that has an enemy (may be attacking player?)
+		if ( focusCharacter->GetEnemy() )
+		{
+			return;
+		}
+
 		// SP - Arx EOS - NPC GUI
 		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
 		{
@@ -5266,31 +5272,40 @@ void idPlayer::UpdateFocus( void ) {
 
 	if ( oldChar != focusCharacter && hud ) {
 		if ( focusCharacter ) {
-			//ivan start
+
+			//Ivan start
+
 			if(focusCharacter->spawnArgs.GetBool( "showStatus", "0" )){  //ff1.1
 				hud->SetStateString( "npc", "Status:" );
 				hud->SetStateString( "npc_action", focusCharacter->spawnArgs.GetString( "shownState", "Inactive" ) );
 			}else{
-				hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "Joe" ) ); 
-				hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ) );
+				hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "404" ) );
+
+				// Solarsplace - Arx End Of Sun
+				// Don't show option to talk to AI that has an enemy or has no talk GUI.
+				if ( !focusCharacter->GetEnemy() ) {
+					if ( focusCharacter->spawnArgs.GetString( "characters_gui", "" ) != "" ) {
+						hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ) ); // Talk
+					}
+				}
 			}
-			//ivan end
-			/*
-			//ivan - commented out start 
-			hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "Joe" ) );
-			//ivan - commented out end 
-			*/
+
+			//Ivan end
+
 			hud->HandleNamedEvent( "showNPC" );
+
 			// HideTip();
 			// HideObjective();
+
 		} else {
+
 			hud->SetStateString( "npc", "" );
 			hud->SetStateString( "npc_action", "" );
 			hud->HandleNamedEvent( "hideNPC" );
 
-			// AP - Arx EOS - 31st May 2012
-			// Need to set script AI_TALK to false on the NPC the player
-			// was previously speaking to
+			// Solarsplace - Arx EOS - 31st May 2012
+			// Do to script code changes we now need to set script AI_TALK
+			// to false on the NPC the player was previously speaking to
 			oldChar->TalkTo( NULL );
 
 			// SP - Arx EOS - NPC GUI
@@ -8622,7 +8637,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 idPlayer::AlertAI
 ==============
 */
-void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
+void idPlayer::AlertAI( bool playerVisible, float alertRadius, int aiTeam, int teamAlertOptions ) {
 
 	// Solarsplace - Arx End Of Sun
 
@@ -8648,10 +8663,26 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 
 		if ( ent->IsType( idAI::Type ) ) {
 
-			gameLocal.Printf("idAI is %s\n", ent->name.c_str());
-
 			if ( playerVisible ) {
 				if ( !static_cast<idActor *>( ent )->CanSee(this, true) ) { continue; }
+			}
+
+			/*
+			0 = Any team
+			1 = Equal team only
+			2 = Equal or greater team only
+			*/
+
+			if ( teamAlertOptions == 1 ) {
+				if ( ent->spawnArgs.GetInt( "team", "0" ) != aiTeam ) {
+					continue;
+				}
+			}
+
+			if ( teamAlertOptions == 2 ) {
+				if ( ent->spawnArgs.GetInt( "team", "0" ) < aiTeam ) {
+					continue;
+				}
 			}
 
 			gameLocal.AlertAI( this );
@@ -8663,7 +8694,7 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius ) {
 
 /*
 ==============
-idPlayer::AlertAI
+idPlayer::RadiusSpell
 ==============
 */
 void idPlayer::RadiusSpell( idStr scriptAction, float alertRadius ) {
@@ -8786,7 +8817,7 @@ void idPlayer::GetEntityByViewRay( void )
 			target->spawnArgs.GetFloat( "alerteffectradius", "1024", alertradius );
 
 			if ( alertai ) {
-				AlertAI( alertaifov, alertradius );
+				AlertAI( alertaifov, alertradius, 0, 0 );
 			}
 			//*** End - Solarsplace 13th Oct 2011 - Should we alert AI?
 

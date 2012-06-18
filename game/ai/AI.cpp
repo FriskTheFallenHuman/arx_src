@@ -1037,7 +1037,7 @@ void idAI::Think( void ) {
 	if ( sendAlertSignals && ( gameLocal.time > lastAlertSignal ) )
 	{
 		lastAlertSignal = gameLocal.time + 1000;
-		gameLocal.GetLocalPlayer()->AlertAI( true, 1024 );
+		gameLocal.GetLocalPlayer()->AlertAI( true, 1024, spawnArgs.GetInt( "team", "0" ), spawnArgs.GetInt( "arx_alertai_team_options", "0" ) );
 	}
 
 	// Solarsplace - Arx EOS - Thanks Hexen
