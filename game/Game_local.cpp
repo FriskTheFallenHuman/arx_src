@@ -4222,7 +4222,7 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 		}
 
 		// Solarsplace - 18th June 2012 - Clear the saved entry point now we have used it.
-		player->SetMapEntryPoint( "" );
+		player->SetMapEntryPoint( "info_player_start" );
 
 		return spot.ent;
 	}
