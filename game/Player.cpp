@@ -8241,7 +8241,7 @@ void idPlayer::UpdateInventoryGUI( void )
 
 			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
 
-			const char *iname = item->GetString( "inv_name" );
+			const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 			const char *iicon = item->GetString( "inv_icon" );
 			const char *itext = item->GetString( "inv_text" );
 
