@@ -928,7 +928,8 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 	} else if (!idStr::Icmp(statname, "arx_inventory_item" ) 
 			|| !idStr::Icmp( statname, "arx_item_attribute" )
 			|| !idStr::Icmp( statname, "shop_item_value" )
-			|| !idStr::Icmp( statname, "classname" ))
+			|| !idStr::Icmp( statname, "classname" )
+			|| !idStr::Icmp( statname, "weapon_def" ))
 	{
 		// ignore these as they are at this time not important here, but are necessary to enable the item to be re-picked up.
 		return false;
@@ -7881,24 +7882,31 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// Put the original inventory items inv_name in the newly spawned items dictionary.
 		spawnedItem->spawnArgs.Set ( "inv_name", iname );
 
-		// Locate the item being dropped from the inventory and put its spawn args in item.
-
-		// *** Check this.
 		idDict *droppingItem = inventory.items[invItemIndex];
 		//idDict *droppingItem = FindInventoryItem( iname );
 
-		// Now remove the item from the players inventory
-		RemoveInventoryItem( droppingItem ); 
-		
+		/* Keep it for now may come in handy!
+		idDict				attr;
+		const idKeyValue	*arg;
+		int i;
+		for( i = 0; i < droppingItem->GetNumKeyVals(); i++ ) {
+			arg = droppingItem->GetKeyVal( i );
+			gameLocal.Printf( "droppingItem -- %s -- %s\n", arg->GetKey().c_str(), arg->GetValue().c_str() );
+		}
+		*/
+
 		// Is the current weapon the player is holding is the same type as the one just dropped?
 		if ( strcmp( weapon.GetEntity()->spawnArgs.GetString( "inv_weapon", "" ), droppingItem->GetString( "inv_weapon" ) ) == 0 )
 		{
 			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
-			if ( FindInventoryItemCount( droppingItem->GetString( "inv_weapon" ) ) <= 0 )
+			if ( FindInventoryItemCount( droppingItem->GetString( "inv_name" ) ) <= 1 )
 			{
 				SelectWeapon( 0, true );
 			}
 		}
+
+		// Now remove the item from the players inventory
+		RemoveInventoryItem( droppingItem ); 
 
 		// Save persistent info
 		SaveTransitionInfoSpecific( spawnedItem, true, false );
@@ -8478,7 +8486,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	idDict *item = FindInventoryItem( iname );
 
 	// Solarsplace - 14th Aug 2010 - Weapons
-	if ( item->GetBool( "inv_weapon" ) )
+	if ( item->GetString( "inv_weapon" ) )
 	{
 		int weaponId = item->GetInt( "inv_weapon_def" );
 		SelectWeapon( weaponId, false );
