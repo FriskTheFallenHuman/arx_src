@@ -2129,6 +2129,17 @@ void idDebris::Launch( void ) {
 	idMat3		axis;
 	idVec3		newDir;
 
+	// Start - Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	bool		arx_random_pos_bounds;
+	idVec2		fuse_random;
+	arx_random_pos_bounds = spawnArgs.GetBool ( "arx_random_pos_bounds" );
+	fuse_random = spawnArgs.GetVec2( "fuse_random" );
+
+	if ( fuse_random.y > 0.0f ) {
+		fuse = gameLocal.random.CRandomFloat() * fuse_random.y + fuse_random.x;
+	}
+	// End - Solarsplace - Arx End Of Sun
+
 	renderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = -MS2SEC( gameLocal.time );
 
 	spawnArgs.GetVector( "velocity", "0 0 0", velocity );
@@ -2153,7 +2164,8 @@ void idDebris::Launch( void ) {
 		velocity.z *= gameLocal.random.RandomFloat() + 0.5f;
 	}
 
-	if ( 1 == 1 ) {
+	// Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	if ( arx_random_pos_bounds ) {
 		// set origin to random position inside moveable's bounds
 		newDir.x = gameLocal.random.RandomFloat() * (randomPosEnt->GetPhysics()->GetBounds()[1].x - randomPosEnt->GetPhysics()->GetBounds()[0].x);
 		newDir.x += randomPosEnt->GetPhysics()->GetBounds()[0].x;

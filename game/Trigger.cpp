@@ -372,6 +372,10 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 	if ( wait >= 0 ) {
 		nextTriggerTime = gameLocal.time + SEC2MS( wait + random * gameLocal.random.CRandomFloat() );
 	} else {
+
+		// Solarsplace - Arx End Of Sun - Level transition related.
+		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
+
 		// we can't just remove (this) here, because this is a touch function
 		// called while looping through area links...
 		nextTriggerTime = gameLocal.time + 1;
@@ -585,6 +589,10 @@ void idTrigger_EntityName::TriggerAction( idEntity *activator ) {
 	if ( wait >= 0 ) {
 		nextTriggerTime = gameLocal.time + SEC2MS( wait + random * gameLocal.random.CRandomFloat() );
 	} else {
+
+		// Solarsplace - Arx End Of Sun - Level transition related.
+		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
+
 		// we can't just remove (this) here, because this is a touch function
 		// called while looping through area links...
 		nextTriggerTime = gameLocal.time + 1;
@@ -897,6 +905,10 @@ void idTrigger_Count::Event_TriggerAction( idEntity *activator ) {
 	ActivateTargets( activator );
 	CallScript();
 	if ( goal == -1 ) {
+
+		// Solarsplace - Arx End Of Sun - Level transition related.
+		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
+
 		PostEventMS( &EV_Remove, 0 );
 	}
 }

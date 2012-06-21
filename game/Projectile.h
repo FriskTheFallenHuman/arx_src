@@ -243,7 +243,6 @@ private:
 	void					Event_Fizzle( void );
 
 public:
-	//bool		randomPosInBounds;
 	idMoveable	*randomPosEnt;
 };
 

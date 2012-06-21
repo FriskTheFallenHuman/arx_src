@@ -7393,9 +7393,6 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 void idPlayer::SetMapEntryPoint( idStr entityName )
 {
-	//REMOVEME
-	gameLocal.Printf( "SetMapEntryPoint( %s )\n", entityName.c_str() );
-
 	gameLocal.persistentLevelInfo.Set
 		( ARX_PROP_MAP_ANY + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ARX_PROP_ENT_ANY + ARX_REC_SEP + ARX_PROP_MAPENTRYPOINT + ARX_REC_SEP, entityName );
 }
@@ -7406,9 +7403,6 @@ idStr idPlayer::GetMapEntryPoint( void )
 
 	entryPoint = gameLocal.persistentLevelInfo.GetString
 		( ARX_PROP_MAP_ANY + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ARX_PROP_ENT_ANY + ARX_REC_SEP + ARX_PROP_MAPENTRYPOINT + ARX_REC_SEP, "info_player_start" );
-
-	//REMOVEME
-	gameLocal.Printf( "GetMapEntryPoint returns ( %s )\n", entryPoint.c_str() );
 
 	return entryPoint;
 }
@@ -7440,16 +7434,11 @@ int idPlayer::GetTransitionKeyIndex( idStr recordType, idStr entityName )
 	
 	indexKey = gameLocal.persistentLevelInfo.FindKeyIndex( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP );
 
-	gameLocal.Printf( "GetTransitionKeyIndex indexKey = %i for %s\n", indexKey, entityName.c_str() ); //REMOVEME
-
 	return indexKey;
 }
 
 void idPlayer::SaveTransitionInfoSpecific( idEntity *ent, bool spawnedItem, bool hiddenItem )
 {
-	//REMOVEME
-	gameLocal.Printf( "Started idPlayer::SaveTransitionInfoSpecific\n" );
-
 	const char *mapName;
 	idStr myKey;
 	idStr itemType;
@@ -7466,28 +7455,14 @@ void idPlayer::SaveTransitionInfoSpecific( idEntity *ent, bool spawnedItem, bool
 	else
 	{ itemType = ARX_REC_CHANGED; }
 
-	//REMOVEME
-	gameLocal.Printf( "Saving %s\n", ent->name.c_str() );
-
 	// Only need to save minimal information here. This is for dropped inventory items only atm.
 	gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + itemType + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
 	gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + itemType + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, hiddenItem );
-
-	/* SP 15th Sep 2010 - Probably useless because using classname it wont be unique
-	gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + itemType + ARX_REC_SEP + ent->spawnArgs.GetString( "classname" ) + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
-	gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + itemType + ARX_REC_SEP + ent->spawnArgs.GetString( "classname" ) + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, hiddenItem );
-	*/
-
-	//REMOVEME
-	gameLocal.Printf( "Finished idPlayer::SaveTransitionInfoSpecific\n" );
 }
 
 void idPlayer::SaveTransitionInfo( void )
 {
 	// This happens on level change.
-
-	//REMOVEME
-	gameLocal.Printf( "Started idPlayer::SaveTransitionInfo\n" );
 
 	/*
 	const int ARX_LVL_MAPNAME = 1;
@@ -7546,7 +7521,7 @@ void idPlayer::SaveTransitionInfo( void )
 				}
 				else
 				{
-					gameLocal.Printf( "Arx: Saving ARX_REC_NEW (%s) (%s) (%s)\n", ent->name.c_str(), entityInventoryName.c_str(), entityClassName.c_str() ); //REMOVEME
+					//gameLocal.Printf( "Arx: Saving ARX_REC_NEW (%s) (%s) (%s)\n", ent->name.c_str(), entityInventoryName.c_str(), entityClassName.c_str() );
 
 					gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
 					gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
@@ -7566,7 +7541,7 @@ void idPlayer::SaveTransitionInfo( void )
 
 			if ( ent->originalOrigin != entityOrigin )
 			{
-				gameLocal.Printf( "Arx: Changed ENT: %s\n", ent->name.c_str() ); //REMOVEME
+				//gameLocal.Printf( "Arx: Changed ENT: %s\n", ent->name.c_str() );
 
 				gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
 				gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
@@ -7576,9 +7551,6 @@ void idPlayer::SaveTransitionInfo( void )
 			}
 		}
 	}
-
-	//REMOVEME
-	gameLocal.Printf( "Finished idPlayer::SaveTransitionInfo\n" );
 }
 
 idStr idPlayer::SplitStrings( idStr inputString, int requiredPart )
@@ -7595,7 +7567,7 @@ idStr idPlayer::SplitStrings( idStr inputString, int requiredPart )
 		inputString = inputString.Right( inputString.Length() - ( cutPosition + 11 ) );
 	}
 
-	gameLocal.Printf( "SplitStrings( %s, %i )\n", outputString.c_str(), requiredPart ); //REMOVEME
+	//gameLocal.Printf( "SplitStrings( %s, %i )\n", outputString.c_str(), requiredPart );
 
 	return outputString;
 }
@@ -7603,9 +7575,6 @@ idStr idPlayer::SplitStrings( idStr inputString, int requiredPart )
 
 void idPlayer::SpawnTransitionEntity( idStr entityName )
 {
-	//REMOVEME
-	gameLocal.Printf( "Started idPlayer::SpawnTransitionEntity( %s )\n", entityName.c_str() );
-
 	const char *mapName;
 	idVec3 entityOrigin;
 	idMat3 entityAxis;
@@ -7620,11 +7589,6 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 	entityInvName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP );
 	entityClassName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP );
 
-	//REMOVEME
-	GetTransitionKeyIndex( ARX_REC_NEW, entityName );
-
-	gameLocal.Printf( "Trying to spawn entitiy of classname %s\n", entityClassName.c_str() );
-
 	args.Set( "classname", entityClassName );
 	args.Set( "dropped", "1" );
 	args.Set( "nodrop", "1" ); // we sometimes drop idMoveables here, so set 'nodrop' to 1 so that it doesn't get put on the floor
@@ -7633,23 +7597,14 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 
 	if ( spawnedItem )
 	{
-		//REMOVEME
-		gameLocal.Printf( "Spawned new entitiy %s\n", spawnedItem->name.c_str() );
-
 		spawnedItem->GetPhysics()->SetOrigin( entityOrigin );
 		spawnedItem->GetPhysics()->SetAxis( entityAxis );
 		spawnedItem->spawnArgs.Set ( "inv_name", entityInvName );
 	}
-
-	//REMOVEME
-	gameLocal.Printf( "Finished idPlayer::SpawnTransitionEntity\n" );
 }
 
 void idPlayer::LoadTransitionInfo( void )
 {
-	//REMOVEME
-	gameLocal.Printf( "Started idPlayer::LoadTransitionInfo\n" );
-
 	idEntity *ent;
 	const char *mapName;
 	const idKeyValue *arg;
@@ -7698,8 +7653,6 @@ void idPlayer::LoadTransitionInfo( void )
 
 			if ( idStr::Icmp( ARX_REC_CHANGED, SplitStrings( keyText, ARX_LVL_RECORDTYPE ) ) == 0 )
 			{
-				gameLocal.Printf( "LoadTransitionInfo changed item.\n" ); //REMOVEME
-
 				keyEntityName = SplitStrings( keyText, ARX_LVL_ENTNAME );
 
 				ent = gameLocal.FindEntity( keyEntityName.c_str() );
@@ -7712,11 +7665,8 @@ void idPlayer::LoadTransitionInfo( void )
 
 				if ( idStr::Icmp( SplitStrings( keyText, ARX_LVL_ENTPROPERTY ) , ARX_PROP_ORIGIN ) == 0 )
 				{
-					gameLocal.Printf( "Setting origin\n" ); //REMOVEME
-
 					entityOrigin = gameLocal.persistentLevelInfo.GetVector( keyText );
 					ent->GetPhysics()->SetOrigin( entityOrigin );
-
 				}
 
 				/****************************************************************************
@@ -7724,24 +7674,18 @@ void idPlayer::LoadTransitionInfo( void )
 				//  Set axis
 				else if ( idStr::Icmp( SplitStrings( keyText, ARX_LVL_ENTPROPERTY ) , ARX_PROP_AXIS ) == 0 )
 				{
-					gameLocal.Printf( "Setting axis\n" ); //REMOVEME
-
 					entityAxis = gameLocal.persistentLevelInfo.GetMatrix( keyText );
 					ent->GetPhysics()->SetAxis( entityAxis );
 				}
 
 				/****************************************************************************
 				****************************************************************************/
-				//  Set hidden
+				//  Set hidden - atually remove the entity
 				else if ( idStr::Icmp( SplitStrings( keyText, ARX_LVL_ENTPROPERTY ) , ARX_PROP_HIDDEN ) == 0 )
 				{
-					gameLocal.Printf( "Hiding entity\n" ); //REMOVEME
-
 					if ( gameLocal.persistentLevelInfo.GetBool( keyText ) )
 					{
-						//ent->Hide();
 						ent->PostEventMS( &EV_Remove, 0 );
-					
 					}
 				}
 
@@ -7749,18 +7693,8 @@ void idPlayer::LoadTransitionInfo( void )
 				****************************************************************************/
 
 			}
-
-			if ( idStr::Icmp( "arx_newent", SplitStrings( keyText, ARX_LVL_RECORDTYPE ) ) == 0 )
-			{
-				gameLocal.Printf( "LoadTransitionInfo new item.\n" ); //REMOVEME
-
-
-			}
 		}
 	}
-
-	//REMOVEME
-	gameLocal.Printf( "Finished idPlayer::LoadTransitionInfo\n" );
 }
 
 
@@ -7948,17 +7882,24 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		spawnedItem->spawnArgs.Set ( "inv_name", iname );
 
 		// Locate the item being dropped from the inventory and put its spawn args in item.
-		idDict *droppingItem = FindInventoryItem( iname );
 
-		if ( droppingItem->GetString( "inv_weapon" ) )
-		{
-			// Dropping a weapon - select the fists
-			SelectWeapon( 0, true );
-		}
+		// *** Check this.
+		idDict *droppingItem = inventory.items[invItemIndex];
+		//idDict *droppingItem = FindInventoryItem( iname );
 
 		// Now remove the item from the players inventory
 		RemoveInventoryItem( droppingItem ); 
 		
+		// Is the current weapon the player is holding is the same type as the one just dropped?
+		if ( strcmp( weapon.GetEntity()->spawnArgs.GetString( "inv_weapon", "" ), droppingItem->GetString( "inv_weapon" ) ) == 0 )
+		{
+			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
+			if ( FindInventoryItemCount( droppingItem->GetString( "inv_weapon" ) ) <= 0 )
+			{
+				SelectWeapon( 0, true );
+			}
+		}
+
 		// Save persistent info
 		SaveTransitionInfoSpecific( spawnedItem, true, false );
 	}

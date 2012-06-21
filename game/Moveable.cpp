@@ -317,11 +317,12 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 	this->StartSoundShader( shader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
 
 	// Thanks HEXEN
-	if ( spawnArgs.GetBool( "removeWhenBroken", "0" ) ) {
+	if ( spawnArgs.GetBool( "arx_remove_on_killed", "0" ) ) {
 
 		Hide();
 
-		//gameLocal.SetPersistentRemove(name.c_str());
+		// Solarsplace - Arx End Of Sun - Level transition related.
+		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
 
 		physicsObj.PutToRest();
 		CancelEvents( &EV_Explode );
@@ -331,7 +332,7 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 			ActivateTargets( this );
 		}
 
-		//PostEventMS( &EV_Remove, spawnArgs.GetFloat("fuse") );
+		PostEventMS( &EV_Remove, spawnArgs.GetFloat("fuse") );
 	}
 
 	// Thanks HEXEN
@@ -358,7 +359,6 @@ void idMoveable::Killed( idEntity *inflictor, idEntity *attacker, int damage, co
 			}
 
 			debris = static_cast<idDebris *>(ent);
-			//debris->randomPosInBounds = true;
 			debris->randomPosEnt = this;
 			debris->Create( this, physicsObj.GetOrigin(), dir.ToMat3() );
 			debris->Launch();
