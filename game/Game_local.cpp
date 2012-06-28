@@ -253,6 +253,7 @@ void idGameLocal::Init( void ) {
 
 	Printf( "--------- Initializing Game ----------\n" );
 	Printf( "gamename: %s\n", GAME_VERSION );
+	Printf( "total conversion: %s\n", TC_VERSION );
 	Printf( "gamedate: %s\n", __DATE__ );
 
 	// register game specific decl types
@@ -817,14 +818,13 @@ Initializes all map variables common to both save games and spawned games.
 */
 void idGameLocal::LoadMap( const char *mapName, int randseed ) {
 
-	//REMOVEME
-	gameLocal.Printf( "Arx EOS - idGameLocal::LoadMap( %s ).\n", mapName );
+	//gameLocal.Printf( "Arx EOS - idGameLocal::LoadMap( %s ).\n", mapName );
 
 	int i;
 	bool sameMap = (mapFile && idStr::Icmp(mapFileName, mapName) == 0);
 
 	// Solarsplace - 30th May 2010 - Persistent related
-	gameLocal.Printf( "Arx EOS - Not clearing player persistent information.\n" );
+	//gameLocal.Printf( "Arx EOS - Not clearing player persistent information.\n" );
 	//persistentLevelInfo.Clear();
 
 	// clear the sound system
@@ -1156,8 +1156,7 @@ idGameLocal::InitFromNewMap
 */
 void idGameLocal::InitFromNewMap( const char *mapName, idRenderWorld *renderWorld, idSoundWorld *soundWorld, bool isServer, bool isClient, int randseed ) {
 
-	//REMOVEME
-	gameLocal.Printf( "Arx EOS - idGameLocal::InitFromNewMap( %s ).\n", mapName );
+	//gameLocal.Printf( "Arx EOS - idGameLocal::InitFromNewMap( %s ).\n", mapName );
 
 	this->isServer = isServer;
 	this->isClient = isClient;
@@ -1199,8 +1198,7 @@ idGameLocal::InitFromSaveGame
 */
 bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWorld, idSoundWorld *soundWorld, idFile *saveGameFile ) {
 	
-	//REMOVEME
-	gameLocal.Printf( "Arx EOS - idGameLocal::InitFromSaveGame( %s ).\n", mapName );
+	//gameLocal.Printf( "Arx EOS - idGameLocal::InitFromSaveGame( %s ).\n", mapName );
 
 	int i;
 	int num;
@@ -2540,15 +2538,13 @@ idGameLocal::HandleMainMenuCommands
 */
 void idGameLocal::HandleMainMenuCommands( const char *menuCommand, idUserInterface *gui )
 {
-
-	//REMOVEME
-	gameLocal.Printf( "idGameLocal::HandleMainMenuCommands ( %s )\n", menuCommand );
+	//gameLocal.Printf( "idGameLocal::HandleMainMenuCommands ( %s )\n", menuCommand );
 
 	// Solarsplace - 4th Oct 2010 - Level transition related
 	if ( idStr::Icmp( menuCommand, "startgame" ) == 0 )
 	{
 		// Clear out the persistent level info. The player has started a new game from the menu.
-		gameLocal.Printf( "idGameLocal::HandleMainMenuCommands - persistentLevelInfo.Clear()\n" );
+		//gameLocal.Printf( "idGameLocal::HandleMainMenuCommands - persistentLevelInfo.Clear()\n" );
 		gameLocal.persistentLevelInfo.Clear();
 	}
 

@@ -1556,7 +1556,7 @@ void idTarget_Tip::Event_Activate( idEntity *activator ) {
 			return;
 		}
 		player->ShowTip( spawnArgs.GetString( "text_title" ), spawnArgs.GetString( "text_tip" ), false );
-		PostEventMS( &EV_GetPlayerPos, 2000 );
+		PostEventMS( &EV_GetPlayerPos, spawnArgs.GetFloat( "tip_time", "2000" ) );
 	}
 }
 

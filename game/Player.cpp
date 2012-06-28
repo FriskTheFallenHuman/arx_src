@@ -7356,7 +7356,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!readableSystemOpen &&		// 3
 				!conversationSystemOpen &&	// 4
 				!shoppingSystemOpen			// 5
-				//!objectiveSystemOpen		// 6
+				!objectiveSystemOpen		// 6
 				)
 
 				{ 
