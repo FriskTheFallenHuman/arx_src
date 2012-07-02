@@ -7355,7 +7355,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!journalSystemOpen &&		// 2
 				!readableSystemOpen &&		// 3
 				!conversationSystemOpen &&	// 4
-				!shoppingSystemOpen			// 5
+				!shoppingSystemOpen	&&		// 5
 				!objectiveSystemOpen		// 6
 				)
 
@@ -8486,7 +8486,8 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	idDict *item = FindInventoryItem( iname );
 
 	// Solarsplace - 14th Aug 2010 - Weapons
-	if ( item->GetString( "inv_weapon" ) )
+	// Solarsplace - 2nd Jul 2012 - Updated if condition to be more specific. Not sure how it ever worked before now....
+	if ( !strcmp( item->GetString( "inv_weapon", "" ), "" ) == 0 )
 	{
 		int weaponId = item->GetInt( "inv_weapon_def" );
 		SelectWeapon( weaponId, false );
