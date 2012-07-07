@@ -8998,6 +8998,21 @@ void idPlayer::GetEntityByViewRay( void )
 			target->Signal( SIG_TRIGGER );
 			return;
 		}
+		else if ( target->spawnArgs.GetBool( "arx_use_script" ) && !target->IsHidden() )
+		{
+			const function_t *func;
+			idThread *thread;
+
+			func = target->scriptObject.GetFunction( target->spawnArgs.GetString( "arx_use_script_call", "use" ) );
+
+			if ( func )
+			{
+				// create a thread and call the function
+				thread = new idThread();
+				thread->CallFunction( target, func, true );
+				thread->Start();
+			}
+		}
 		else if ( target->spawnArgs.GetBool( "inv_pda" ) && !target->IsHidden() ) 
 		{
 			// Solarsplace 13th June 2012 - Pickup journal PDA's
