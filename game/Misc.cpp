@@ -1400,6 +1400,10 @@ void idStaticEntity::Spawn( void ) {
 	bool solid;
 	bool hidden;
 
+	// Solarsplace - 1st Aug 2012 - Arx EOS
+	bool aiOpaque;
+	aiOpaque = spawnArgs.GetBool( "aiOpaque" );
+
 	// an inline static model will not do anything at all
 	if ( spawnArgs.GetBool( "inline" ) || gameLocal.world->spawnArgs.GetBool( "inlineAllStatics" ) ) {
 		Hide();
@@ -1410,7 +1414,11 @@ void idStaticEntity::Spawn( void ) {
 	hidden = spawnArgs.GetBool( "hide" );
 
 	if ( solid && !hidden ) {
-		GetPhysics()->SetContents( CONTENTS_SOLID );
+		if ( aiOpaque ) {
+			GetPhysics()->SetContents( CONTENTS_SOLID | CONTENTS_OPAQUE );
+		} else {
+			GetPhysics()->SetContents( CONTENTS_SOLID );
+		}
 	} else {
 		GetPhysics()->SetContents( 0 );
 	}
@@ -1510,8 +1518,17 @@ idStaticEntity::Show
 */
 void idStaticEntity::Show( void ) {
 	idEntity::Show();
+
+	// Solarsplace - 1st Aug 2012 - Arx EOS
+	bool aiOpaque;
+	aiOpaque = spawnArgs.GetBool( "aiOpaque" );
+
 	if ( spawnArgs.GetBool( "solid" ) ) {
-		GetPhysics()->SetContents( CONTENTS_SOLID );
+		if ( aiOpaque ) {
+			GetPhysics()->SetContents( CONTENTS_SOLID | CONTENTS_OPAQUE );
+		} else {
+			GetPhysics()->SetContents( CONTENTS_SOLID );
+		}
 	}
 }
 

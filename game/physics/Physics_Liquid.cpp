@@ -112,7 +112,9 @@ idPhysics_Liquid::GetPressure
 */
 idVec3 idPhysics_Liquid::GetPressure( const idVec3 &point ) const {
 	idVec3 pressure;
-	idVec3 &depth = this->GetDepth(point);
+
+	//idVec3 &depth = this->GetDepth(point);
+	idVec3 depth = this->GetDepth(point);
 
 	pressure = depth * this->density;
 
