@@ -47,9 +47,16 @@ void idTarget_Remove::Event_Activate( idEntity *activator ) {
 	for( i = 0; i < targets.Num(); i++ ) {
 		ent = targets[ i ].GetEntity();
 		if ( ent ) {
+
+			// Solarsplace - Arx End Of Sun - Level transition related.
+			gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( ent, false, true );
+
 			ent->PostEventMS( &EV_Remove, 0 );
 		}
 	}
+
+	// Solarsplace - Arx End Of Sun - Level transition related.
+	gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
 
 	// delete our self when done
 	PostEventMS( &EV_Remove, 0 );

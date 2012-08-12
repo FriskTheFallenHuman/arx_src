@@ -8972,6 +8972,8 @@ void idPlayer::GetEntityByViewRay( void )
 				return;
 			}
 
+			target->ActivateTargets( this );
+
 			// Save level transition data just before we send a session command to change levels.
 			SaveTransitionInfo();
 			levelTransitionSpawnPoint = target->spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
