@@ -3519,7 +3519,12 @@ void idGameLocal::KillBox( idEntity *ent, bool catch_teleport ) {
 
 		if ( !gameLocal.isMultiplayer ) {
 			// let the mapper know about it
-			Warning( "'%s' telefragged '%s'", ent->name.c_str(), hit->name.c_str() );
+
+			// Solarsplace - 12th Aug 2012 - Hide warning in certain circumstances -such as moveable boxes
+			// over spawn point etc as the player spawns before they are removed from the map.
+			if ( !hit->spawnArgs.GetBool( "ignoreTelefrag", "0" ) ) {
+				Warning( "'%s' telefragged '%s'", ent->name.c_str(), hit->name.c_str() );
+			}
 		}
 	}
 }
