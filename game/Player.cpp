@@ -8617,6 +8617,9 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius, int aiTeam, int t
 				if ( !static_cast<idActor *>( ent )->CanSee(this, true) ) { continue; }
 			}
 
+			// Do not alert this actor. This actor will not respond to help signals from other attacked AI.
+			if ( static_cast<idActor *>( ent )->spawnArgs.GetBool( "arx_alertai_ignore", "0" ) ) { continue; }
+
 			/*
 			0 = Any team
 			1 = Equal team only

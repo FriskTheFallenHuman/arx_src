@@ -1136,9 +1136,13 @@ void idMoveableItem::DropItems( idAnimatedEntity  *ent, const char *type, idList
 
 			origin += ent->spawnArgs.GetVector( key2, "0 0 0" );
 
-			item = DropItem( kv->GetValue(), origin, axis, vec3_origin, 0, 0 );
-			if ( list && item ) {
-				list->Append( item );
+			// Arx - SP - 30th Aug 2012 - Need ability to blank out def_dropDeathItem's from inherited defs and not have the console whine about missing class name.
+			if ( !strcmp( kv->GetValue(), "" ) == 0 )
+			{
+				item = DropItem( kv->GetValue(), origin, axis, vec3_origin, 0, 0 );
+				if ( list && item ) {
+					list->Append( item );
+				}
 			}
 		}
 
