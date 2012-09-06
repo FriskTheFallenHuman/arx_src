@@ -66,6 +66,7 @@ const idEventDef EV_Player_GetCommonEnemy( "getCommonEnemy", NULL, 'e' );
 const idEventDef EV_Player_InventoryContainsItem( "inventoryContainsItem", "s", 'f' );
 const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint", "s", NULL );
 const idEventDef EV_HudMessage( "HudMessage", "s" );
+const idEventDef EV_SetGuiHUDParm( "SetGuiHUDParm", "ss" );
 const idEventDef EV_PlayerMoney( "PlayerMoney", "d", 'd' );
 const idEventDef EV_OpenCloseShop( "OpenCloseShop", "s", NULL );
 const idEventDef EV_RemoveInventoryItem( "RemoveInventoryItem", "s", NULL );
@@ -105,6 +106,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_InventoryContainsItem,		idPlayer::Event_InventoryContainsItem )
 	EVENT( EV_Player_LevelTransitionSpawnPoint,	idPlayer::Event_LevelTransitionSpawnPoint )
 	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
+	EVENT( EV_SetGuiHUDParm,					idPlayer::Event_SetGuiHUDParm )
 	EVENT( EV_PlayerMoney,						idPlayer::Event_PlayerMoney )
 	EVENT( EV_OpenCloseShop,					idPlayer::Event_OpenCloseShop )
 	EVENT( EV_RemoveInventoryItem,				idPlayer::Event_RemoveInventoryItem )
@@ -3795,6 +3797,23 @@ int idPlayer::FindInventoryItemIndex( const char *name ) {
 
 /*
 ===============
+idPlayer::FindInventoryWeaponIndex - Solarsplace - 6nd Aug 2012
+===============
+*/
+int idPlayer::FindInventoryWeaponIndex( int playerWeaponDefNumber ) {
+
+	int iWeapon = -1;
+
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+		iWeapon = inventory.items[i]->GetInt( "inv_weapon_def" );
+		if ( playerWeaponDefNumber == iWeapon ) {
+			return i;
+		}
+	}
+	return -1;
+}
+/*
+===============
 idPlayer::RemoveInventoryItem
 ===============
 */
@@ -4093,22 +4112,40 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 	}
 
 	if ( force || ( inventory.weapons & ( 1 << num ) ) ) {
+
 		if ( !inventory.HasAmmo( weap ) && !spawnArgs.GetBool( va( "weapon%d_allowempty", num ) ) ) {
 			return;
 		}
+
 		if ( ( previousWeapon >= 0 ) && ( idealWeapon == num ) && ( spawnArgs.GetBool( va( "weapon%d_toggle", num ) ) ) ) {
+
 			weap = spawnArgs.GetString( va( "def_weapon%d", previousWeapon ) );
 			if ( !inventory.HasAmmo( weap ) && !spawnArgs.GetBool( va( "weapon%d_allowempty", previousWeapon ) ) ) {
 				return;
 			}
-			idealWeapon = previousWeapon;
+
+			// Solarsplace - 6th Sep 2012 - Make sure the player has not dropped previous weapon from inventory.
+			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
+			if ( FindInventoryWeaponIndex( previousWeapon ) != -1 )
+			{
+				idealWeapon = previousWeapon;
+
+			} else {
+				idealWeapon = 0; // Fists
+			}
+			
+
 		} else if ( ( weapon_pda >= 0 ) && ( num == weapon_pda ) && ( inventory.pdas.Num() == 0 ) ) {
+
 			// 1st Jan 2010 - Solarsplace - Prevent this message window from being displayed.
 			//ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
 			return;
+
 		} else {
+
 			idealWeapon = num;
 		}
+
 		UpdateHudWeapon();
 	}
 
@@ -12433,6 +12470,14 @@ void idPlayer::Event_HudMessage( const char *message )
 		hud->HandleNamedEvent( "arx_ShowMainMessage" );
 	}
 	
+}
+
+void idPlayer::Event_SetGuiHUDParm( const char *key, const char *value )
+{
+	if ( hud )
+	{
+		hud->SetStateString( key, value );
+	}	
 }
 
 void idPlayer::Event_FindInventoryItemCount( const char *name )

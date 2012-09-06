@@ -448,6 +448,7 @@ public:
 	// Solarsplace - 2nd July 2010 - Needed a slightly modified version of the above function
 	int						FindInventoryItemIndex( const char *name );
 	int						FindInventoryItemCount( const char *name );
+	int						FindInventoryWeaponIndex( int playerWeaponDefNumber );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
@@ -797,6 +798,7 @@ private:
 	void					Event_InventoryContainsItem( const char *itemName );				// 2nd Jan 2009 - Solarsplace
 	void					Event_LevelTransitionSpawnPoint( const char *spawnPointEntName );	// 3rd Oct 2010 - Solarsplace
 	void					Event_HudMessage( const char *message );							// 25th Sep 2011 - Solarsplace
+	void					Event_SetGuiHUDParm( const char *key, const char *value );			// 6th Sep 2012 - Solarsplace		
 	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
 	void					Event_OpenCloseShop( const char *newState );						// 30th Nov 2011 - Solarsplace
 	void					Event_RemoveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
