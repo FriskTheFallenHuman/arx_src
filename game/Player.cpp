@@ -66,7 +66,7 @@ const idEventDef EV_Player_GetCommonEnemy( "getCommonEnemy", NULL, 'e' );
 const idEventDef EV_Player_InventoryContainsItem( "inventoryContainsItem", "s", 'f' );
 const idEventDef EV_Player_LevelTransitionSpawnPoint( "levelTransitionSpawnPoint", "s", NULL );
 const idEventDef EV_HudMessage( "HudMessage", "s" );
-const idEventDef EV_SetGuiHUDParm( "SetGuiHUDParm", "ss" );
+const idEventDef EV_SetFloatHUDParm( "SetFloatHUDParm", "sf", NULL );
 const idEventDef EV_PlayerMoney( "PlayerMoney", "d", 'd' );
 const idEventDef EV_OpenCloseShop( "OpenCloseShop", "s", NULL );
 const idEventDef EV_RemoveInventoryItem( "RemoveInventoryItem", "s", NULL );
@@ -106,7 +106,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_InventoryContainsItem,		idPlayer::Event_InventoryContainsItem )
 	EVENT( EV_Player_LevelTransitionSpawnPoint,	idPlayer::Event_LevelTransitionSpawnPoint )
 	EVENT( EV_HudMessage,						idPlayer::Event_HudMessage )
-	EVENT( EV_SetGuiHUDParm,					idPlayer::Event_SetGuiHUDParm )
+	EVENT( EV_SetFloatHUDParm,					idPlayer::Event_SetFloatHUDParm )
 	EVENT( EV_PlayerMoney,						idPlayer::Event_PlayerMoney )
 	EVENT( EV_OpenCloseShop,					idPlayer::Event_OpenCloseShop )
 	EVENT( EV_RemoveInventoryItem,				idPlayer::Event_RemoveInventoryItem )
@@ -12472,12 +12472,13 @@ void idPlayer::Event_HudMessage( const char *message )
 	
 }
 
-void idPlayer::Event_SetGuiHUDParm( const char *key, const char *value )
+void idPlayer::Event_SetFloatHUDParm( const char *key, float value )
 {
 	if ( hud )
 	{
-		hud->SetStateString( key, value );
-	}	
+		hud->SetStateFloat( key, value );
+		hud->StateChanged( gameLocal.time );
+	}
 }
 
 void idPlayer::Event_FindInventoryItemCount( const char *name )

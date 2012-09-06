@@ -798,7 +798,7 @@ private:
 	void					Event_InventoryContainsItem( const char *itemName );				// 2nd Jan 2009 - Solarsplace
 	void					Event_LevelTransitionSpawnPoint( const char *spawnPointEntName );	// 3rd Oct 2010 - Solarsplace
 	void					Event_HudMessage( const char *message );							// 25th Sep 2011 - Solarsplace
-	void					Event_SetGuiHUDParm( const char *key, const char *value );			// 6th Sep 2012 - Solarsplace		
+	void					Event_SetFloatHUDParm( const char *key, float value );				// 6th Sep 2012 - Solarsplace		
 	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
 	void					Event_OpenCloseShop( const char *newState );						// 30th Nov 2011 - Solarsplace
 	void					Event_RemoveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
