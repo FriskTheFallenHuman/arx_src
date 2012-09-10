@@ -822,6 +822,9 @@ void idActor::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteBool( finalBoss );
 
+	// Solarsplace - Arx End Of Sun
+	savefile->WriteBool( playingUnderwaterLoop );
+
 	idToken token;
 
 	//FIXME: this is unneccesary
@@ -946,6 +949,9 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	}
 
 	savefile->ReadBool( finalBoss );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->ReadBool( playingUnderwaterLoop );
 
 	idStr statename;
 
@@ -2433,41 +2439,19 @@ idActor::Event_EnableEyeFocus
 void idActor::PlayFootStepSound( void ) {
 
 	// Modified: Solarsplace 1st April 2010 - Add water sounds
+	// Solarsplace: Use the water physis mod to identify if the player is in water and to what depth
 
 	const char *sound = NULL;
 	const idMaterial *material;
-	
-	// Solarsplace: Use the water physis mod to identify if the player is in water and to what depth
-	//idPhysics_Player *phys = dynamic_cast<idPhysics_Player *>(this->GetPhysics());
+	bool playerIsWaterLevelHead;
 
 	idPhysics& physics = *GetPhysics(); // shortcut
 	waterLevel_t waterModLevel = static_cast<idPhysics_Actor&>(physics).GetWaterLevel();
 
-	//waterLevel_t waterLevel = physicsObj.GetWaterLevel();
+	playerIsWaterLevelHead = false;
 
-	//waterLevel_t waterModLevel = phys->GetWaterLevel();
+	if (waterModLevel == WATERLEVEL_NONE) {
 
-	/* Some debugging stuff
-	if (waterModLevel == WATERLEVEL_NONE)
-	{
-		gameLocal.Printf( "idActor::PlayFootStepSound WATERLEVEL_NONE\n" );
-	}
-	else if (waterModLevel == WATERLEVEL_FEET)
-	{
-		gameLocal.Printf( "idActor::PlayFootStepSound WATERLEVEL_FEET\n" );
-	}
-	else if (waterModLevel == WATERLEVEL_WAIST)
-	{
-		gameLocal.Printf( "idActor::PlayFootStepSound WATERLEVEL_WAIST\n" );
-	}
-	else if (waterModLevel == WATERLEVEL_HEAD)
-	{
-		gameLocal.Printf( "idActor::PlayFootStepSound WATERLEVEL_HEAD\n" );
-	}
-	*/
-
-	if (waterModLevel == WATERLEVEL_NONE)
-	{
 		// Solarsplace - This check seems to be redundant. This method is not called if the actor is not on a surface.
 		if ( !GetPhysics()->HasGroundContacts() ) {
 			return;
@@ -2475,6 +2459,7 @@ void idActor::PlayFootStepSound( void ) {
 
 		// start footstep sound based on material type
 		material = GetPhysics()->GetContact( 0 ).material;
+
 		if ( material != NULL ) {
 			sound = spawnArgs.GetString( va( "snd_footstep_%s", gameLocal.sufaceTypeNames[ material->GetSurfaceType() ] ) );
 		}
@@ -2483,30 +2468,38 @@ void idActor::PlayFootStepSound( void ) {
 			sound = spawnArgs.GetString( "snd_footstep" );
 		}
 
-		if ( *sound != '\0' ) {
-			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
-		}
-	}
-	else
-	{
+	} else {
+
 		// Solarsplace: If the player is in water, replace material sound above with appropriate water sounds
-		if (waterModLevel == WATERLEVEL_FEET )
-		{
+		if (waterModLevel == WATERLEVEL_FEET ) {
 			sound = spawnArgs.GetString( "snd_footstep_paddle" );
-		}
-		else if (waterModLevel == WATERLEVEL_WAIST)
-		{
+		} else if (waterModLevel == WATERLEVEL_WAIST) {
 			sound = spawnArgs.GetString( "snd_footstep_swimming" );
-		}
-		else if (waterModLevel == WATERLEVEL_HEAD)
-		{
+		} else if (waterModLevel == WATERLEVEL_HEAD) {
+			playerIsWaterLevelHead = true;
 			sound = spawnArgs.GetString( "snd_footstep_underwater" );
 		}
-	
+	}
+
+	if ( playerIsWaterLevelHead && !playingUnderwaterLoop ) {
+
+		playingUnderwaterLoop = true;
+
 		if ( *sound != '\0' ) {
 			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
 		}
+
+
+	} else {
+
+		playingUnderwaterLoop = false;
+
+		if ( *sound != '\0' ) {
+			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
+		}
+
 	}
+
 }
 
 /*

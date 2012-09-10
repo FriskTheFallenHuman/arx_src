@@ -2756,13 +2756,21 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	int inclip;
 	int ammoamount;
 	int i;
-	int totalMana;	// Solarsplace 28th Feb 2010
+
+	// Solarsplace - Arx End Of Sun
+	int totalMana;
+	bool hasChargeAttack;
 
 	assert( weapon.GetEntity() );
 	assert( _hud );
 
 	inclip		= weapon.GetEntity()->AmmoInClip();
 	ammoamount	= weapon.GetEntity()->AmmoAvailable();
+
+	// Solarsplace - Arx End Of Sun
+	hasChargeAttack = weapon.GetEntity()->HasChargeAttack();
+	_hud->SetStateBool( "arx_has_charge_attack", hasChargeAttack );
+
 	if ( ammoamount < 0 || !weapon.GetEntity()->IsReady() ) {
 		// show infinite ammo
 		_hud->SetStateString( "player_ammo", "" );
@@ -3821,8 +3829,7 @@ void idPlayer::RemoveInventoryItem( const char *name ) {
 
 	idDict *item;
 
-	if ( idStr::FindText( name, "#str_" ) == 0 )
-	{
+	if ( idStr::FindText( name, "#str_" ) == 0 ) {
 		item = FindInventoryItem( common->GetLanguageDict()->GetString( name ) );
 	} else {
 		item = FindInventoryItem( name );
@@ -3837,7 +3844,13 @@ void idPlayer::RemoveInventoryItem( const char *name ) {
 void idPlayer::Event_RemoveInventoryItem( const char *name ) {
 
 	idStr message;
-	sprintf( message, "Inventory item %s removed", name );
+
+	if ( idStr::FindText( name, "#str_" ) == 0 ) {
+		sprintf( message, "Inventory item %s removed", common->GetLanguageDict()->GetString( name ) );
+	} else {
+		sprintf( message, "Inventory item %s removed", name );
+	}
+
 	ShowHudMessage( message );
 
 	RemoveInventoryItem( name );

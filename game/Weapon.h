@@ -87,8 +87,11 @@ public:
 	bool					CanDrop( void ) const;
 	void					WeaponStolen( void );
 
-	// Solarsplace - 23rd May 2010 - Magic related
+	// Solarsplace - Arx EOS - 23rd May 2010 - Magic related
 	void					magicChangeProjectileDef( const char *projectileName );
+
+	// Solarsplace - Arx EOS - 10th Sep 2012
+	bool					HasChargeAttack( void ) const;
 
 	// Script state management
 	virtual idThread *		ConstructScriptObject( void );
@@ -155,6 +158,9 @@ private:
 
 	idPlayer *				owner;
 	idEntityPtr<idAnimatedEntity>	worldModel;
+
+	// Solarsplace - Arx EOS - 10th Sep 2012
+	bool					hasChargeAttack;
 
 	// hiding (for GUIs and NPCs)
 	int						hideTime;

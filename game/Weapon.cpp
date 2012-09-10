@@ -123,6 +123,9 @@ idWeapon::idWeapon() {
 	Clear();
 
 	fl.networkSync = true;
+
+	// Solarsplace - Arx EOS
+	hasChargeAttack = false;
 }
 
 /*
@@ -344,6 +347,8 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( allowDrop );
 	savefile->WriteObject( projectileEnt );
 
+	// Solarsplace - Arx EOS
+	savefile->WriteBool( hasChargeAttack );
 }
 
 /*
@@ -498,6 +503,9 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadBool( allowDrop );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( projectileEnt ) );
+
+	// Solarsplace - Arx EOS
+	savefile->ReadBool( hasChargeAttack );
 }
 
 /***********************************************************************
@@ -679,6 +687,9 @@ void idWeapon::Clear( void ) {
 	projectileEnt		= NULL;
 
 	isFiring			= false;
+
+	// Solarsplace - Arx EOS
+	hasChargeAttack		= false;
 }
 
 /*
@@ -751,6 +762,9 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	assert( owner );
 
 	weaponDef			= gameLocal.FindEntityDef( objectname );
+
+	// Solarsplace - Arx EOS
+	hasChargeAttack		= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
 
 	ammoType			= GetAmmoNumForName( weaponDef->dict.GetString( "ammoType" ) );
 	ammoRequired		= weaponDef->dict.GetInt( "ammoRequired" );
@@ -2262,6 +2276,15 @@ idWeapon::AmmoRequired
 */
 int	idWeapon::AmmoRequired( void ) const {
 	return ammoRequired;
+}
+
+/*
+================
+idWeapon::HasChargeAttack
+================
+*/
+bool idWeapon::HasChargeAttack( void ) const {
+	return hasChargeAttack;
 }
 
 /*

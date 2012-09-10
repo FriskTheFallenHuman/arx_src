@@ -252,6 +252,9 @@ private:
 	void					SetupHead( void );
 	void					PlayFootStepSound( void );
 
+	// Solarsplace - Arx End Of Sun
+	bool					playingUnderwaterLoop;
+
 	void					Event_EnableEyeFocus( void );
 	void					Event_DisableEyeFocus( void );
 	void					Event_Footstep( void );
