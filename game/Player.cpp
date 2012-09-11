@@ -9471,6 +9471,12 @@ void idPlayer::AdjustSpeed( void ) {
 		bobFrac = 0.0f;
 	}
 
+	// Solarsplace - Arx EOS - Clamp movement speed when wading or swimming.
+	if (physicsObj.GetWaterLevel() >= WATERLEVEL_WAIST)
+	{
+		speed = idMath::ClampFloat(0, pm_walkspeed.GetFloat(), speed);
+	}
+
 	speed *= PowerUpModifier(SPEED);
 
 	if ( influenceActive == INFLUENCE_LEVEL3 ) {

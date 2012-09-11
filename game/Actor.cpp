@@ -822,9 +822,6 @@ void idActor::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteBool( finalBoss );
 
-	// Solarsplace - Arx End Of Sun
-	savefile->WriteBool( playingUnderwaterLoop );
-
 	idToken token;
 
 	//FIXME: this is unneccesary
@@ -949,9 +946,6 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	}
 
 	savefile->ReadBool( finalBoss );
-
-	// Solarsplace - Arx End Of Sun
-	savefile->ReadBool( playingUnderwaterLoop );
 
 	idStr statename;
 
@@ -2177,33 +2171,8 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		gameLocal.Error( "Unknown damageDef '%s'", damageDefName );
 	}
 
-	//ivan start
-	if(damageDef->GetBool( "ignore_friends" )){
-		if(team == attacker->spawnArgs.GetInt("team","0")){
-			return;
-		}
-	}
-	//ivan end
-
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
 	damage = GetDamageForLocation( damage, location );
-
-	// Solarsplace 20th Dec 2011 - Arx - End Of Sun - On Fire Damage effects
-	if ( damageDef->GetInt( "onFire" ) ) {
-		// Solarsplace - Arx EOS - Thanks Hexen
-		onFire =  gameLocal.time + 5000;
-	}
-
-	// Solarsplace 9th Feb 2012 - Arx - End Of Sun - Do double damage if surprise attack
-	idPlayer * player = gameLocal.GetLocalPlayer();
-	if ( attacker == player )
-	{
-		if ( !CanSee(player, true) && health > 0 )
-		{
-			damage = 2 * damage;
-			player->ShowHudMessage( "#str_general_00002" );
-		}
-	}
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );
@@ -2438,68 +2407,47 @@ idActor::Event_EnableEyeFocus
 */
 void idActor::PlayFootStepSound( void ) {
 
-	// Modified: Solarsplace 1st April 2010 - Add water sounds
-	// Solarsplace: Use the water physis mod to identify if the player is in water and to what depth
+	// Modified: Solarsplace - Arx End Of Sun - Add water sounds
 
 	const char *sound = NULL;
 	const idMaterial *material;
-	bool playerIsWaterLevelHead;
+	
+	if ( !GetPhysics()->HasGroundContacts() ) {
+		return;
+	}
 
+	// Solarsplace: Use the water physis mod to identify if the player is in water and to what depth
 	idPhysics& physics = *GetPhysics(); // shortcut
 	waterLevel_t waterModLevel = static_cast<idPhysics_Actor&>(physics).GetWaterLevel();
 
-	playerIsWaterLevelHead = false;
-
-	if (waterModLevel == WATERLEVEL_NONE) {
-
-		// Solarsplace - This check seems to be redundant. This method is not called if the actor is not on a surface.
-		if ( !GetPhysics()->HasGroundContacts() ) {
-			return;
-		}
-
+	if (waterModLevel == WATERLEVEL_NONE)
+	{
 		// start footstep sound based on material type
 		material = GetPhysics()->GetContact( 0 ).material;
-
 		if ( material != NULL ) {
 			sound = spawnArgs.GetString( va( "snd_footstep_%s", gameLocal.sufaceTypeNames[ material->GetSurfaceType() ] ) );
 		}
-
-		if ( *sound == '\0' ) {
-			sound = spawnArgs.GetString( "snd_footstep" );
-		}
-
-	} else {
-
+	}
+	else
+	{
 		// Solarsplace: If the player is in water, replace material sound above with appropriate water sounds
-		if (waterModLevel == WATERLEVEL_FEET ) {
+		if (waterModLevel == WATERLEVEL_FEET )
+		{
 			sound = spawnArgs.GetString( "snd_footstep_paddle" );
-		} else if (waterModLevel == WATERLEVEL_WAIST) {
+		}
+		else if (waterModLevel == WATERLEVEL_WAIST)
+		{
 			sound = spawnArgs.GetString( "snd_footstep_swimming" );
-		} else if (waterModLevel == WATERLEVEL_HEAD) {
-			playerIsWaterLevelHead = true;
-			sound = spawnArgs.GetString( "snd_footstep_underwater" );
+		}
+		else if (waterModLevel == WATERLEVEL_HEAD)
+		{
+			sound = spawnArgs.GetString( "snd_footstep_nosound" ); // This is handled in idPlayer::UpdateAir
 		}
 	}
 
-	if ( playerIsWaterLevelHead && !playingUnderwaterLoop ) {
-
-		playingUnderwaterLoop = true;
-
-		if ( *sound != '\0' ) {
-			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
-		}
-
-
-	} else {
-
-		playingUnderwaterLoop = false;
-
-		if ( *sound != '\0' ) {
-			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
-		}
-
+	if ( *sound != '\0' ) {
+		StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
 	}
-
 }
 
 /*
@@ -3415,7 +3363,7 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 		{
 			item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
 			item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
-			item->GetPhysics()->SetLinearVelocity( idVec3( 0, 0, 1 ) * 150 ); //( vec3_origin );
+			item->GetPhysics()->SetLinearVelocity( vec3_origin );
 			item->UpdateVisuals();
 		}
 		
