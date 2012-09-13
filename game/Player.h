@@ -804,6 +804,7 @@ private:
 	void					Event_RemoveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
 	void					Event_GiveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
 	void					Event_FindInventoryItemCount( const char *name );					// 2nd Jan 2011 - Solarsplace
+	void					Event_GiveJournal( const char *name );								// 13th Sep 2012 - Solarsplace
 
 	// Inventory Related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

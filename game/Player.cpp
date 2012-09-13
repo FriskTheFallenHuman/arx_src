@@ -72,6 +72,7 @@ const idEventDef EV_OpenCloseShop( "OpenCloseShop", "s", NULL );
 const idEventDef EV_RemoveInventoryItem( "RemoveInventoryItem", "s", NULL );
 const idEventDef EV_GiveInventoryItem( "GiveInventoryItem", "s", NULL );
 const idEventDef EV_FindInventoryItemCount( "FindInventoryItemCount", "s", 'f' );
+const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
 
 //*****************************************************************
 //*****************************************************************
@@ -112,6 +113,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_RemoveInventoryItem,				idPlayer::Event_RemoveInventoryItem )
 	EVENT( EV_GiveInventoryItem,				idPlayer::Event_GiveInventoryItem )
 	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_FindInventoryItemCount )
+	EVENT( EV_GiveJournal,						idPlayer::Event_GiveJournal )
 
 	//*****************************************************************
 	//*****************************************************************
@@ -12539,6 +12541,13 @@ void idPlayer::Event_OpenCloseShop( const char *newState )
 {
 	gameLocal.Printf( "Event_OpenCloseShop\n" ); //REMOVEME
 	ToggleShoppingSystem();
+}
+
+void idPlayer::Event_GiveJournal( const char *name )
+{
+	if ( name && *name ) {
+		GivePDA( name, NULL );
+	}
 }
 
 //ivan start
