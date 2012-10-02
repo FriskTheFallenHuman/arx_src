@@ -3061,8 +3061,6 @@ inflictor, attacker, dir, and point can be NULL for environmental effects
 void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, 
 					  const char *damageDefName, const float damageScale, const int location ) {
 
-	//gameLocal.Printf ( "idEntity::Damage(%s)\n", name.c_str() );
-
 	if ( !fl.takedamage ) {
 		return;
 	}
@@ -3081,6 +3079,9 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	}
 
 	int	damage = damageDef->GetInt( "damage" );
+
+	//REMOVEME
+	gameLocal.Printf ( "idEntity '%s' was (%d) damaged by '%s'\n", name.c_str(), damage, damageDefName );
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );

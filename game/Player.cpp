@@ -73,6 +73,7 @@ const idEventDef EV_RemoveInventoryItem( "RemoveInventoryItem", "s", NULL );
 const idEventDef EV_GiveInventoryItem( "GiveInventoryItem", "s", NULL );
 const idEventDef EV_FindInventoryItemCount( "FindInventoryItemCount", "s", 'f' );
 const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
+const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
 
 //*****************************************************************
 //*****************************************************************
@@ -114,7 +115,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GiveInventoryItem,				idPlayer::Event_GiveInventoryItem )
 	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_FindInventoryItemCount )
 	EVENT( EV_GiveJournal,						idPlayer::Event_GiveJournal )
-
+	EVENT( EV_GetMapName,						idPlayer::Event_GetMapName )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -5942,15 +5943,11 @@ void idPlayer::ProcessMagic()
 				// Script calls
 				if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 )
 				{
-					magicSpellCombo->dict.GetString( "script_action", "", scriptAction );
 					magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
+					playerView.Flash( colorRed, 500 );
+					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+					RadiusSpell( customMagicScriptActionWorld, alertRadius );
 
-					if ( !strcmp( scriptAction, "" ) == 0 )
-					{
-						playerView.Flash( colorWhite, 500 );
-						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-						RadiusSpell( scriptAction, alertRadius );
-					}
 				}
 
 			} // if ( magicSpellCombo )
@@ -7682,7 +7679,7 @@ void idPlayer::LoadTransitionInfo( void )
 		arg = gameLocal.persistentLevelInfo.GetKeyVal( i );
 		keyText = arg->GetKey();
 		keyMapName = SplitStrings( keyText, ARX_LVL_MAPNAME );
-		
+
 		if ( idStr::Icmp( mapName, keyMapName ) == 0 )
 		{
 			//******************************************************************************************************
@@ -7710,7 +7707,7 @@ void idPlayer::LoadTransitionInfo( void )
 
 				ent = gameLocal.FindEntity( keyEntityName.c_str() );
 
-				if ( !ent ) { return; }
+				if ( !ent ) { continue; }
 
 				/****************************************************************************
 				****************************************************************************/
@@ -8949,7 +8946,7 @@ void idPlayer::GetEntityByViewRay( void )
 			// We need to find the door entity name or master door if teamed from the barstard triggers spawn args.
 			idEntity * actualDoorMaster = gameLocal.FindEntity( target->spawnArgs.GetString( "target" ) );
 
-			if ( actualDoorMaster->spawnArgs.GetBool( "lock_status" ) )
+			if ( actualDoorMaster->spawnArgs.GetBool( "lock_status", "0" ) == true )
 			{
 				requiredItemInvName = actualDoorMaster->spawnArgs.GetString( "requires_inv_item", "" );
 
@@ -12548,6 +12545,11 @@ void idPlayer::Event_GiveJournal( const char *name )
 	if ( name && *name ) {
 		GivePDA( name, NULL );
 	}
+}
+
+void idPlayer::Event_GetMapName( void ) {
+
+	return idThread::ReturnString( gameLocal.GetMapName() );
 }
 
 //ivan start

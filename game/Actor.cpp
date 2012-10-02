@@ -2174,6 +2174,9 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
 	damage = GetDamageForLocation( damage, location );
 
+	//REMOVEME
+	gameLocal.Printf ( "idActor '%s' was (%d) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );
 	if ( damage > 0 ) {
@@ -2184,7 +2187,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 			}
 			Killed( inflictor, attacker, damage, dir, location );
 
-			//REMOVEME
+			/*
 			gameLocal.Printf( "idActor::Damage health = %i\n", health );
 
 			if ( damageDef->GetBool( "gib" ) )
@@ -2195,6 +2198,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 			{
 				gameLocal.Printf( "idActor::Damage gib = no\n", spawnArgs.GetBool( "gib" ) );
 			}
+			*/
 
 			if ( ( health < -20 ) && spawnArgs.GetBool( "gib" ) && damageDef->GetBool( "gib" ) ) {
 				Gib( dir, damageDefName );
