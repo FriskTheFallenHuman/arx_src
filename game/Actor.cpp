@@ -2171,11 +2171,33 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		gameLocal.Error( "Unknown damageDef '%s'", damageDefName );
 	}
 
+	//ivan start
+	if(damageDef->GetBool( "ignore_friends" )){
+		if(team == attacker->spawnArgs.GetInt("team","0")){
+			return;
+		}
+	}
+	//ivan end
+
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
 	damage = GetDamageForLocation( damage, location );
 
-	//REMOVEME
-	gameLocal.Printf ( "idActor '%s' was (%d) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+	// Solarsplace 20th Dec 2011 - Arx - End Of Sun - On Fire Damage effects
+	if ( damageDef->GetInt( "onFire" ) ) {
+		// Solarsplace - Arx EOS - Thanks Hexen
+		onFire =  gameLocal.time + 5000;
+	}
+
+	// Solarsplace 9th Feb 2012 - Arx - End Of Sun - Do double damage if surprise attack
+	idPlayer * player = gameLocal.GetLocalPlayer();
+	if ( attacker == player )
+	{
+		if ( !CanSee(player, true) && health > 0 )
+		{
+			damage = 2 * damage;
+			player->ShowHudMessage( "#str_general_00002" );
+		}
+	}
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );
