@@ -646,14 +646,14 @@ void idActor::SetupHead( void ) {
 	if ( headModel[ 0 ] ) {
 
 		// SP 14th Sep 2011 - Arx EOS - From TDM
-		// greebo: Regardless what happens, the offsetHeadModel vector always gets added to the offset
-		mHeadModelOffset += spawnArgs.GetVector("offsetHeadModel", "0 0 0");
+		mHeadModelOffset = spawnArgs.GetVector( "offsetHeadModel", "0 0 0" );
 
-		//REMOVEME
+		/*
 		if ( mHeadModelOffset.x != 0 || mHeadModelOffset.y != 0 || mHeadModelOffset.z != 0 ) {
 			gameLocal.Printf( "mHeadModelOffset is not zero on '%s'\n", headModel );
 			gameLocal.Printf( "mHeadModelOffset is '%d' '%d' '%d'\n", mHeadModelOffset.x, mHeadModelOffset.y, mHeadModelOffset.z );
 		}
+		*/
 
 		jointName = spawnArgs.GetString( "head_joint" );
 		joint = animator.GetJointHandle( jointName );
