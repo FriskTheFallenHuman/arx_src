@@ -657,6 +657,9 @@ private:
 	idInterpolate<float>	zoomFov;
 	idInterpolate<float>	centerView;
 	bool					fxFov;
+#ifdef _DT
+	bool					isRunning;
+#endif
 
 	float					influenceFov;
 	int						influenceActive;		// level of influence.. 1 == no gun or hud .. 2 == 1 + no movement

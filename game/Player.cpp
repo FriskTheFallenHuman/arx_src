@@ -1187,6 +1187,9 @@ idPlayer::idPlayer() {
 	zoomFov.Init( 0, 0, 0, 0 );
 	centerView.Init( 0, 0, 0, 0 );
 	fxFov					= false;
+#ifdef _DT
+	isRunning				= false;
+#endif
 
 	influenceFov			= 0;
 	influenceActive			= 0;
@@ -1367,6 +1370,9 @@ void idPlayer::Init( void ) {
 	zoomFov.Init( 0, 0, 0, 0 );
 	centerView.Init( 0, 0, 0, 0 );
 	fxFov					= false;
+#ifdef _DT
+	isRunning				= false;
+#endif
 
 	influenceFov			= 0;
 	influenceActive			= 0;
@@ -1945,6 +1951,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteFloat( centerView.GetEndValue() );
 
 	savefile->WriteBool( fxFov );
+#ifdef _DT
+	savefile->WriteBool( isRunning );
+#endif
 
 	savefile->WriteFloat( influenceFov );
 	savefile->WriteInt( influenceActive );
@@ -2227,6 +2236,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	centerView.SetEndValue( set );
 
 	savefile->ReadBool( fxFov );
+#ifdef _DT
+	savefile->ReadBool( isRunning );
+#endif
 
 	savefile->ReadFloat( influenceFov );
 	savefile->ReadInt( influenceActive );
@@ -9447,14 +9459,32 @@ void idPlayer::AdjustSpeed( void ) {
 			stamina = 0;
 		}
 		if ( ( !pm_stamina.GetFloat() ) || ( stamina > pm_staminathreshold.GetFloat() ) ) {
+#ifdef _DT
+			if ( !isRunning && !usercmd.rightmove ) {
+				zoomFov.Init( gameLocal.time + 500, 300.0f, CalcFov( false ), DefaultFov() + 10.0f );
+				isRunning = true;
+			}
+#endif
 			bobFrac = 1.0f;
 		} else if ( pm_staminathreshold.GetFloat() <= 0.0001f ) {
 			bobFrac = 0.0f;
 		} else {
+#ifdef _DT
+			if ( isRunning ) {
+				zoomFov.Init( gameLocal.time, 300.0f, zoomFov.GetCurrentValue( gameLocal.time ), DefaultFov() );
+				isRunning = false;
+			}
+#endif
 			bobFrac = stamina / pm_staminathreshold.GetFloat();
 		}
 		speed = pm_walkspeed.GetFloat() * ( 1.0f - bobFrac ) + pm_runspeed.GetFloat() * bobFrac;
 	} else {
+#ifdef _DT
+		if ( isRunning ) {
+			zoomFov.Init( gameLocal.time, 200.0f, zoomFov.GetCurrentValue( gameLocal.time ), DefaultFov() );
+			isRunning = false;
+		}
+#endif
 		rate = pm_staminarate.GetFloat();
 		
 		// increase 25% faster when not moving
@@ -10002,7 +10032,11 @@ void idPlayer::Think( void ) {
 	}
 
 	// zooming
+#ifdef _DT
+	if ( ( ( usercmd.buttons ^ oldCmd.buttons ) & BUTTON_ZOOM ) && !isRunning ) {
+#else
 	if ( ( usercmd.buttons ^ oldCmd.buttons ) & BUTTON_ZOOM ) {
+#endif
 		if ( ( usercmd.buttons & BUTTON_ZOOM ) && weapon.GetEntity() ) {
 			zoomFov.Init( gameLocal.time, 200.0f, CalcFov( false ), weapon.GetEntity()->GetZoomFov() );
 		} else {
@@ -10841,7 +10875,17 @@ float idPlayer::CalcFov( bool honorZoom ) {
 	}
 
 	if ( zoomFov.IsDone( gameLocal.time ) ) {
+#ifdef _DT
+		if ( !isRunning && ( honorZoom && usercmd.buttons & BUTTON_ZOOM ) && weapon.GetEntity() ) {
+			fov = weapon.GetEntity()->GetZoomFov();
+		} else if ( isRunning ) {
+			fov = DefaultFov() + 10.0f;
+		} else {
+			fov = DefaultFov();
+		}
+#else
 		fov = ( honorZoom && usercmd.buttons & BUTTON_ZOOM ) && weapon.GetEntity() ? weapon.GetEntity()->GetZoomFov() : DefaultFov();
+#endif
 	} else {
 		fov = zoomFov.GetCurrentValue( gameLocal.time );
 	}
