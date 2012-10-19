@@ -3034,8 +3034,12 @@ void idWeapon::Event_Melee( void ) {
 				gameRenderWorld->DebugBounds( colorRed, ent->GetPhysics()->GetBounds(), ent->GetPhysics()->GetOrigin(), 100 );
 			}
 		}
-
+#ifndef _DT
 		bool hit = false;
+#else
+
+		int hit = 0;
+#endif
 		const char *hitSound = meleeDef->dict.GetString( "snd_miss" );
 
 		if ( ent ) {
@@ -3065,9 +3069,17 @@ void idWeapon::Event_Melee( void ) {
 				meleeDef->dict.GetVector( "kickDir", "0 0 0", kickDir );
 				globalKickDir = muzzleAxis * kickDir;
 				ent->Damage( owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier( MELEE_DAMAGE ), tr.c.id );
+#ifndef _DT
 				hit = true;
 			}
+#else
+				hit = 2; // 2 = Something that can take damage.
 
+			} else {
+
+				hit = 1;
+			}
+#endif
 			if ( weaponDef->dict.GetBool( "impact_damage_effect" ) ) {
 
 				if ( ent->spawnArgs.GetBool( "bleed" ) ) {
