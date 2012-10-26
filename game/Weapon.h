@@ -328,7 +328,12 @@ private:
 	void					Event_LaunchProjectiles( int num_projectiles, float spread, float fuseOffset, float launchPower, float dmgPower );
 	void					Event_CreateProjectile( void );
 	void					Event_EjectBrass( void );
+#ifndef _DT
 	void					Event_Melee( void );
+#else
+	void					Event_Melee( float dmgScale );
+	void					Event_FacingEnemy( float maxDistance );
+#endif
 	void					Event_GetWorldModel( void );
 	void					Event_AllowDrop( int allow );
 	void					Event_AutoReload( void );

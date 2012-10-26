@@ -35,7 +35,12 @@ const idEventDef EV_Weapon_Flashlight( "flashlight", "d" );
 const idEventDef EV_Weapon_LaunchProjectiles( "launchProjectiles", "dffff" );
 const idEventDef EV_Weapon_CreateProjectile( "createProjectile", NULL, 'e' );
 const idEventDef EV_Weapon_EjectBrass( "ejectBrass" );
+#ifdef _DT
+const idEventDef EV_Weapon_Melee( "melee", "f", 'd' );
+const idEventDef EV_Weapon_FacingEnemy( "facingEnemy", "f", 'd' );
+#else
 const idEventDef EV_Weapon_Melee( "melee", NULL, 'd' );
+#endif
 const idEventDef EV_Weapon_GetWorldModel( "getWorldModel", NULL, 'e' );
 const idEventDef EV_Weapon_AllowDrop( "allowDrop", "d" );
 const idEventDef EV_Weapon_AutoReload( "autoReload", NULL, 'f' );
@@ -77,6 +82,9 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Weapon_CreateProjectile,			idWeapon::Event_CreateProjectile )
 	EVENT( EV_Weapon_EjectBrass,				idWeapon::Event_EjectBrass )
 	EVENT( EV_Weapon_Melee,						idWeapon::Event_Melee )
+#ifdef _DT
+	EVENT( EV_Weapon_FacingEnemy,				idWeapon::Event_FacingEnemy )
+#endif
 	EVENT( EV_Weapon_GetWorldModel,				idWeapon::Event_GetWorldModel )
 	EVENT( EV_Weapon_AllowDrop,					idWeapon::Event_AllowDrop )
 	EVENT( EV_Weapon_AutoReload,				idWeapon::Event_AutoReload )
@@ -3010,7 +3018,11 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 idWeapon::Event_Melee
 =====================
 */
+#ifdef _DT
+void idWeapon::Event_Melee( float dmgScale ) {
+#else
 void idWeapon::Event_Melee( void ) {
+#endif
 	idEntity	*ent;
 	trace_t		tr;
 
@@ -3065,19 +3077,27 @@ void idWeapon::Event_Melee( void ) {
 			}
 
 			if ( ent->fl.takedamage ) {
+#ifdef _DT
+				float damageScale;
+#endif
 				idVec3 kickDir, globalKickDir;
 				meleeDef->dict.GetVector( "kickDir", "0 0 0", kickDir );
 				globalKickDir = muzzleAxis * kickDir;
-				ent->Damage( owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier( MELEE_DAMAGE ), tr.c.id );
-#ifndef _DT
-				hit = true;
-			}
-#else
-				hit = 2; // 2 = Something that can take damage.
+				
+#ifdef _DT
+				damageScale = owner->PowerUpModifier( MELEE_DAMAGE ) * dmgScale;
+				ent->Damage( owner, owner, globalKickDir, meleeDefName, damageScale, tr.c.id );
+				
+				hit = 2; // 2 = Something that can be damaged.
 
 			} else {
 
 				hit = 1;
+			}
+				
+#else
+				ent->Damage( owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier( MELEE_DAMAGE ), tr.c.id );
+				hit = true;
 			}
 #endif
 			if ( weaponDef->dict.GetBool( "impact_damage_effect" ) ) {
@@ -3135,6 +3155,50 @@ void idWeapon::Event_Melee( void ) {
 	idThread::ReturnInt( 0 );
 	owner->WeaponFireFeedback( &weaponDef->dict );
 }
+
+#ifdef _DT
+/*
+=====================
+idWeapon::Event_FacingEnemy
+=====================
+*/
+void idWeapon::Event_FacingEnemy( float maxDistance ) {
+	idEntity	*ent;
+	trace_t		tr;
+
+	if ( !gameLocal.isClient ) {
+		idVec3 start = playerViewOrigin;
+		idVec3 end = start + playerViewAxis[0] * maxDistance;
+		gameLocal.clip.TracePoint( tr, start, end, MASK_SHOT_RENDERMODEL, owner );
+		if ( tr.fraction < 1.0f ) {
+			ent = gameLocal.GetTraceEntity( tr );
+		} else {
+			ent = NULL;
+		}
+
+		if ( g_debugWeapon.GetBool() ) {
+			gameRenderWorld->DebugLine( colorYellow, start, end, 100 );
+			if ( ent ) {
+				gameRenderWorld->DebugBounds( colorRed, ent->GetPhysics()->GetBounds(), ent->GetPhysics()->GetOrigin(), 100 );
+			}
+		}
+
+		bool hit = false;
+		
+		if ( ent ) {
+
+			if ( ent->fl.takedamage ) {
+				hit = true;
+			}
+		}
+
+		idThread::ReturnInt( hit );
+		return;
+	}
+
+	idThread::ReturnInt( 0 );
+}
+#endif
 
 /*
 =====================
