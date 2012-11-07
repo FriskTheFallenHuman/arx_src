@@ -2477,9 +2477,14 @@ void idActor::PlayFootStepSound( void ) {
 		}
 	}
 
+	if ( *sound == '\0' ) {
+		sound = spawnArgs.GetString( "snd_footstep" ); // Default footstep sound when not set on material itself
+	}
+
 	if ( *sound != '\0' ) {
 		StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
 	}
+
 }
 
 /*
