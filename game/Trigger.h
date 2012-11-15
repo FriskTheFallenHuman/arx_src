@@ -38,9 +38,6 @@ protected:
 	void				Event_Enable( void );
 	void				Event_Disable( void );
 
-	// Solarsplace - Arx End Of Sun
-	bool				triggerEnabled;
-
 	const function_t *	scriptFunction;
 };
 
@@ -90,6 +87,8 @@ private:
 	idClipModel *		clipModel;
 	float				TouchingWeights( void );
 	float				requirementWeight;
+	bool				triggerEnabled;
+	bool				oldTriggerEnabled;
 };
 
 

@@ -96,9 +96,6 @@ idTrigger::Enable
 void idTrigger::Enable( void ) {
 	GetPhysics()->SetContents( CONTENTS_TRIGGER );
 	GetPhysics()->EnableClip();
-
-	// Solarsplace - Arx End Of Sun
-	triggerEnabled = true;
 }
 
 /*
@@ -110,9 +107,6 @@ void idTrigger::Disable( void ) {
 	// we may be relinked if we're bound to another object, so clear the contents as well
 	GetPhysics()->SetContents( 0 );
 	GetPhysics()->DisableClip();
-
-	// Solarsplace - Arx End Of Sun
-	triggerEnabled = false;
 }
 
 /*
@@ -149,9 +143,6 @@ void idTrigger::Save( idSaveGame *savefile ) const {
 	} else {
 		savefile->WriteString( "" );
 	}
-
-	// Solarsplace - Arx End Of Sun
-	savefile->WriteBool( triggerEnabled );
 }
 
 /*
@@ -170,9 +161,6 @@ void idTrigger::Restore( idRestoreGame *savefile ) {
 	} else {
 		scriptFunction = NULL;
 	}
-
-	// Solarsplace - Arx End Of Sun
-	savefile->ReadBool( triggerEnabled );
 }
 
 /*
@@ -259,6 +247,7 @@ idTrigger_Multi::idTrigger_Multi( void ) {
 	// Solarsplace - Arx End Of Sun
 	requirementWeight = 0.0f;
 	triggerEnabled = false;
+	oldTriggerEnabled = false;
 }
 
 /*
@@ -279,6 +268,10 @@ void idTrigger_Multi::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( triggerFirst );
 	savefile->WriteBool( triggerWithSelf );
 	savefile->WriteFloat( requirementWeight );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->WriteBool( triggerEnabled );
+	savefile->WriteBool( oldTriggerEnabled );
 }
 
 /*
@@ -299,6 +292,10 @@ void idTrigger_Multi::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( triggerFirst );
 	savefile->ReadBool( triggerWithSelf );
 	savefile->ReadFloat( requirementWeight );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->ReadBool( triggerEnabled );
+	savefile->ReadBool( oldTriggerEnabled );
 }
 
 /*
@@ -362,11 +359,16 @@ void idTrigger_Multi::Spawn( void ) {
 	spawnArgs.GetFloat( "requirementWeight", "0.0", requirementWeight );
 	if ( requirementWeight > 0.0f ) {
 
+		// Here we basically disable the 'touch' event and process touching via think instead.
+
 		// get the clip model
 		clipModel = new idClipModel( GetPhysics()->GetClipModel() );
 
 		// remove the collision model from the physics object
 		GetPhysics()->SetClipModel( NULL, 1.0f );
+
+		triggerEnabled = true;
+		oldTriggerEnabled = !triggerEnabled;
 
 		// Start thinking
 		BecomeActive( TH_THINK );
@@ -382,25 +384,7 @@ idTrigger_Multi::Think
 void idTrigger_Multi::Think( void ) {
 
 	// Solarsplace - Arx End Of Sun
-
-	// Trigger should only start thinking if has spawn args float "requirementWeight" > 0.0f
-
-	// When TouchingWeights() >= requirementWeight the trigger activates its target
-	// and then is disabled.
-
-	// Here we monitor using TouchingWeights() to see if a weight has been removed
-	// from the trigger by pickup or push for example.
-	
-	// If the requirement weight is no longer adequate we trigger the target again
-	// to raise the pressure plate and then re-enable the trigger.
-
-	if ( TouchingWeights() < requirementWeight ) {
-		if ( !triggerEnabled ) {
-			TriggerAction( NULL );
-			Enable();
-		}
-	}
-
+	Event_Touch( this, NULL );
 }
 
 /*
@@ -504,6 +488,7 @@ idTrigger_Multi::Event_Touch
 ================
 */
 void idTrigger_Multi::Event_Touch( idEntity *other, trace_t *trace ) {
+
 	if( triggerFirst ) {
 		return;
 	}
@@ -538,14 +523,22 @@ void idTrigger_Multi::Event_Touch( idEntity *other, trace_t *trace ) {
 		triggerFirst = true;
 	}
 
-	// Solarsplace - Arx End Of Sun
+	// Start -> Solarsplace - Arx End Of Sun
 	if ( requirementWeight > 0.0f ) {
-		if ( TouchingWeights() < requirementWeight ) {
+
+		if ( TouchingWeights() >= requirementWeight ) {
+			triggerEnabled = true;
+		} else {
+			triggerEnabled = false;
+		}
+
+		if ( triggerEnabled == oldTriggerEnabled ) {
 			return;
 		} else {
-			Disable();
+			oldTriggerEnabled = triggerEnabled;
 		}
 	}
+	// End -> Solarsplace - Arx End Of Sun
 
 	nextTriggerTime = gameLocal.time + 1;
 	if ( delay > 0 ) {
