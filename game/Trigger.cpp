@@ -96,6 +96,9 @@ idTrigger::Enable
 void idTrigger::Enable( void ) {
 	GetPhysics()->SetContents( CONTENTS_TRIGGER );
 	GetPhysics()->EnableClip();
+
+	// Solarsplace - Arx End Of Sun
+	triggerEnabled = true;
 }
 
 /*
@@ -107,6 +110,9 @@ void idTrigger::Disable( void ) {
 	// we may be relinked if we're bound to another object, so clear the contents as well
 	GetPhysics()->SetContents( 0 );
 	GetPhysics()->DisableClip();
+
+	// Solarsplace - Arx End Of Sun
+	triggerEnabled = false;
 }
 
 /*
@@ -143,6 +149,9 @@ void idTrigger::Save( idSaveGame *savefile ) const {
 	} else {
 		savefile->WriteString( "" );
 	}
+
+	// Solarsplace - Arx End Of Sun
+	savefile->WriteBool( triggerEnabled );
 }
 
 /*
@@ -161,6 +170,9 @@ void idTrigger::Restore( idRestoreGame *savefile ) {
 	} else {
 		scriptFunction = NULL;
 	}
+
+	// Solarsplace - Arx End Of Sun
+	savefile->ReadBool( triggerEnabled );
 }
 
 /*
@@ -243,6 +255,10 @@ idTrigger_Multi::idTrigger_Multi( void ) {
 	touchOther = false;
 	triggerFirst = false;
 	triggerWithSelf = false;
+
+	// Solarsplace - Arx End Of Sun
+	requirementWeight = 0.0f;
+	triggerEnabled = false;
 }
 
 /*
@@ -262,6 +278,7 @@ void idTrigger_Multi::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( touchOther );
 	savefile->WriteBool( triggerFirst );
 	savefile->WriteBool( triggerWithSelf );
+	savefile->WriteFloat( requirementWeight );
 }
 
 /*
@@ -281,6 +298,7 @@ void idTrigger_Multi::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( touchOther );
 	savefile->ReadBool( triggerFirst );
 	savefile->ReadBool( triggerWithSelf );
+	savefile->ReadFloat( requirementWeight );
 }
 
 /*
@@ -337,6 +355,52 @@ void idTrigger_Multi::Spawn( void ) {
 	} else {
 		GetPhysics()->SetContents( CONTENTS_TRIGGER );
 	}
+
+	// Start -> Solarsplace - Arx End Of Sun
+	triggerEnabled = true;
+
+	spawnArgs.GetFloat( "requirementWeight", "0.0", requirementWeight );
+	if ( requirementWeight > 0.0f ) {
+
+		// get the clip model
+		clipModel = new idClipModel( GetPhysics()->GetClipModel() );
+
+		// remove the collision model from the physics object
+		GetPhysics()->SetClipModel( NULL, 1.0f );
+
+		// Start thinking
+		BecomeActive( TH_THINK );
+	}
+	// End -> Solarsplace - Arx End Of Sun
+}
+
+/*
+================
+idTrigger_Multi::Think
+================
+*/
+void idTrigger_Multi::Think( void ) {
+
+	// Solarsplace - Arx End Of Sun
+
+	// Trigger should only start thinking if has spawn args float "requirementWeight" > 0.0f
+
+	// When TouchingWeights() >= requirementWeight the trigger activates its target
+	// and then is disabled.
+
+	// Here we monitor using TouchingWeights() to see if a weight has been removed
+	// from the trigger by pickup or push for example.
+	
+	// If the requirement weight is no longer adequate we trigger the target again
+	// to raise the pressure plate and then re-enable the trigger.
+
+	if ( TouchingWeights() < requirementWeight ) {
+		if ( !triggerEnabled ) {
+			TriggerAction( NULL );
+			Enable();
+		}
+	}
+
 }
 
 /*
@@ -474,6 +538,15 @@ void idTrigger_Multi::Event_Touch( idEntity *other, trace_t *trace ) {
 		triggerFirst = true;
 	}
 
+	// Solarsplace - Arx End Of Sun
+	if ( requirementWeight > 0.0f ) {
+		if ( TouchingWeights() < requirementWeight ) {
+			return;
+		} else {
+			Disable();
+		}
+	}
+
 	nextTriggerTime = gameLocal.time + 1;
 	if ( delay > 0 ) {
 		// don't allow it to trigger again until our delay has passed
@@ -482,6 +555,49 @@ void idTrigger_Multi::Event_Touch( idEntity *other, trace_t *trace ) {
 	} else {
 		TriggerAction( other );
 	}
+}
+
+/*
+================
+idTrigger_Multi::TouchingWeights
+================
+*/
+float idTrigger_Multi::TouchingWeights( void ) {
+
+	int numClipModels, i;
+	idBounds bounds;
+	idClipModel *cm, *clipModelList[ MAX_GENTITIES ];
+	float totalWeightInTrigger = 0.0f;
+
+	if ( clipModel == NULL ) {
+		return 0.0f;
+	}
+
+	bounds.FromTransformedBounds( clipModel->GetBounds(), clipModel->GetOrigin(), clipModel->GetAxis() );
+	numClipModels = gameLocal.clip.ClipModelsTouchingBounds( bounds, -1, clipModelList, MAX_GENTITIES );
+
+	for ( i = 0; i < numClipModels; i++ ) {
+		cm = clipModelList[ i ];
+
+		if ( !cm->IsTraceModel() ) {
+			continue;
+		}
+
+		idEntity *entity = cm->GetEntity();
+
+		if ( !entity ) {
+			continue;
+		}
+		
+		if ( !gameLocal.clip.ContentsModel( cm->GetOrigin(), cm, cm->GetAxis(), -1,
+									clipModel->Handle(), clipModel->GetOrigin(), clipModel->GetAxis() ) ) {
+			continue;
+		}
+
+		totalWeightInTrigger += entity->spawnArgs.GetFloat( "inv_arx_weight", "0.0" );
+	}
+
+	return totalWeightInTrigger;
 }
 
 /*

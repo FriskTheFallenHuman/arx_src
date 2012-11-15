@@ -38,6 +38,9 @@ protected:
 	void				Event_Enable( void );
 	void				Event_Disable( void );
 
+	// Solarsplace - Arx End Of Sun
+	bool				triggerEnabled;
+
 	const function_t *	scriptFunction;
 };
 
@@ -57,6 +60,9 @@ public:
 						idTrigger_Multi( void );
 
 	void				Spawn( void );
+
+	// Solarsplace - Arx End Of Sun
+	void				Think( void );
 
 	void				Save( idSaveGame *savefile ) const;
 	void				Restore( idRestoreGame *savefile );
@@ -79,6 +85,11 @@ private:
 	void				Event_TriggerAction( idEntity *activator );
 	void				Event_Trigger( idEntity *activator );
 	void				Event_Touch( idEntity *other, trace_t *trace );
+
+	// Solarsplace - Arx End Of Sun
+	idClipModel *		clipModel;
+	float				TouchingWeights( void );
+	float				requirementWeight;
 };
 
 
