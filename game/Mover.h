@@ -232,6 +232,9 @@ private:
 	int						returnFloor;
 	int						lastTouchTime;
 
+	// Solarsplace - Arx - End Of Sun
+	bool					noTouch;
+
 	class idDoor *			GetDoor( const char *name );
 	void					Think( void );
 	void					OpenInnerDoor( void );

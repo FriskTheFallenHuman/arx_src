@@ -1620,6 +1620,7 @@ idElevator::idElevator( void ) {
 	lastTouchTime = 0;
 	returnFloor = 0;
 	returnTime = 0;
+	noTouch = false;
 }
 
 /*
@@ -1646,6 +1647,9 @@ void idElevator::Save( idSaveGame *savefile ) const {
 	savefile->WriteFloat( returnTime );
 	savefile->WriteInt( returnFloor );
 	savefile->WriteInt( lastTouchTime );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->WriteBool( noTouch );
 }
 
 /*
@@ -1676,6 +1680,9 @@ void idElevator::Restore( idRestoreGame *savefile ) {
 	savefile->ReadFloat( returnTime );
 	savefile->ReadInt( returnFloor );
 	savefile->ReadInt( lastTouchTime );
+
+	// Solarsplace - Arx End Of Sun
+	savefile->ReadBool( noTouch );
 }
 
 /*
@@ -1686,6 +1693,9 @@ idElevator::Spawn
 void idElevator::Spawn( void ) {
 	idStr str;
 	int len1;
+
+	// Solarsplace - Arx - End Of Sun
+	spawnArgs.GetBool( "no_touch", "0", noTouch );
 
 	lastFloor = 0;
 	currentFloor = 0;
@@ -1720,6 +1730,9 @@ idElevator::Event_Touch
 */
 void idElevator::Event_Touch( idEntity *other, trace_t *trace ) {
 	
+	// Solarsplace - Arx - End Of Sun
+	if( noTouch ) { return; }
+
 	if ( gameLocal.time < lastTouchTime + 2000 ) {
 		return;
 	}
@@ -1792,9 +1805,20 @@ idElevator::Event_Activate
 ================
 */
 void idElevator::Event_Activate( idEntity *activator ) {
+
 	int triggerFloor = spawnArgs.GetInt( "triggerFloor" );
+
 	if ( spawnArgs.GetBool( "trigger" ) && triggerFloor != currentFloor ) {
 		Event_GotoFloor( triggerFloor );
+	}
+
+	// Arx - End Of Sun
+	if ( spawnArgs.GetBool( "arx_isPressurePlate", "0" ) ) {
+		if ( triggerFloor == 2 ) {
+			spawnArgs.SetInt( "triggerFloor", 1 );
+		} else {
+			spawnArgs.SetInt( "triggerFloor", 2 );
+		}
 	}
 }
 
@@ -2018,6 +2042,16 @@ void idElevator::DoneMoving( void ) {
 		}
 		kv = spawnArgs.MatchPrefix( "statusGui", kv );
 	}
+
+	// Arx - End Of Sun
+	if ( spawnArgs.GetBool( "arx_isPressurePlate", "0" ) ) {
+		if ( currentFloor == 2 ) {
+			spawnArgs.SetInt( "pressurePlatePressed", 1 );
+		} else {
+			spawnArgs.SetInt( "pressurePlatePressed", 0 );
+		}
+	}
+
 	if ( spawnArgs.GetInt( "pauseOnFloor", "-1" ) == currentFloor ) {
 		PostEventSec( &EV_PostArrival, spawnArgs.GetFloat( "pauseTime" ) );
 	} else {

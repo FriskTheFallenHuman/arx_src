@@ -384,7 +384,9 @@ idTrigger_Multi::Think
 void idTrigger_Multi::Think( void ) {
 
 	// Solarsplace - Arx End Of Sun
-	Event_Touch( this, NULL );
+	if ( requirementWeight > 0.0f ) {
+		Event_Touch( this, NULL );
+	}
 }
 
 /*
