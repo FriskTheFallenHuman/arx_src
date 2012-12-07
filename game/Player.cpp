@@ -3548,23 +3548,42 @@ idPlayer::GiveInventoryItem
 ===============
 */
 bool idPlayer::GiveInventoryItem( idDict *item ) {
+
 	if ( gameLocal.isMultiplayer && spectating ) {
 		return false;
 	}
-	inventory.items.Append( new idDict( *item ) );
-	idItemInfo info;
-	const char* itemName = item->GetString( "inv_name" );
-	if ( idStr::Cmpn( itemName, STRTABLE_ID, STRTABLE_ID_LENGTH ) == 0 ) {
-		info.name = common->GetLanguageDict()->GetString( itemName );
+
+	// Solarsplace - 7th Dec 2012
+	// Note! - This method needs enhancing. For instance adding the drop item version to inventory rather than pickup version....
+
+	// Solarsplace - 7th Dec 2012 - Hack to handle runes differently.
+	if ( item->GetBool( "player_persistent_rune", "0" ) ) {
+
+		gameLocal.persistentLevelInfo.SetBool( item->GetString( "persistent_rune_name" ), true );
+
+		// Update persistent information for the journal spells that the player can cast. - 22nd Jul 2010 for Nuro
+		MagicUpdateJournalSpells();
+
 	} else {
-		info.name = itemName;
+
+		// Start -> Original code path
+		inventory.items.Append( new idDict( *item ) );
+		idItemInfo info;
+		const char* itemName = item->GetString( "inv_name" );
+		if ( idStr::Cmpn( itemName, STRTABLE_ID, STRTABLE_ID_LENGTH ) == 0 ) {
+			info.name = common->GetLanguageDict()->GetString( itemName );
+		} else {
+			info.name = itemName;
+		}
+		info.icon = item->GetString( "inv_icon" );
+		inventory.pickupItemNames.Append( info );
+		if ( hud ) {
+			hud->SetStateString( "itemicon", info.icon );
+			hud->HandleNamedEvent( "invPickup" );
+		}
+		// End <- Original code path
 	}
-	info.icon = item->GetString( "inv_icon" );
-	inventory.pickupItemNames.Append( info );
-	if ( hud ) {
-		hud->SetStateString( "itemicon", info.icon );
-		hud->HandleNamedEvent( "invPickup" );
-	}
+
 	return true;
 }
 
