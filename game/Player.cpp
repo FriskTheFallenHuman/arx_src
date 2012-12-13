@@ -5871,6 +5871,7 @@ void idPlayer::ProcessMagic()
 	const char *currentRuneSound;
 	const char *projectileName;
 	const char *customMagicName;
+	const char *customMagicFX;
 	const char *customMagicSpell;
 	const char *customMagicScriptActionWorld;
 	idStr scriptAction;
@@ -5954,12 +5955,17 @@ void idPlayer::ProcessMagic()
 				Solarsplace - 1st Aug 2010 - Now perform any custom spell actions. */
 	
 				customMagicSpell = magicSpellCombo->dict.GetString( "magic_spell" );
+				customMagicFX = magicSpellCombo->dict.GetString( "fx_magic_cast" );
 				customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
+
+				if ( !strcmp( customMagicFX, "" ) == 0 )
+				{
+					idEntityFx::StartFx( customMagicFX, NULL, NULL, this, true );
+				}
 
 				// Cure Poison
 				if ( strcmp( customMagicSpell, "remove_poison" ) == 0 )
 				{
-					playerView.Flash( colorGreen, 500 );
 					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 					playerPoisoned = false;
 				}
@@ -5967,7 +5973,6 @@ void idPlayer::ProcessMagic()
 				// Telekinesis
 				if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 )
 				{
-					playerView.Flash( colorPurple, 500 );
 					playerTelekinesisEndTime = gameLocal.time + ARX_TELEKENESIS_TIME;
 				}
 
@@ -5975,7 +5980,6 @@ void idPlayer::ProcessMagic()
 				if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 )
 				{
 					magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
-					playerView.Flash( colorRed, 500 );
 					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 					RadiusSpell( customMagicScriptActionWorld, alertRadius );
 
