@@ -31,6 +31,7 @@ idArxShop::~idArxShop() {
 }
 
 const int ARX_MAX_SHOP_SLOTS = 48; // 0 to 47
+const int ARX_MAX_SHOP_ITEMS_GROUP = 10;
 
 const idStr ARX_REC_SEP = "<@@@ARX@@@>";
 const idStr ARX_PROP_SHOP = "ARX_ENT_SHOP";
@@ -65,7 +66,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
     idStr inv_shop_item_value;
 	const idDeclEntityDef *shopItemDef = NULL;
 
-	int itemCount = 0;
+	int inventorySlotPosition = 0;
 
 	idStr shopItemClass;
 	
@@ -81,7 +82,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 	{
 		gameLocal.Printf( "LoadActiveShop new shop = %s\n", currentShopIDString.c_str() );
 
-		itemCount = 0;
+		inventorySlotPosition = 0;
 
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
 		{
@@ -96,12 +97,12 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 				gameLocal.persistentLevelInfo.Set( currentShopSlotItem, shopItemClass );
 
-				itemCount ++;
+				inventorySlotPosition ++; // 0 to ARX_MAX_SHOP_SLOTS
 			}
 		}
 
 		// Store the number of items in this shop - also used as a flag to see if we need to store this shop.
-		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, itemCount );
+		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, inventorySlotPosition );
 	}
 
 	/******************************************************************************/
@@ -109,7 +110,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 	// Load the shop into the dictionaries
 	shopSlotItem_Dict->Clear();
-	itemCount = 0;
+	inventorySlotPosition = 0;
 
 	for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
 	{
@@ -133,18 +134,18 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			shopItemDef->dict.GetString( "inv_shop_item_value", "404", inv_shop_item_value ); // Hopefully people with 'get' that 404 gold coins = inv_shop_item_value is not set for this item! 
 
 			// Grouping of identical items or not.
-			int existingShopItemIndex = FindShopItem( result );
+			int existingShopItemIndex = FindShopItem( result, true );
 
 			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
 			{
 				// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
-				shopSlotItem_Dict->Set( va( "shop_item_class_%i", itemCount ), result );
-				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", itemCount ), shop_item_icon.c_str() );
-				shopSlotItem_Dict->Set( va( "shop_item_name_%i", itemCount ), shop_item_name.c_str() );
-				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", itemCount ), inv_shop_item_value.c_str() );
-				shopSlotItem_Dict->Set( va( "shop_item_count_%i", itemCount ), "1" );
+				shopSlotItem_Dict->Set( va( "shop_item_class_%i", inventorySlotPosition ), result );
+				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", inventorySlotPosition ), shop_item_icon.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_name_%i", inventorySlotPosition ), shop_item_name.c_str() );
+				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", inventorySlotPosition ), inv_shop_item_value.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_count_%i", inventorySlotPosition ), "1" );
 
-				itemCount ++;
+				inventorySlotPosition ++; // 0 to ARX_MAX_SHOP_SLOTS
 			}
 			else
 			{
@@ -161,13 +162,19 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 	}
 
-	totalUsedShopSlots = itemCount;
+	totalUsedShopSlots = inventorySlotPosition;
 
-	//itemCount = gameLocal.persistentLevelInfo.GetInt( currentShopIDString );
+	//inventorySlotPosition = gameLocal.persistentLevelInfo.GetInt( currentShopIDString );
 
 }
 
-void idArxShop::AddShopItem( const char *className )
+void idArxShop::SaveShopState( idEntity *shopEntity ); {
+
+	int toDo = 0;
+
+}
+
+bool idArxShop::AddShopItem( const char *className )
 {
 
 	int existingShopItemIndex = -1;
@@ -175,6 +182,11 @@ void idArxShop::AddShopItem( const char *className )
     idStr shop_item_name;
     idStr inv_shop_item_value;
 	const idDeclEntityDef *shopItemDef = NULL;
+
+	// Check whether the shop is full up
+	if ( FindShopItemsCount() >= ARX_MAX_SHOP_SLOTS ) {
+		return false;
+	}
 
 	// Get the .def for the item the shop is buying
 	shopItemDef = gameLocal.FindEntityDef( className, false );
@@ -187,7 +199,7 @@ void idArxShop::AddShopItem( const char *className )
 		shopItemDef->dict.GetString( "inv_shop_item_value", "404", inv_shop_item_value ); // Hopefully people with 'get' that 404 gold coins = inv_shop_item_value is not set for this item! 
 
 		// Do we have one of these items already?
-		existingShopItemIndex = FindShopItem( className );
+		existingShopItemIndex = FindShopItem( className, true );
 
 		//REMOVEME
 		gameLocal.Printf( "AddShopItem %i = %s\n", totalUsedShopSlots, className );	
@@ -209,7 +221,14 @@ void idArxShop::AddShopItem( const char *className )
 			shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
 		}
 
+		return true;
+
+	} else { // if ( shopItemDef )
+
+		// Should really never enter here
+		return false;
 	}
+
 }
 
 void idArxShop::RemoveShopItem( int slotId )
@@ -278,23 +297,35 @@ void idArxShop::RemoveShopItem( int slotId )
 	}
 }
 
-int idArxShop::FindShopItem( const char *name ) {
+int idArxShop::FindShopItem( const char *name, bool useMaxGroup ) {
 
 	const char *shop_item;
+	int itemGroupCount;
 
 	for ( int i = 0; i < ARX_MAX_SHOP_SLOTS; i++ ) {
 
 		shop_item = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
-		 
+		
+		itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", i ), "0" );
+
 		if ( shop_item && *shop_item ) {
 
 			//gameLocal.Printf( "(%i): name = %s and shop_item = %s\n", i, name, shop_item );
 
 			if ( idStr::Icmp( name, shop_item ) == 0 ) {
 
-				//gameLocal.Printf( "FindShopItem returns: %i\n", i );
+				if ( useMaxGroup ) {
+					if ( itemGroupCount < ARX_MAX_SHOP_ITEMS_GROUP ) {
+						//gameLocal.Printf( "FindShopItem returns: %i\n", i );
+						return i;
+					} else {
+						continue;
+					}
+				} else {
+					//gameLocal.Printf( "FindShopItem returns: %i\n", i );
+					return i;
+				}
 
-				return i;
 			}
 		}
 	}
@@ -302,4 +333,19 @@ int idArxShop::FindShopItem( const char *name ) {
 	//gameLocal.Printf( "FindShopItem returns: -1\n" );
 
 	return -1;
+}
+
+int idArxShop::FindShopItemsCount( void ) {
+
+	int totalSlotsUsed = 0;
+	const char *shop_item;
+
+	for ( int i = 0; i < ARX_MAX_SHOP_SLOTS; i++ ) {
+		shop_item = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
+		if ( shop_item && *shop_item ) {
+			totalSlotsUsed ++;
+		}
+	}
+
+	return totalSlotsUsed;
 }
