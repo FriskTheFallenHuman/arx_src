@@ -4446,6 +4446,24 @@ bool idAI::AttackMelee( const char *meleeDefName ) {
 
 	enemyEnt->Damage( this, this, globalKickDir, meleeDefName, 1.0f, INVALID_JOINT );
 
+	// Solarsplace - 7th Feb 2012 - Make AI on AI attacks spit blood and splat blood decals too.
+	if ( enemyEnt->spawnArgs.GetBool( "bleed" ) ) {
+
+		//REMOVEME
+		gameLocal.Printf("idAI::AttackMelee - AI (%s) is attacking AI (%s).\n", this->name.c_str(), enemyEnt->name.c_str() );
+
+		trace_t trace;
+		idVec3 start = this->GetPhysics()->GetAbsBounds().GetCenter();
+		idVec3 end = enemyEnt->GetPhysics()->GetAbsBounds().GetCenter();
+		idVec3 impulse = -20000 * (end - start);
+
+		gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
+
+		if ( trace.fraction < 1.0f ) {
+			enemyEnt->AddDamageEffect( trace, impulse, meleeDefName );
+		}
+	}
+
 	lastAttackTime = gameLocal.time;
 
 	return true;

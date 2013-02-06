@@ -5872,6 +5872,7 @@ void idPlayer::ProcessMagic()
 	const char *projectileName;
 	const char *customMagicName;
 	const char *customMagicFX;
+	const char *customMagicSound;
 	const char *customMagicSpell;
 	const char *customMagicScriptActionWorld;
 	idStr scriptAction;
@@ -5956,11 +5957,19 @@ void idPlayer::ProcessMagic()
 	
 				customMagicSpell = magicSpellCombo->dict.GetString( "magic_spell" );
 				customMagicFX = magicSpellCombo->dict.GetString( "fx_magic_cast" );
+				customMagicSound = magicSpellCombo->dict.GetString( "snd_magic_cast" );
 				customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
 
+				// Display visual spell effects around player etc.
 				if ( !strcmp( customMagicFX, "" ) == 0 )
 				{
 					idEntityFx::StartFx( customMagicFX, NULL, NULL, this, true );
+				}
+
+				// Play sound spell effects around player etc.
+				if ( !strcmp( customMagicSound, "" ) == 0 )
+				{
+					StartSoundShader( declManager->FindSound( customMagicSound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
 				}
 
 				// Cure Poison
@@ -6896,7 +6905,7 @@ void idPlayer::ToggleMagicMode(void)
 		magicLastCompassDir = -1;
 		magicRuneSequence = "";
 	
-		playerView.Flash( colorBlue, 500 );
+		//playerView.Flash( colorBlue, 500 );
 
 		if ( currentWeapon != ARX_MAGIC_WEAPON ) // If the current weapon is not the magic weapon, select it. Must check the current weapon to prevent 'toggling'
 		{ SelectWeapon( ARX_MAGIC_WEAPON, true ); }
@@ -6920,8 +6929,8 @@ void idPlayer::ToggleMagicMode(void)
 			magicLastXPos = usercmd.mx;
 
 			start = GetEyePosition();
-			end = start + viewAngles.ToForward() * 30.0f;
-			trailEnd = start + viewAngles.ToForward() * 31.0f;
+			end = start + viewAngles.ToForward() * 40.0f;
+			trailEnd = start + viewAngles.ToForward() * 40.1f;
 
 			magicWand->SetOrigin( end );
 			magicWandTrail->SetOrigin( trailEnd );
@@ -6933,7 +6942,7 @@ void idPlayer::ToggleMagicMode(void)
 	}
 	else
 	{
-		playerView.Flash( colorCyan, 500 );
+		//playerView.Flash( colorCyan, 500 );
 
 		StopSound( SND_CHANNEL_BODY2, false );
 		StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
@@ -10210,7 +10219,8 @@ void idPlayer::Think( void ) {
 	// Note: We cannot use the following original D3 hack because it always enters each condition twice!
 	// if ( ( usercmd.buttons ^ oldCmd.buttons ) & BUTTON_5 ) {
 
-	if ( journalSystemOpen || inventorySystemOpen )
+	// Solarsplace - 21st Dec 2012 - Updated list of GUIS
+	if ( objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen || shoppingSystemOpen )
 	{
 		// Do nothing - other GUI's are open.
 	}

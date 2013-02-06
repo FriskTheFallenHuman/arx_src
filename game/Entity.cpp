@@ -5277,6 +5277,7 @@ idAnimatedEntity::AddDamageEffect
 ==============
 */
 void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName ) {
+
 	jointHandle_t jointNum;
 	idVec3 origin, dir, localDir, localOrigin, localNormal;
 	idMat3 axis;
@@ -5294,6 +5295,9 @@ void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &
 	if ( jointNum == INVALID_JOINT ) {
 		return;
 	}
+
+	//REMOVEME
+	gameLocal.Printf( "idAE::AddDamageEffect - AI (%s) is using damageDefName (%s)\n", this->name.c_str(), damageDefName );
 
 	dir = velocity;
 	dir.Normalize();
@@ -5357,6 +5361,9 @@ void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec
 	}
 
 	const char *materialType = gameLocal.sufaceTypeNames[ type ];
+
+	//REMOVEME
+	gameLocal.Printf( "idAE::AddLocalDamageEffect - (%s) has been hit on materialType (%s)\n", this->name.c_str(), materialType );
 
 	// start impact sound based on material type
 	key = va( "snd_%s", materialType );

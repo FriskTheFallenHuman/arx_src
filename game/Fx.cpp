@@ -304,6 +304,11 @@ void idEntityFx::ApplyFade( const idFXSingleAction& fxaction, idFXLocalAction& l
 
 			gameRenderWorld->UpdateLightDef( laction.lightDefHandle, &laction.renderLight );
 		}
+	} else if ( fxaction.trackOrigin ) {
+		// Solarsplace - Arx End Of Sun - 15th Dec 2012
+		// Fix bug where gameRenderWorld->UpdateEntityDef would not be called when fxaction.trackOrigin is true
+		// without fxaction.fadeInTime || fxaction.fadeOutTime being set - which does not work with some particles
+		gameRenderWorld->UpdateEntityDef( laction.modelDefHandle, &laction.renderEntity );
 	}
 }
 
