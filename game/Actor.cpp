@@ -502,6 +502,16 @@ void idActor::Spawn( void ) {
 
 	walkIK.Init( this, IK_ANIM, modelOffset );
 
+	// Arx - End Of Sun - Save all sounds into a dictionary for efficiency.
+	// Related to adding multiple sounds like pain1, pain2, idle_chatter1, ..., idle_chatter7 etc
+	const idKeyValue *sound_kv = spawnArgs.MatchPrefix( "snd_", NULL );
+	while( sound_kv ) {
+
+		allSounds.Set( sound_kv->GetKey().c_str() , sound_kv->GetValue().c_str() );
+
+		sound_kv = spawnArgs.MatchPrefix( "snd_", sound_kv );
+	}
+
 	// the animation used to be set to the IK_ANIM at this point, but that was fixed, resulting in
 	// attachments not binding correctly, so we're stuck setting the IK_ANIM before attaching things.
 	animator.ClearAllAnims( gameLocal.time, 0 );
