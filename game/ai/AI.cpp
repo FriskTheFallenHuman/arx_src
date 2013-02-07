@@ -4446,23 +4446,26 @@ bool idAI::AttackMelee( const char *meleeDefName ) {
 
 	enemyEnt->Damage( this, this, globalKickDir, meleeDefName, 1.0f, INVALID_JOINT );
 
-	// Solarsplace - 7th Feb 2012 - Make AI on AI attacks spit blood and splat blood decals too.
+	// <--- Solarsplace - Arx End Of Sun - 7th Feb 2012 - Make AI on AI attacks spit blood and splat blood decals too.
 	if ( enemyEnt->spawnArgs.GetBool( "bleed" ) ) {
 
-		//REMOVEME
-		gameLocal.Printf("idAI::AttackMelee - AI (%s) is attacking AI (%s).\n", this->name.c_str(), enemyEnt->name.c_str() );
+		//gameLocal.Printf("idAI::AttackMelee - AI (%s) is attacking AI (%s).\n", this->name.c_str(), enemyEnt->name.c_str() );
 
 		trace_t trace;
-		idVec3 start = this->GetPhysics()->GetAbsBounds().GetCenter();
-		idVec3 end = enemyEnt->GetPhysics()->GetAbsBounds().GetCenter();
-		idVec3 impulse = -20000 * (end - start);
+		idVec3 start;
+		idVec3 end;
 
+		start = this->GetPhysics()->GetAbsBounds().GetCenter();
+		end = enemyEnt->GetPhysics()->GetAbsBounds().GetCenter();
+		
 		gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
+		idVec3 impulse = -15000 * trace.c.normal; // 15000 seems common in the id def files...
 
 		if ( trace.fraction < 1.0f ) {
 			enemyEnt->AddDamageEffect( trace, impulse, meleeDefName );
 		}
 	}
+	// ---> Solarsplace
 
 	lastAttackTime = gameLocal.time;
 

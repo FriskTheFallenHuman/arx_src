@@ -5362,8 +5362,7 @@ void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec
 
 	const char *materialType = gameLocal.sufaceTypeNames[ type ];
 
-	//REMOVEME
-	gameLocal.Printf( "idAE::AddLocalDamageEffect - (%s) has been hit on materialType (%s)\n", this->name.c_str(), materialType );
+	//gameLocal.Printf( "idAE::AddLocalDamageEffect - (%s) has been hit on materialType (%s)\n", this->name.c_str(), materialType );
 
 	// start impact sound based on material type
 	key = va( "snd_%s", materialType );

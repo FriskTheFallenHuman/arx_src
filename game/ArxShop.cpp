@@ -168,11 +168,13 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 }
 
+/*
 void idArxShop::SaveShopState( idEntity *shopEntity ); {
 
 	int toDo = 0;
 
 }
+*/
 
 bool idArxShop::AddShopItem( const char *className )
 {
