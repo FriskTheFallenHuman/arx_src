@@ -79,8 +79,9 @@ private:
 
 	// ---> Arx - Solarsplace
 	const idMaterial *	poisonMaterial;			// Player poisoned effect
-	const idMaterial *	justLeftWaterMaterial;	// Player poisoned effect
-	const idMaterial *	blurMaterial;			// Player poisoned effect
+	const idMaterial *	justLeftWaterMaterial;	// Player water drops effect
+	const idMaterial *	blurMaterial;			// Player underwater blur effect
+	const idMaterial *	filmgrainMaterial;		// Player view filmgrain material
 	// <--- Arx
 
 	const idMaterial *	tunnelMaterial;		// health tunnel vision

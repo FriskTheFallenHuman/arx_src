@@ -238,4 +238,11 @@ extern idCVar	g_enablePortalSky;
 extern idCVar	g_levelFog;
 // <--- Arx
 
+// ---> sikk
+extern idCVar	r_useFilmgrain;
+extern idCVar	r_filmgrainBlendMode;
+extern idCVar	r_filmgrainScale;
+extern idCVar	r_filmgrainStrength;
+// <--- sikk
+
 #endif /* !__SYS_CVAR_H__ */

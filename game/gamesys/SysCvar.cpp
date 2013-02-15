@@ -332,3 +332,10 @@ idCVar g_enablePortalSky			( "g_enablePortalSky",			"1",			CVAR_GAME | CVAR_BOOL
 // ---> Arx
 idCVar g_levelFog					( "g_levelFog",					"1",			CVAR_GAME | CVAR_BOOL, "Enables level fog if level has fog" );
 // <--- Arx
+
+// ---> sikk
+idCVar r_useFilmgrain				( "r_useFilmgrain",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable filmgrain postprocessing effect" );
+idCVar r_filmgrainBlendMode			( "r_filmgrainBlendMode",		"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the grain blending mode. Value range: 0 - 3\n0 = gl_one, gl_one\n1 = gl_zero, gl_one_minus_src_color\n2 = gl_dst_color, gl_one\n3 = gl_one_minus_dst_color, gl_one" );
+idCVar r_filmgrainScale				( "r_filmgrainScale",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the grain scale" );
+idCVar r_filmgrainStrength			( "r_filmgrainStrength",		"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the grain strength. Value range: 0.0 - 1.0" );
+// <--- sikk

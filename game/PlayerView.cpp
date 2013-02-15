@@ -32,6 +32,7 @@ idPlayerView::idPlayerView()
 	poisonMaterial = declManager->FindMaterial( "textures/arx/decals/poisoned" );
 	justLeftWaterMaterial = declManager->FindMaterial( "textures/arx/water/screen" );
 	blurMaterial = declManager->FindMaterial( "textures/arx/sfx/blur" );
+	filmgrainMaterial = declManager->FindMaterial( "textures/arx/postProcess/filmgrain" );
 	// <--- Arx
 
 	dvMaterial = declManager->FindMaterial( "_scratch" );
@@ -528,6 +529,12 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, blurMaterial );
 	}
+
+	// ---> sikk
+	float size = 128.0f * r_filmgrainScale.GetFloat();
+	renderSystem->SetColor4( renderSystem->GetScreenWidth() / size, renderSystem->GetScreenHeight() / size, r_filmgrainStrength.GetFloat(), r_filmgrainBlendMode.GetInteger() );
+	renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, filmgrainMaterial );
+	// <--- sikk
 
 	// End - Solarsplace - Arx End Of Sun
 	//******************************************************************************************************
