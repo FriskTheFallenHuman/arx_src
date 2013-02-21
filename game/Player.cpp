@@ -152,6 +152,7 @@ const idStr ARX_PROP_ORIGIN = "ARX_ORIGIN";
 const idStr ARX_PROP_AXIS = "ARX_AXIS";
 const idStr ARX_PROP_HIDDEN = "ARX_HIDDEN";
 const idStr ARX_PROP_INV_NAME = "ARX_INV_NAME";
+const idStr ARX_PROP_INV_HEALTH = "ARX_INV_HEALTH";
 const idStr ARX_PROP_LOCKED = "ARX_LOCKED";
 const idStr ARX_PROP_CLASSNAME = "ARX_CLASSNAME";
 
@@ -1160,8 +1161,10 @@ idPlayer::idPlayer() {
 	landTime				= 0;
 
 	currentWeapon			= -1;
+	currentWeaponHealth		=  0;	// SP - Arx
 	idealWeapon				= -1;
 	previousWeapon			= -1;
+	previousWeaponHealth	=  0;	// SP - Arx
 	weaponSwitchTime		=  0;
 	weaponEnabled			= true;
 	weapon_soulcube			= -1;
@@ -1315,6 +1318,10 @@ void idPlayer::SetupWeaponEntity( void ) {
 		weapon.GetEntity()->SetOwner( this );
 		currentWeapon = -1;
 	}
+
+	// SP - Arx - 21st Feb 2013
+	currentWeaponHealth = 0;
+	previousWeaponHealth = 0;
 
 	for( w = 0; w < MAX_WEAPONS; w++ ) {
 		weap = spawnArgs.GetString( va( "def_weapon%d", w ) );
@@ -2566,6 +2573,9 @@ void idPlayer::SavePersistantInfo( void ) {
 	inventory.GetPersistantData( playerInfo );
 	playerInfo.SetInt( "health", health );
 	playerInfo.SetInt( "current_weapon", currentWeapon );
+
+	// SP - Arx - 21st Feb 2013
+	playerInfo.SetInt( "current_weapon_health", currentWeaponHealth );
 }
 
 /*
@@ -2586,6 +2596,9 @@ void idPlayer::RestorePersistantInfo( void ) {
 	health = spawnArgs.GetInt( "health", "100" );
 	if ( !gameLocal.isClient ) {
 		idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
+
+		// SP - Arx - 21st Feb 2013
+		currentWeaponHealth = spawnArgs.GetInt( "current_weapon_health", "100" );
 	}
 }
 
@@ -7514,7 +7527,8 @@ void idPlayer::DeleteTransitionInfoSpecific( idStr recordType, idStr entityName 
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP );
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP );
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP );
-	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_LOCKED + ARX_REC_SEP );
+	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP );
+	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_LOCKED + ARX_REC_SEP ); // Don't think this is used. Leave it for now.
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP );
 }
 
@@ -7582,6 +7596,7 @@ void idPlayer::SaveTransitionInfo( void )
 	idMat3 entityAxis;
 	bool entityHidden;
 	idStr entityInventoryName;
+	int entityHealth;
 	idStr entityClassName;
 
 	mapName = gameLocal.GetMapName();
@@ -7597,8 +7612,9 @@ void idPlayer::SaveTransitionInfo( void )
 			entityAxis = ent->GetPhysics()->GetAxis();
 			entityHidden = ent->IsHidden();
 			ent->spawnArgs.GetString( "inv_name", "", entityInventoryName );
+			ent->spawnArgs.GetInt( "inv_health", "", entityHealth );
 			ent->spawnArgs.GetString( "classname", "", entityClassName );
-			
+
 			//******************************************************************************************************
 			//******************************************************************************************************
 			//******************************************************************************************************
@@ -7620,8 +7636,11 @@ void idPlayer::SaveTransitionInfo( void )
 					gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
 					gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
 					gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, entityHidden );
+
 					if ( idStr::Icmp( entityInventoryName, "" ) != 0 )
 					{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }
+
+					gameLocal.persistentLevelInfo.SetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP, entityHealth );
 					gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP, entityClassName );
 				}
 
@@ -7633,6 +7652,8 @@ void idPlayer::SaveTransitionInfo( void )
 			//******************************************************************************************************
 			//***** Saving of native level items
 
+			// ATM this just saves new positions and angles of things that have moved around by knocking for example
+
 			if ( ent->originalOrigin != entityOrigin )
 			{
 				//gameLocal.Printf( "Arx: Changed ENT: %s\n", ent->name.c_str() );
@@ -7640,8 +7661,10 @@ void idPlayer::SaveTransitionInfo( void )
 				gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
 				gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
 				gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, entityHidden );
-				if ( idStr::Icmp( entityInventoryName, "" ) != 0 )
-				{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }	
+
+				// SP - 21st Feb 2013 - This is actually probably not needed here at all. We don't restore this property in 'SpawnTransitionEntity' ! - Comment out for now.
+				//if ( idStr::Icmp( entityInventoryName, "" ) != 0 )
+				//{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }	
 			}
 		}
 	}
@@ -7673,6 +7696,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 	idVec3 entityOrigin;
 	idMat3 entityAxis;
 	idStr entityInvName;
+	int entityHealth;
 	idStr entityClassName;
 	idDict args;
 	idEntity *spawnedItem;
@@ -7681,6 +7705,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 	entityOrigin = gameLocal.persistentLevelInfo.GetVector( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP);
 	entityAxis = gameLocal.persistentLevelInfo.GetMatrix( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP );
 	entityInvName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP );
+	entityHealth = gameLocal.persistentLevelInfo.GetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP );
 	entityClassName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP );
 
 	args.Set( "classname", entityClassName );
@@ -7694,6 +7719,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 		spawnedItem->GetPhysics()->SetOrigin( entityOrigin );
 		spawnedItem->GetPhysics()->SetAxis( entityAxis );
 		spawnedItem->spawnArgs.Set ( "inv_name", entityInvName );
+		spawnedItem->spawnArgs.SetInt ( "inv_health", entityHealth );
 	}
 }
 
@@ -7959,34 +7985,27 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 	if ( spawnedItem )
 	{
-
 		// Force, with which to launch object
 		throwVector = (playerItemDropForwardForce * forward) + (playerItemDropUpwardForce * up); // Solarsplace - TBH, throwVector = experimental
-
 		spawnedItem->GetPhysics()->SetOrigin( playerOrigin + (playerItemDropFromHeight * up) + ( forward * 16.0f ) );
-
 		spawnedItem->GetPhysics()->SetAxis( spawnedItem->GetPhysics()->GetAxis() ); // Solarsplace - TBH, not 100% on this at the moment, but seems to be working OK.
-
 		spawnedItem->GetPhysics()->SetLinearVelocity( throwVector );
 
-		// Get the inv_name of the item that is being dropped from the players inventory
-		const char *iname = inventory.items[invItemIndex]->GetString( "inv_name" );
+		// *************************************************************************************
 
-		// Put the original inventory items inv_name in the newly spawned items dictionary.
-		spawnedItem->spawnArgs.Set ( "inv_name", iname );
+		// Get "inv_XXX" key vals from the item in the players inventory that is being dropped
+		// and put them into the spawn args of the dropped item.
+		// This needs to be done for things like keys that have unique names set in inv_name or
+		// for items such as tools or weapons that have a health value
 
+		// *** CRITICAL - Update SaveTransitionInfo() and associated methods to persist these values through level changes ***
+
+		spawnedItem->spawnArgs.Set ( "inv_name", inventory.items[invItemIndex]->GetString( "inv_name" ) );
+
+		// *************************************************************************************
+
+		// Populate dictionary with key vals of dropping item
 		idDict *droppingItem = inventory.items[invItemIndex];
-		//idDict *droppingItem = FindInventoryItem( iname );
-
-		/* Keep it for now may come in handy!
-		idDict				attr;
-		const idKeyValue	*arg;
-		int i;
-		for( i = 0; i < droppingItem->GetNumKeyVals(); i++ ) {
-			arg = droppingItem->GetKeyVal( i );
-			gameLocal.Printf( "droppingItem -- %s -- %s\n", arg->GetKey().c_str(), arg->GetValue().c_str() );
-		}
-		*/
 
 		// Is the current weapon the player is holding is the same type as the one just dropped?
 		if ( strcmp( weapon.GetEntity()->spawnArgs.GetString( "inv_weapon", "" ), droppingItem->GetString( "inv_weapon" ) ) == 0 )
@@ -7994,6 +8013,8 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
 			if ( FindInventoryItemCount( droppingItem->GetString( "inv_name" ) ) <= 1 )
 			{
+				int currentWeaponHealth = weapon.GetEntity()->health;
+
 				SelectWeapon( 0, true );
 			}
 		}
@@ -8582,8 +8603,18 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	// Solarsplace - 2nd Jul 2012 - Updated if condition to be more specific. Not sure how it ever worked before now....
 	if ( !strcmp( item->GetString( "inv_weapon", "" ), "" ) == 0 )
 	{
+
+		// SP - Arx - 21st Feb 2013 - Weapon health related
+		previousWeaponHealth = weapon.GetEntity()->health;
+
 		int weaponId = item->GetInt( "inv_weapon_def" );
 		SelectWeapon( weaponId, false );
+
+		// SP - Arx - 21st Feb 2013 - Weapon health related
+		// Get the unique inv_name of the item
+		const char *uname = inventory.items[invItemIndex]->GetString( "inv_unique_name" );
+		weapon.GetEntity()->spawnArgs.Set( "inv_unique_name", uname );
+		gameLocal.Printf( "Setting equiped weapon unique name to '%s'\n", uname ); //REMOVEME
 
 		// Optional, may wish to play an equip sound.
 		sound = item->GetString( "snd_consume" );
@@ -8895,10 +8926,11 @@ void idPlayer::GetEntityByViewRay( void )
 			{
 				entityClassName = target->spawnArgs.GetString( "classname" );
 			}
-
-			//REMOVEME
-			gameLocal.Printf( "Setting inv_classname to %s\n ", entityClassName.c_str() );
 			args.Set( "inv_classname", entityClassName );
+
+			// Store a unique identifier for this item into its args. This is so we can match for example
+			// the current weapon to the player inventory dictionary for weapon health etc.
+			args.Set( "inv_unique_name", gameLocal.GetMapName() + target->name );
 
 			// trigger our targets
 			ActivateTargets( this );

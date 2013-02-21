@@ -531,9 +531,11 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 	}
 
 	// ---> sikk
-	float size = 128.0f * r_filmgrainScale.GetFloat();
-	renderSystem->SetColor4( renderSystem->GetScreenWidth() / size, renderSystem->GetScreenHeight() / size, r_filmgrainStrength.GetFloat(), r_filmgrainBlendMode.GetInteger() );
-	renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, filmgrainMaterial );
+	if ( r_useFilmgrain.GetBool() ) {
+		float size = 128.0f * r_filmgrainScale.GetFloat();
+		renderSystem->SetColor4( renderSystem->GetScreenWidth() / size, renderSystem->GetScreenHeight() / size, r_filmgrainStrength.GetFloat(), r_filmgrainBlendMode.GetInteger() );
+		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, filmgrainMaterial );
+	}
 	// <--- sikk
 
 	// End - Solarsplace - Arx End Of Sun

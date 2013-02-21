@@ -3056,6 +3056,21 @@ void idWeapon::Event_Melee( void ) {
 
 		if ( ent ) {
 
+			// ************************************************
+			// SP - Arx - 21st Feb 2013 - Weapon health related
+			const char *key;
+			int damageWeapon = 0;
+			const char *materialType = gameLocal.sufaceTypeNames[ tr.c.material->GetSurfaceType() ];
+			key = va( "damage_to_weapon_%s", materialType );
+			weaponDef->dict.GetInt( key, "0", damageWeapon);
+			damageWeapon = gameLocal.random.RandomInt( damageWeapon );
+			health -= damageWeapon;
+
+			//REMOVEME
+			gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+
+			// ************************************************
+
 			float push = meleeDef->dict.GetFloat( "push" );
 			idVec3 impulse = -push * owner->PowerUpModifier( SPEED ) * tr.c.normal;
 

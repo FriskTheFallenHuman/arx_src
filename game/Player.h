@@ -633,8 +633,10 @@ private:
 	int						landTime;
 
 	int						currentWeapon;
+	int						currentWeaponHealth;	// SP - Arx - 21st Feb 2013 - Weapon health related
 	int						idealWeapon;
 	int						previousWeapon;
+	int						previousWeaponHealth;	// SP - Arx - 21st Feb 2013 - Weapon health related
 	int						weaponSwitchTime;
 	bool					weaponEnabled;
 	bool					showWeaponViewModel;
