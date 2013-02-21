@@ -3579,6 +3579,13 @@ bool idPlayer::GiveInventoryItem( idDict *item ) {
 
 	} else {
 
+		// SP - Arx - 21st Feb 2013 - Weapon health related
+		// Now create a "reasonably" unique name for everything added to the inventory. Chances of this being duplicated are (i hope) very very very small. This is a bodge really.
+		idStr fairlyUniqueName;
+		sprintf( fairlyUniqueName, "<ARX_NAME_START>_%i_%i_%i_<ARX_NAME_END>", gameLocal.random.RandomInt(), gameLocal.random.RandomInt(), gameLocal.random.RandomInt() );
+		item->Set( "inv_unique_name", fairlyUniqueName );
+		//gameLocal.Printf( "Adding unique name %s to dictionary\n", fairlyUniqueName.c_str() );
+
 		// Start -> Original code path
 		inventory.items.Append( new idDict( *item ) );
 		idItemInfo info;
@@ -8927,10 +8934,6 @@ void idPlayer::GetEntityByViewRay( void )
 				entityClassName = target->spawnArgs.GetString( "classname" );
 			}
 			args.Set( "inv_classname", entityClassName );
-
-			// Store a unique identifier for this item into its args. This is so we can match for example
-			// the current weapon to the player inventory dictionary for weapon health etc.
-			args.Set( "inv_unique_name", gameLocal.GetMapName() + target->name );
 
 			// trigger our targets
 			ActivateTargets( this );
