@@ -3874,6 +3874,41 @@ int idPlayer::FindInventoryWeaponIndex( int playerWeaponDefNumber ) {
 	}
 	return -1;
 }
+
+/*
+===============
+idPlayer::UpdateInventoryItem - Solarsplace - 22nd Feb 2013
+===============
+*/
+bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue) {
+
+	// Used to update inventory item key vals.
+	// The inventory item is usually identified via uniqueItemName = inv_unique_name key
+
+	bool updated = false;
+
+	// Loop through all inventory items
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+
+		// Get the unique name for this item
+		const char *inv_uniqueName = inventory.items[i]->GetString( uniqueItemName );
+
+		// Do we have a unique inventory name key?
+		if ( inv_uniqueName && *inv_uniqueName ) {
+
+			// Does the unique inventory item name match the unique name we are looking for?
+			if ( idStr::Icmp( uniqueItemName, inv_uniqueName ) == 0 ) {
+
+				// Add new or update original key val
+				inventory.items[i]->Set( dictKey, dictValue );
+				updated = true;
+			}
+		}
+	}
+
+	return updated;
+}
+
 /*
 ===============
 idPlayer::RemoveInventoryItem

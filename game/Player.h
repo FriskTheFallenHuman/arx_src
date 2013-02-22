@@ -449,6 +449,7 @@ public:
 	int						FindInventoryItemIndex( const char *name );
 	int						FindInventoryItemCount( const char *name );
 	int						FindInventoryWeaponIndex( int playerWeaponDefNumber );
+	bool					UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue);
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
