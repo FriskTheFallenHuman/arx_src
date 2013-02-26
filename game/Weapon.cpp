@@ -134,6 +134,7 @@ idWeapon::idWeapon() {
 
 	// Solarsplace - Arx EOS
 	hasChargeAttack = false;
+	lastHealth = 0;
 }
 
 /*
@@ -357,6 +358,7 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 
 	// Solarsplace - Arx EOS
 	savefile->WriteBool( hasChargeAttack );
+	savefile->WriteInt( lastHealth );
 }
 
 /*
@@ -514,6 +516,7 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 
 	// Solarsplace - Arx EOS
 	savefile->ReadBool( hasChargeAttack );
+	savefile->ReadInt( lastHealth);
 }
 
 /***********************************************************************
@@ -772,6 +775,7 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	weaponDef			= gameLocal.FindEntityDef( objectname );
 
 	// Solarsplace - Arx EOS
+	lastHealth			= 0;
 	hasChargeAttack		= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
 
 	ammoType			= GetAmmoNumForName( weaponDef->dict.GetString( "ammoType" ) );
@@ -1263,6 +1267,33 @@ idWeapon::Think
 */
 void idWeapon::Think( void ) {
 	// do nothing because the present is called from the player through PresentWeapon
+
+	// Solarsplace - Arx End Of Sun
+	const char *damageSkin;
+	const char *damageSkinKey;
+
+	if ( health != lastHealth ) {
+
+		lastHealth = health;
+
+		if ( health >= 81 ) {
+			damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
+		} else if ( health >= 61 && health <= 80 ) {
+			damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
+		} else if ( health >= 41 && health <= 60 ) {
+			damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
+		} else if ( health >= 21 && health <= 40 ) {
+			damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
+		} else if ( health <= 20 ) {
+			damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
+		}
+
+		if ( !strcmp( damageSkinKey, "" ) == 0 ) {
+			gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
+			Event_SetSkin( damageSkinKey );
+		}
+	}
+
 }
 
 /*

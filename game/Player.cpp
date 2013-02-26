@@ -8658,6 +8658,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 		weapon.GetEntity()->spawnArgs.Set( "inv_unique_name", uname );
 		gameLocal.Printf( "Setting equiped weapon unique name to '%s'\n", uname ); //REMOVEME
 
+		int weaponHealth = inventory.items[invItemIndex]->GetInt( "inv_health", "0" );
+		weapon.GetEntity()->health = weaponHealth;
+		gameLocal.Printf( "Setting equiped weapon health to '%d'\n", weaponHealth ); //REMOVEME
+
 		// Optional, may wish to play an equip sound.
 		sound = item->GetString( "snd_consume" );
 		if ( sound )

@@ -162,6 +162,9 @@ private:
 	// Solarsplace - Arx EOS - 10th Sep 2012
 	bool					hasChargeAttack;
 
+	// Solarsplace - Arx EOS - 27th Feb 2012
+	int						lastHealth;
+
 	// hiding (for GUIs and NPCs)
 	int						hideTime;
 	float					hideDistance;
