@@ -7823,7 +7823,7 @@ void idPlayer::LoadTransitionInfo( void )
 
 				/****************************************************************************
 				****************************************************************************/
-				//  Set axis
+				//  Set origin
 
 				if ( idStr::Icmp( SplitStrings( keyText, ARX_LVL_ENTPROPERTY ) , ARX_PROP_ORIGIN ) == 0 )
 				{

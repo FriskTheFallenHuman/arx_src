@@ -135,6 +135,8 @@ idWeapon::idWeapon() {
 	// Solarsplace - Arx EOS
 	hasChargeAttack = false;
 	lastHealth = 0;
+	allowWeaponDamage = false;
+	weaponDamageAlert = -1;
 }
 
 /*
@@ -359,6 +361,8 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	// Solarsplace - Arx EOS
 	savefile->WriteBool( hasChargeAttack );
 	savefile->WriteInt( lastHealth );
+	savefile->WriteBool( allowWeaponDamage );
+	savefile->WriteInt( weaponDamageAlert );
 }
 
 /*
@@ -517,6 +521,8 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 	// Solarsplace - Arx EOS
 	savefile->ReadBool( hasChargeAttack );
 	savefile->ReadInt( lastHealth);
+	savefile->ReadBool( allowWeaponDamage );
+	savefile->ReadInt( weaponDamageAlert );
 }
 
 /***********************************************************************
@@ -701,6 +707,9 @@ void idWeapon::Clear( void ) {
 
 	// Solarsplace - Arx EOS
 	hasChargeAttack		= false;
+	lastHealth			= 0;
+	allowWeaponDamage	= false;
+	weaponDamageAlert	= -1;
 }
 
 /*
@@ -776,7 +785,9 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 
 	// Solarsplace - Arx EOS
 	lastHealth			= 0;
+	weaponDamageAlert	= -1;
 	hasChargeAttack		= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
+	allowWeaponDamage	= weaponDef->dict.GetBool( "arx_allow_weapon_damage", "0" );
 
 	ammoType			= GetAmmoNumForName( weaponDef->dict.GetString( "ammoType" ) );
 	ammoRequired		= weaponDef->dict.GetInt( "ammoRequired" );
@@ -1269,28 +1280,59 @@ void idWeapon::Think( void ) {
 	// do nothing because the present is called from the player through PresentWeapon
 
 	// Solarsplace - Arx End Of Sun
-	const char *damageSkin;
-	const char *damageSkinKey;
+	if ( allowWeaponDamage ) {
 
-	if ( health != lastHealth ) {
+		idStr weaponHealth;
+		const char *damageSkin;
+		const char *damageSkinKey;
 
-		lastHealth = health;
+		if ( health != lastHealth ) {
 
-		if ( health >= 81 ) {
-			damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
-		} else if ( health >= 61 && health <= 80 ) {
-			damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
-		} else if ( health >= 41 && health <= 60 ) {
-			damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
-		} else if ( health >= 21 && health <= 40 ) {
-			damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
-		} else if ( health <= 20 ) {
-			damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
-		}
+			// Update last health and if there is a change upate the player inventory health for this weapon
+			lastHealth = health;
+			sprintf( weaponHealth, "%d", health );
+			gameLocal.Printf( "idWeapon::Think - Updating '%s' inventory health to '%d'\n", weaponDef->dict.GetString( "inv_unique_name" ), health ); // REMOVEME
+			owner->UpdateInventoryItem( weaponDef->dict.GetString( "inv_unique_name" ), "inv_health", weaponHealth.c_str() );
 
-		if ( !strcmp( damageSkinKey, "" ) == 0 ) {
-			gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
-			Event_SetSkin( damageSkinKey );
+			if ( health >= 81 ) {
+
+				damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
+
+			} else if ( health >= 61 && health <= 80 ) {
+
+				damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
+
+			} else if ( health >= 41 && health <= 60 ) {
+
+				damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
+
+			} else if ( health >= 21 && health <= 40 ) {
+
+				damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
+
+				// Warn player weapon is getting worn
+				if ( weaponDamageAlert != 3 ) {
+					weaponDamageAlert = 3;
+					owner->ShowHudMessage( "#str_general_00006" ); // "The equiped item is becoming very worn"
+				}
+
+			} else if ( health <= 20 ) {
+
+				damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
+
+				// Warn player weapon is getting very worn
+				if ( weaponDamageAlert != 4 ) {
+					weaponDamageAlert = 4;
+					owner->ShowHudMessage( "#str_general_00007" ); // "The equiped item is almost broken"
+				}
+
+			}
+
+			// If the weapon has damage skin(s) then set the new damage skin
+			if ( !strcmp( damageSkinKey, "" ) == 0 ) {
+				gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
+				Event_SetSkin( damageSkinKey );
+			}
 		}
 	}
 
