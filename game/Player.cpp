@@ -3898,7 +3898,7 @@ bool idPlayer::UpdateInventoryItemWeapon( int newWeaponHealth ) {
 
 	gameLocal.Printf( "idPlayer::UpdateInventoryItemWeapon '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
 
-	UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health", weaponHealth.c_str() );
+	return UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health", weaponHealth.c_str() );
 
 }
 
@@ -3918,7 +3918,9 @@ bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dict
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
 
 		// Get the unique name for this item
-		const char *inv_uniqueName = inventory.items[i]->GetString( uniqueItemName );
+		const char *inv_uniqueName = inventory.items[i]->GetString( "inv_unique_name" );
+
+		gameLocal.Printf( "idPlayer::UpdateInventoryItem inventory.items[%d] unique name is '%s' updated\n", i, inv_uniqueName ); //REMOVEME
 
 		// Do we have a unique inventory name key?
 		if ( inv_uniqueName && *inv_uniqueName ) {
