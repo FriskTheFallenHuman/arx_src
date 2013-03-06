@@ -3862,17 +3862,44 @@ int idPlayer::FindInventoryItemIndex( const char *name ) {
 idPlayer::FindInventoryWeaponIndex - Solarsplace - 6nd Aug 2012
 ===============
 */
-int idPlayer::FindInventoryWeaponIndex( int playerWeaponDefNumber ) {
+int idPlayer::FindInventoryWeaponIndex( int playerWeaponDefNumber, bool checkHealth ) {
 
 	int iWeapon = -1;
+	int weaponHealth;
 
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+
 		iWeapon = inventory.items[i]->GetInt( "inv_weapon_def" );
+
 		if ( playerWeaponDefNumber == iWeapon ) {
+
+			// SP - 6th Mar 2013 - Optional check the weapon is not broken.
+			inventory.items[i]->GetInt( "inv_health", "0", weaponHealth );
+			if ( checkHealth && weaponHealth <= 0 ) { continue; }
+
 			return i;
 		}
 	}
 	return -1;
+}
+
+/*
+===============
+idPlayer::UpdateInventoryItemWeapon - Solarsplace - 22nd Feb 2013
+===============
+*/
+bool idPlayer::UpdateInventoryItemWeapon( int newWeaponHealth ) {
+
+	idStr weaponHealth;
+	idStr weaponUniqueName;
+
+	sprintf( weaponHealth, "%d", newWeaponHealth );
+	weaponUniqueName = inventory.weaponUniqueName;
+
+	gameLocal.Printf( "idPlayer::UpdateInventoryItemWeapon '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
+
+	UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health", weaponHealth.c_str() );
+
 }
 
 /*
@@ -3901,6 +3928,9 @@ bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dict
 
 				// Add new or update original key val
 				inventory.items[i]->Set( dictKey, dictValue );
+
+				gameLocal.Printf( "idPlayer::UpdateInventoryItem '%s', '%s', '%s' updated\n", uniqueItemName, dictKey, dictValue ); //REMOVEME
+
 				updated = true;
 			}
 		}
@@ -4228,7 +4258,8 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 
 			// Solarsplace - 6th Sep 2012 - Make sure the player has not dropped previous weapon from inventory.
 			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
-			if ( FindInventoryWeaponIndex( previousWeapon ) != -1 )
+			// Solarsplace - 6th Mar 2013 - Added weapon health check so that we do not select any broken weapons. 
+			if ( FindInventoryWeaponIndex( previousWeapon, true ) != -1 )
 			{
 				idealWeapon = previousWeapon;
 
@@ -8043,6 +8074,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// *** CRITICAL - Update SaveTransitionInfo() and associated methods to persist these values through level changes ***
 
 		spawnedItem->spawnArgs.Set ( "inv_name", inventory.items[invItemIndex]->GetString( "inv_name" ) );
+		spawnedItem->spawnArgs.Set ( "inv_health", inventory.items[invItemIndex]->GetString( "inv_health" ) ); // SP - 6th Mar 2013 - Added for breakable weapons / items.
 
 		// *************************************************************************************
 
@@ -8055,7 +8087,6 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
 			if ( FindInventoryItemCount( droppingItem->GetString( "inv_name" ) ) <= 1 )
 			{
-				int currentWeaponHealth = weapon.GetEntity()->health;
 
 				SelectWeapon( 0, true );
 			}
@@ -8655,7 +8686,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 		// SP - Arx - 21st Feb 2013 - Weapon health related
 		// Get the unique inv_name of the item
 		const char *uname = inventory.items[invItemIndex]->GetString( "inv_unique_name" );
-		weapon.GetEntity()->spawnArgs.Set( "inv_unique_name", uname );
+		inventory.weaponUniqueName = idStr( uname );
 		gameLocal.Printf( "Setting equiped weapon unique name to '%s'\n", uname ); //REMOVEME
 
 		int weaponHealth = inventory.items[invItemIndex]->GetInt( "inv_health", "0" );

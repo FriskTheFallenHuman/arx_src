@@ -98,6 +98,7 @@ public:
 
 	// Solarsplace - Arx EOS
 	int						money;
+	idStr					weaponUniqueName; // Store unique string name of current active weapon
 
 	// mp
 	int						ammoPredictTime;
@@ -448,8 +449,9 @@ public:
 	// Solarsplace - 2nd July 2010 - Needed a slightly modified version of the above function
 	int						FindInventoryItemIndex( const char *name );
 	int						FindInventoryItemCount( const char *name );
-	int						FindInventoryWeaponIndex( int playerWeaponDefNumber );
-	bool					UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue);
+	int						FindInventoryWeaponIndex( int playerWeaponDefNumber, bool checkHealth );
+	bool					UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue );
+	bool					UpdateInventoryItemWeapon( int newWeaponHealth );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );

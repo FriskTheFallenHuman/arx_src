@@ -1290,52 +1290,59 @@ void idWeapon::Think( void ) {
 
 			// Update last health and if there is a change upate the player inventory health for this weapon
 			lastHealth = health;
-			sprintf( weaponHealth, "%d", health );
-			gameLocal.Printf( "idWeapon::Think - Updating '%s' inventory health to '%d'\n", weaponDef->dict.GetString( "inv_unique_name" ), health ); // REMOVEME
-			owner->UpdateInventoryItem( weaponDef->dict.GetString( "inv_unique_name" ), "inv_health", weaponHealth.c_str() );
+	
+			// Update the players inventory. Set the new health level of this weapon into the inventory.
+			owner->UpdateInventoryItemWeapon( health );
 
-			if ( health >= 81 ) {
+			if ( health <= 0 ) {
 
-				damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
+				owner->SelectWeapon( owner->weapon_fists, true );
 
-			} else if ( health >= 61 && health <= 80 ) {
+			} else {
 
-				damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
+				if ( health >= 81 ) {
 
-			} else if ( health >= 41 && health <= 60 ) {
+					damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
 
-				damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
+				} else if ( health >= 61 && health <= 80 ) {
 
-			} else if ( health >= 21 && health <= 40 ) {
+					damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
 
-				damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
+				} else if ( health >= 41 && health <= 60 ) {
 
-				// Warn player weapon is getting worn
-				if ( weaponDamageAlert != 3 ) {
-					weaponDamageAlert = 3;
-					owner->ShowHudMessage( "#str_general_00006" ); // "The equiped item is becoming very worn"
+					damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
+
+				} else if ( health >= 21 && health <= 40 ) {
+
+					damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
+
+					// Warn player weapon is getting worn
+					if ( weaponDamageAlert != 3 ) {
+						weaponDamageAlert = 3;
+						owner->ShowHudMessage( "#str_general_00006" ); // "The equiped item is becoming very worn"
+					}
+
+				} else if ( health <= 20 ) {
+
+					damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
+
+					// Warn player weapon is getting very worn
+					if ( weaponDamageAlert != 4 ) {
+						weaponDamageAlert = 4;
+						owner->ShowHudMessage( "#str_general_00007" ); // "The equiped item is almost broken"
+					}
+
 				}
 
-			} else if ( health <= 20 ) {
-
-				damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
-
-				// Warn player weapon is getting very worn
-				if ( weaponDamageAlert != 4 ) {
-					weaponDamageAlert = 4;
-					owner->ShowHudMessage( "#str_general_00007" ); // "The equiped item is almost broken"
+				// If the weapon has damage skin(s) then set the new damage skin
+				if ( !strcmp( damageSkinKey, "" ) == 0 ) {
+					gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
+					Event_SetSkin( damageSkinKey );
 				}
 
-			}
-
-			// If the weapon has damage skin(s) then set the new damage skin
-			if ( !strcmp( damageSkinKey, "" ) == 0 ) {
-				gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
-				Event_SetSkin( damageSkinKey );
-			}
+			} // if ( health <= 0 )
 		}
 	}
-
 }
 
 /*
