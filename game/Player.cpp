@@ -8050,11 +8050,9 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 	// Solarsplace - 4th Oct 2010 - Level Transition related - changed from 'classname' to 'inv_classname' which is persisted through level changes.
 	args.Set( "classname", inventory.items[invItemIndex]->GetString( "inv_classname" ) );
-
-	args.Set( "dropped", "1" );
-
-	// we sometimes drop idMoveables here, so set 'nodrop' to 1 so that it doesn't get put on the floor
-	args.Set( "nodrop", "1" );
+	args.Set( "inv_health", inventory.items[invItemIndex]->GetString( "inv_health" ) ); // SP - 6th Mar 2013 - Added for breakable weapons / items. Must be done before spawn!
+	args.Set( "dropped", "1" ); // Probably not used
+	args.Set( "nodrop", "1" ); // We sometimes drop idMoveables here, so set 'nodrop' to 1 so that it doesn't get put on the floor
 
 	gameLocal.SpawnEntityDef( args, &spawnedItem );
 
@@ -8074,10 +8072,8 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// for items such as tools or weapons that have a health value
 
 		// *** CRITICAL - Update SaveTransitionInfo() and associated methods to persist these values through level changes ***
-
 		spawnedItem->spawnArgs.Set ( "inv_name", inventory.items[invItemIndex]->GetString( "inv_name" ) );
-		spawnedItem->spawnArgs.Set ( "inv_health", inventory.items[invItemIndex]->GetString( "inv_health" ) ); // SP - 6th Mar 2013 - Added for breakable weapons / items.
-
+		
 		// *************************************************************************************
 
 		// Populate dictionary with key vals of dropping item
