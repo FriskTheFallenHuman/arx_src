@@ -153,6 +153,7 @@ const idStr ARX_PROP_AXIS = "ARX_AXIS";
 const idStr ARX_PROP_HIDDEN = "ARX_HIDDEN";
 const idStr ARX_PROP_INV_NAME = "ARX_INV_NAME";
 const idStr ARX_PROP_INV_HEALTH = "ARX_INV_HEALTH";
+const idStr ARX_PROP_INV_HEALTH_MAX = "ARX_INV_HEALTH_MAX";
 const idStr ARX_PROP_LOCKED = "ARX_LOCKED";
 const idStr ARX_PROP_CLASSNAME = "ARX_CLASSNAME";
 
@@ -3885,10 +3886,10 @@ int idPlayer::FindInventoryWeaponIndex( int playerWeaponDefNumber, bool checkHea
 
 /*
 ===============
-idPlayer::UpdateInventoryItemWeapon - Solarsplace - 22nd Feb 2013
+idPlayer::UpdateInventoryItem_health - Solarsplace - 22nd Feb 2013
 ===============
 */
-bool idPlayer::UpdateInventoryItemWeapon( int newWeaponHealth ) {
+bool idPlayer::UpdateInventoryItem_health( int newWeaponHealth ) {
 
 	idStr weaponHealth;
 	idStr weaponUniqueName;
@@ -3896,10 +3897,70 @@ bool idPlayer::UpdateInventoryItemWeapon( int newWeaponHealth ) {
 	sprintf( weaponHealth, "%d", newWeaponHealth );
 	weaponUniqueName = inventory.weaponUniqueName;
 
-	gameLocal.Printf( "idPlayer::UpdateInventoryItemWeapon '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
+	gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
 
 	return UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health", weaponHealth.c_str() );
 
+}
+
+/*
+===============
+idPlayer::UpdateInventoryItem_health_max - Solarsplace - 11th Mar 2013
+===============
+*/
+bool idPlayer::UpdateInventoryItem_health_max( int newWeaponHealthMax ) {
+
+	idStr weaponHealth;
+	idStr weaponUniqueName;
+
+	sprintf( weaponHealth, "%d", newWeaponHealthMax );
+	weaponUniqueName = inventory.weaponUniqueName;
+
+	gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health_max', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
+
+	return UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health_max", weaponHealth.c_str() );
+
+}
+
+/*
+===============
+idPlayer::GetInventoryItemHealthIcon - Solarsplace - 11th Mar 2013
+===============
+*/
+const char *idPlayer::GetInventoryItemHealthIcon( int health, int health_max, const idDict itemDict  ) {
+
+	int healthPercentage;
+	const char *assetName;
+
+	// Prevent divide by 0 exception - health_max should never be 0 - something went wrong if it is.
+	if ( health_max == 0 ) {
+		gameLocal.Warning( "GetInventoryItemHealthIcon: health_max was 0. Set to 100\n" );
+		health_max = 100;
+	}
+
+	healthPercentage = ( (float)health / (float)health_max ) * 100; // Just in case health_max is some how 0.
+
+	//gameLocal.Printf( "idPlayer::GetInventoryItemHealthIcon healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max );
+
+	if ( healthPercentage >= 81 ) {
+		assetName = itemDict.GetString( "inv_icon", "" );
+	} else if ( healthPercentage >= 61 && healthPercentage <= 80 ) {
+		assetName = itemDict.GetString( "inv_icon_damage_1", "" );
+	} else if ( healthPercentage >= 41 && healthPercentage <= 60 ) {
+		assetName = itemDict.GetString( "inv_icon_damage_2", "" );
+	} else if ( healthPercentage >= 21 && healthPercentage <= 40 ) {
+		assetName = itemDict.GetString( "inv_icon_damage_3", "" );
+	} else if ( healthPercentage >= 1 && healthPercentage <= 20 ) {
+		assetName = itemDict.GetString( "inv_icon_damage_4", "" );
+	} else if ( healthPercentage <= 0 ) {
+		assetName = itemDict.GetString( "inv_icon_damage_5", "" );
+	}
+
+	if ( assetName && *assetName ) {
+		return assetName;
+	} else {
+		return itemDict.GetString( "inv_icon", "guis/assets/icons/404_icon.tga" ); // All normal inventory items hit this path.
+	}
 }
 
 /*
@@ -7603,6 +7664,7 @@ void idPlayer::DeleteTransitionInfoSpecific( idStr recordType, idStr entityName 
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP );
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP );
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP );
+	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH_MAX + ARX_REC_SEP );
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_LOCKED + ARX_REC_SEP ); // Don't think this is used. Leave it for now.
 	gameLocal.persistentLevelInfo.Delete( mapName + ARX_REC_SEP + recordType + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP );
 }
@@ -7672,6 +7734,7 @@ void idPlayer::SaveTransitionInfo( void )
 	bool entityHidden;
 	idStr entityInventoryName;
 	int entityHealth;
+	int entityHealthMax;
 	idStr entityClassName;
 
 	mapName = gameLocal.GetMapName();
@@ -7688,6 +7751,7 @@ void idPlayer::SaveTransitionInfo( void )
 			entityHidden = ent->IsHidden();
 			ent->spawnArgs.GetString( "inv_name", "", entityInventoryName );
 			ent->spawnArgs.GetInt( "inv_health", "", entityHealth );
+			ent->spawnArgs.GetInt( "inv_health_max", "", entityHealthMax );
 			ent->spawnArgs.GetString( "classname", "", entityClassName );
 
 			//******************************************************************************************************
@@ -7716,6 +7780,7 @@ void idPlayer::SaveTransitionInfo( void )
 					{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }
 
 					gameLocal.persistentLevelInfo.SetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP, entityHealth );
+					gameLocal.persistentLevelInfo.SetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_HEALTH_MAX + ARX_REC_SEP, entityHealthMax );
 					gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP, entityClassName );
 				}
 
@@ -7772,6 +7837,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 	idMat3 entityAxis;
 	idStr entityInvName;
 	int entityHealth;
+	int entityHealthMax;
 	idStr entityClassName;
 	idDict args;
 	idEntity *spawnedItem;
@@ -7781,6 +7847,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 	entityAxis = gameLocal.persistentLevelInfo.GetMatrix( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP );
 	entityInvName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP );
 	entityHealth = gameLocal.persistentLevelInfo.GetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH + ARX_REC_SEP );
+	entityHealthMax = gameLocal.persistentLevelInfo.GetInt( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_INV_HEALTH_MAX + ARX_REC_SEP );
 	entityClassName = gameLocal.persistentLevelInfo.GetString( mapName + ARX_REC_SEP + ARX_REC_NEW + ARX_REC_SEP + entityName + ARX_REC_SEP + ARX_PROP_CLASSNAME + ARX_REC_SEP );
 
 	args.Set( "classname", entityClassName );
@@ -7795,6 +7862,7 @@ void idPlayer::SpawnTransitionEntity( idStr entityName )
 		spawnedItem->GetPhysics()->SetAxis( entityAxis );
 		spawnedItem->spawnArgs.Set ( "inv_name", entityInvName );
 		spawnedItem->spawnArgs.SetInt ( "inv_health", entityHealth );
+		spawnedItem->spawnArgs.SetInt ( "inv_health_max", entityHealthMax );
 	}
 }
 
@@ -8051,6 +8119,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	// Solarsplace - 4th Oct 2010 - Level Transition related - changed from 'classname' to 'inv_classname' which is persisted through level changes.
 	args.Set( "classname", inventory.items[invItemIndex]->GetString( "inv_classname" ) );
 	args.Set( "inv_health", inventory.items[invItemIndex]->GetString( "inv_health" ) ); // SP - 6th Mar 2013 - Added for breakable weapons / items. Must be done before spawn!
+	args.Set( "inv_health_max", inventory.items[invItemIndex]->GetString( "inv_health_max" ) ); // SP - 13th Mar 2013 - Added for breakable weapons / items. Must be done before spawn!
 	args.Set( "dropped", "1" ); // Probably not used
 	args.Set( "nodrop", "1" ); // We sometimes drop idMoveables here, so set 'nodrop' to 1 so that it doesn't get put on the floor
 
@@ -8315,54 +8384,25 @@ void idPlayer::UpdateInventoryGUI( void )
 
 			if ( !item->GetBool( "inv_pda" ) ) {
 
-				const char *iname = item->GetString( "inv_name" );
-				const char *iicon = item->GetString( "inv_icon" );
-				const char *itext = item->GetString( "inv_text" );
-
-				idStr n1 = iname;
-				idStr n2 = va( "_%i", j );
+				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 
 				if ( item->GetBool( "inventory_nostack", "0" ) ) {
-
-					//gameLocal.Printf("Adding new item %s\n", iname);
-					// Add 1 new item
-
-					//invItemGroupPointer->SetInt( iname, j );
-					//invItemGroupCount->SetInt( iname, 1 );
-
-					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j ); //invItemGroupPointer->SetInt( iname, j );
-					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
+					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j );
+					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 );
 				}
 				else
 				{
 					if ( !invItemGroupPointer->FindKey( iname ) ) {
-
-						//gameLocal.Printf("Adding new item %s\n", iname);
 						// Add 1 new item
 						invItemGroupPointer->SetInt( iname, j );
 						invItemGroupCount->SetInt( iname, 1 );
 					}
 					else {
-
-						//gameLocal.Printf("Updating existing item\n", iname);
 						// We have this inv_name in the dictionary already. So update its quantity count.
 						itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
 						invItemGroupCount->SetInt( iname, itemGroupCount );
 					}
 				}
-
-				/*
-				inventorySystem->SetStateString( va( "inv_name_%i", j ), iname );
-				inventorySystem->SetStateString( va( "inv_icon_%i", j ), iicon );
-				inventorySystem->SetStateString( va( "inv_text_%i", j ), itext );
-
-				// SP 24th Sep 2011 'inv_id' does not seem to be used by the game or custom Neuro guis's
-				const idKeyValue *kv = item->MatchPrefix( "inv_id", NULL );
-				if ( kv ) {
-					inventorySystem->SetStateString( va( "inv_id_%i", j ), kv->GetValue() );
-				}
-				*/
-
 			}
 		}
 
@@ -8375,8 +8415,23 @@ void idPlayer::UpdateInventoryGUI( void )
 
 			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
 
-			const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
-			const char *iicon = item->GetString( "inv_icon" );
+			//const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+			int tempHealth = item->GetInt( "inv_health", "0" );
+			int tempHealthMax = item->GetInt( "inv_health_max", "100" );
+			const char *iname;
+
+			if ( !item->GetBool( "inv_allow_weapon_damage", "0" ) ) {
+				iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+			} else {
+				// Display current health / max health in inventory
+				idStr tempInvName;
+				sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
+				iname = tempInvName.c_str();
+			}
+
+			//const char *iicon = item->GetString( "inv_icon" );
+			const char *iicon = GetInventoryItemHealthIcon( tempHealth, tempHealthMax, *item );
+
 			const char *itext = item->GetString( "inv_text" );
 
 			inventorySystem->SetStateString( va( "inv_name_%i", j ), iname );
@@ -8690,6 +8745,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 		int weaponHealth = inventory.items[invItemIndex]->GetInt( "inv_health", "0" );
 		weapon.GetEntity()->health = weaponHealth;
 		gameLocal.Printf( "Setting equiped weapon health to '%d'\n", weaponHealth ); //REMOVEME
+
+		int weaponHealthMax = inventory.items[invItemIndex]->GetInt( "inv_health_max", "100" );
+		weapon.GetEntity()->health_max = weaponHealthMax;
+		gameLocal.Printf( "Setting equiped weapon health_max to '%d'\n", weaponHealthMax ); //REMOVEME
 
 		// Optional, may wish to play an equip sound.
 		sound = item->GetString( "snd_consume" );

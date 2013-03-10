@@ -787,7 +787,7 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	lastHealth			= 0;
 	weaponDamageAlert	= -1;
 	hasChargeAttack		= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
-	allowWeaponDamage	= weaponDef->dict.GetBool( "arx_allow_weapon_damage", "0" );
+	allowWeaponDamage	= weaponDef->dict.GetBool( "inv_allow_weapon_damage", "0" );
 
 	ammoType			= GetAmmoNumForName( weaponDef->dict.GetString( "ammoType" ) );
 	ammoRequired		= weaponDef->dict.GetInt( "ammoRequired" );
@@ -1292,7 +1292,7 @@ void idWeapon::Think( void ) {
 			lastHealth = health;
 	
 			// Update the players inventory. Set the new health level of this weapon into the inventory.
-			owner->UpdateInventoryItemWeapon( health );
+			owner->UpdateInventoryItem_health( health );
 
 			if ( health <= 0 ) {
 
@@ -1300,19 +1300,23 @@ void idWeapon::Think( void ) {
 
 			} else {
 
-				if ( health >= 81 ) {
+				int healthPercentage = ( (float)health / (float)health_max ) * 100;
+
+				gameLocal.Printf( "idWeapon::Think healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max ); //REMOVEME
+
+				if ( healthPercentage >= 81 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
 
-				} else if ( health >= 61 && health <= 80 ) {
+				} else if ( healthPercentage >= 61 && healthPercentage <= 80 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_1", "" );
 
-				} else if ( health >= 41 && health <= 60 ) {
+				} else if ( healthPercentage >= 41 && healthPercentage <= 60 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_2", "" );
 
-				} else if ( health >= 21 && health <= 40 ) {
+				} else if ( healthPercentage >= 21 && healthPercentage <= 40 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_3", "" );
 
@@ -1322,7 +1326,7 @@ void idWeapon::Think( void ) {
 						owner->ShowHudMessage( "#str_general_00006" ); // "The equiped item is becoming very worn"
 					}
 
-				} else if ( health <= 20 ) {
+				} else if ( healthPercentage <= 20 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_4", "" );
 

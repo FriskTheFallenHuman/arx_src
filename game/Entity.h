@@ -110,8 +110,8 @@ public:
 
 	int						health;					// FIXME: do all objects really need health?
 
-	// Solarsplace - Arx EOS - Thanks Hexen
-	int						onFire;
+	int						health_max;				// Solarsplace - Arx EOS - Think of it a max durability an item can be repaired too. Default 100.
+	int						onFire;					// Solarsplace - Arx EOS - Thanks Hexen
 
 	struct entityFlags_s {
 		bool				notarget			:1;	// if true never attack or target this entity

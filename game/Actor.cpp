@@ -2206,12 +2206,26 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 	// Solarsplace 9th Feb 2012 - Arx - End Of Sun - Do double damage if surprise attack
 	idPlayer * player = gameLocal.GetLocalPlayer();
-	if ( attacker == player )
+
+	if ( attacker == player && health > 0)
 	{
-		if ( !CanSee(player, true) && health > 0 )
-		{
+		/*
+		Backstab only happens when hitting an opponent from the back without him knowing your presence.
+		In this case the damage is increased by 50%, this can cumulate with a critical hit.
+		*/
+		if ( !HasEnemies() && !CanSee(player, true) ) {
 			damage = 2 * damage;
-			player->ShowHudMessage( "#str_general_00002" );
+			player->ShowHudMessage( "#str_general_00002" ); // "! Backstab !"
+		}
+
+		/*
+		Dexterity determines the accuracy in combat and your speed and increases the chance for a
+		Critical Hit, which represents the percentage of chance to double the damages on a succesful hit. 
+		*/
+		float chanceOfCriticalHit = 10.0f;
+		if ( gameLocal.random.RandomFloat() * 100 > chanceOfCriticalHit ) {
+			damage = damage + ( damage * 0.5 ); // This is cumulative if you get a backstab too.
+			player->ShowHudMessage( "#str_general_00003" ); // "! Critical hit !"
 		}
 	}
 

@@ -396,6 +396,7 @@ idEntity::idEntity() {
 	renderView		= NULL;
 	cameraTarget	= NULL;
 	health			= 0;
+	health_max		= 100; // Solarsplace - Arx End Of Sun
 
 	physics			= NULL;
 	bindMaster		= NULL;
@@ -650,6 +651,7 @@ void idEntity::Save( idSaveGame *savefile ) const {
 	savefile->WriteObject( cameraTarget );
 
 	savefile->WriteInt( health );
+	savefile->WriteInt( health_max ); // Solarsplace - Arx End Of Sun
 
 	savefile->WriteInt( targets.Num() );
 	for( i = 0; i < targets.Num(); i++ ) {
@@ -734,6 +736,7 @@ void idEntity::Restore( idRestoreGame *savefile ) {
 	savefile->ReadObject( reinterpret_cast<idClass *&>( cameraTarget ) );
 
 	savefile->ReadInt( health );
+	savefile->ReadInt( health_max ); // Solarsplace - Arx End Of Sun
 
 	targets.Clear();
 	savefile->ReadInt( num );

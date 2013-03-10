@@ -451,7 +451,9 @@ public:
 	int						FindInventoryItemCount( const char *name );
 	int						FindInventoryWeaponIndex( int playerWeaponDefNumber, bool checkHealth );
 	bool					UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue );
-	bool					UpdateInventoryItemWeapon( int newWeaponHealth );
+	bool					UpdateInventoryItem_health( int newWeaponHealth );
+	bool					UpdateInventoryItem_health_max( int newWeaponHealthMax ); // Think of it as max health / durability an item can be repaired to
+	const char *			GetInventoryItemHealthIcon( int health, int health_max, const idDict itemDict );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
