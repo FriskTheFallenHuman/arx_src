@@ -100,6 +100,30 @@ public:
 	int						money;
 	idStr					weaponUniqueName; // Store unique string name of current active weapon
 
+	idList<idStr>			arx_equipt_items;
+
+	int						arx_attr_strength;
+	int						arx_attr_mental;
+	int						arx_attr_dexterity;
+	int						arx_attr_constitution;
+
+	int						arx_skill_casting;
+	int						arx_skill_close_combat;
+	int						arx_skill_defense;
+	int						arx_skill_ethereal_link;
+	int						arx_skill_intuition;
+	int						arx_skill_intelligence;
+	int						arx_skill_projectile;
+	int						arx_skill_stealth;
+	int						arx_skill_technical;
+
+	int						arx_stat_armour_class;
+	int						arx_stat_hit_points;
+	int						arx_stat_mana_points;
+	int						arx_stat_resistance_to_magic;
+	int						arx_stat_resistance_to_poison;
+	int						arx_stat_damage_inflicted;
+
 	// mp
 	int						ammoPredictTime;
 
@@ -826,11 +850,10 @@ private:
 	bool					ConsumeInventoryItem( int invItemIndex );						// solarsplace 15th Apr 2010
 	void					DropInventoryItem( int invItemIndex );							// solarsplace 15th Apr 2010
 	idDict					*invItemGroupCount;												// solarsplace 24th Sep 2011
-	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011											
-			
-	// Poison related
-	void					healthDecreaseOverTime();										// solarsplace 16th May 2010
-	int						healthNextDecreaseTime;											// solarsplace 16th May 2010
+	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011
+	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
+	int						heroStatsTime;													// solarsplace 15th Mar 2013
+	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
 
 	// Magic related
 	int						GetPlayerManaAmount( void );									// Solarsplace 28th Feb 2010
@@ -839,8 +862,6 @@ private:
 	int						magicAttackTime;												// solarsplace 15th May 2010
 	bool					magicAttackInProgress;											// solarsplace 15th May 2010
 	void					ProcessMagic();													// solarsplace 22nd May 2010 
-	void					increaseManaOverTime();											// solarsplace 18th Mar 2010
-	int						manaNextGiveTime;												// solarsplace 18th Mar 2010
 	void					MagicUpdateJournalSpells( void );								// solarsplace 22nd Jul 2010
 
 	// Shop related

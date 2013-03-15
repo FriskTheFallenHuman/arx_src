@@ -1060,8 +1060,6 @@ idPlayer::idPlayer() {
 	// *********************************************************************************
 	// Solarsplace - Arx End Of Sun
 
-	manaNextGiveTime		= 0;					// Mana recharge over time
-	healthNextDecreaseTime	= 0;					// Poison related
 	playerPoisoned			= false;				// Poison related
 	magicWand				= NULL;					// Spell casting related
 	magicWandTrail			= NULL;					// Spell casting related
@@ -1341,7 +1339,10 @@ void idPlayer::Init( void ) {
 
 	// Solarsplace - Start
 
-	manaNextGiveTime = 0;
+	//WIP
+	int poison_duration = spawnArgs.GetInt( "arx_poison_duration", "120" ) * 1000;
+	int stats_update_rate = spawnArgs.GetInt( "arx_poison_duration", "2" ) * 1000;
+
 
 	// Solarsplace - End
 
@@ -1573,7 +1574,7 @@ void idPlayer::Spawn( void ) {
 
 	// Solarsplace - Start
 
-	manaNextGiveTime = gameLocal.time * SEC2MS( 10 ); // Fudge this and put it 10 seconds into the future for now.	
+
 
 	// Solarsplace - End
 
@@ -8159,6 +8160,9 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 			}
 		}
 
+		// Un-equip the item if equiped
+		inventory.equiptItems.Remove( inventory.items[invItemIndex]->GetString( "inv_unique_name" ) );
+
 		// Now remove the item from the players inventory
 		RemoveInventoryItem( droppingItem ); 
 
@@ -9493,52 +9497,7 @@ void idPlayer::PlaySpecificEntitySoundShader( idEntity *ent, const char *sndShad
 	
 	shader = declManager->FindSound( sound );
 	StartSoundShader( shader, SND_CHANNEL_ITEM, 0, false, NULL );
-}
-
-void idPlayer::increaseManaOverTime()
-{
-	//REMOVEME - Disable this for now while debugging other stuff
-	return;
-
-	int ammo_mana;
-	int max_mana;
-	int manaIncrementAmount = 10;
-	int manaIncrementDelaySecs = 5;
-
-	ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
-	max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
-
-	if ( inventory.ammo[ ammo_mana ] < 100 )
-	{
-		if ( gameLocal.time >= manaNextGiveTime )
-		{
-			inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] + manaIncrementAmount;
-			manaNextGiveTime = gameLocal.time + SEC2MS( manaIncrementDelaySecs);
-		}
-	}
-}
-	
-
-void idPlayer::healthDecreaseOverTime()
-{
-	// Solarsplace - 16th May 2010 - Poison related
-
-	int healthDecrementAmount = 5;
-	int healthDecrementDelaySecs = 5;
-
-	if ( playerPoisoned )
-	{
-		if ( health > 0 )
-		{
-			if ( gameLocal.time >= healthNextDecreaseTime )
-			{
-				health -= healthDecrementAmount;
-				healthNextDecreaseTime = gameLocal.time + SEC2MS( healthDecrementAmount);
-			}
-		}
-	}
-}
-
+}	
 
 /*
 *** END - Solarsplace 1st Mar 2010
@@ -10333,9 +10292,6 @@ void idPlayer::Think( void ) {
 	UpdateShoppingSystem();
 	UpdateConversationSystem();
 
-	increaseManaOverTime();
-	healthDecreaseOverTime();
-
 	// This code is ONLY used for pre-cast magic projectiles.
 	if ( magicDoingPreCastSpellProjectile )
 	{
@@ -10410,6 +10366,9 @@ void idPlayer::Think( void ) {
 		}
 	}
 
+	// 15th Mar 2013 - Process bonuses and player stats etc
+	UpdateHeroStats();
+
 	// Solarsplace - End
 	// **************************************************************************
 	// **************************************************************************
@@ -10481,6 +10440,89 @@ void idPlayer::Think( void ) {
 	// determine if portal sky is in pvs
 	gameLocal.portalSkyActive = gameLocal.pvs.CheckAreasForPortalSky( gameLocal.GetPlayerPVS(), GetPhysics()->GetOrigin() );
 	//neuro end
+}
+
+/*
+=================
+idPlayer::CalculateHeroChance
+=================
+*/
+bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
+
+	// Use the format add_xxxx or remove_xxxx
+
+	bool returnChance = false;
+
+	// Chance of getting poisoned
+	if ( strcmp( chanceDescription, "add_poison" ) == 0 ) {
+
+		//REMOVEME
+		int poison_resistance_chance = 20; // 20%
+
+		if ( gameLocal.random.RandomFloat() * 100 > poison_resistance_chance ) {
+			returnChance = true;
+		}
+
+	}
+
+}
+
+/*
+=================
+idPlayer::UpdateHeroStats
+=================
+*/
+void idPlayer::UpdateHeroStats( void ) {
+
+	const int heroUpdateRate = 2000;
+	int now = gameLocal.time;
+
+	if ( now >= heroStatsTime ) {
+
+		heroStatsTime = now;
+
+
+	}
+
+	/*
+
+	int healthDecrementAmount = 5;
+	int healthDecrementDelaySecs = 5;
+
+	if ( playerPoisoned )
+	{
+		if ( health > 0 )
+		{
+			if ( gameLocal.time >= healthNextDecreaseTime )
+			{
+				health -= healthDecrementAmount;
+				healthNextDecreaseTime = gameLocal.time + SEC2MS( healthDecrementAmount);
+			}
+		}
+	}
+
+
+	*/
+
+
+	/*
+
+	*** Mana
+
+	int ammo_mana;
+	int max_mana;
+
+	ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+
+	if ( inventory.ammo[ ammo_mana ] < 100 )
+	{
+		inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] + manaIncrementAmount;
+	}
+
+	*/
+
+
 }
 
 /*
@@ -10873,9 +10915,10 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	// Solarsplace - 16th May 2010 - Poision related
 	if ( damageDef->dict.GetBool( "poisoned" ) )
 	{
-		//REMOVED
-		//gameLocal.Printf( "idPlayer::Damage - The player HAS been poisoned.\n" );
-		playerPoisoned = true;
+		// SP - Updated 15th Mar 2013 - Player skills related
+		if ( CalculateHeroChance( "add_poison" ) ) {
+			playerPoisoned = true;
+		}
 	}
 
 	if ( damageDef->dict.GetBool( "burn" ) ) {
