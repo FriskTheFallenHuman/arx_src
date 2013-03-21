@@ -197,8 +197,48 @@ void idInventory::Clear( void ) {
 	deplete_ammount	= 0;
 	nextArmorDepleteTime = 0;
 
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 	// Solarsplace - Arx EOS
-	money			= 0;
+	money							= 0;
+	weaponUniqueName				= "";
+
+	arx_equipt_items.Clear();
+
+	arx_player_level				= 0;
+
+	arx_player_x_points				= 0;
+
+	arx_attribute_points			= 0;
+	arx_skill_points				= 0;
+
+	arx_attr_strength				= 0;
+	arx_attr_mental					= 0;
+	arx_attr_dexterity				= 0;
+	arx_attr_constitution			= 0;
+
+	arx_skill_casting				= 0;
+	arx_skill_close_combat			= 0;
+	arx_skill_defense				= 0;
+	arx_skill_ethereal_link			= 0;
+	arx_skill_intuition				= 0;
+	arx_skill_intelligence			= 0;
+	arx_skill_projectile			= 0;
+	arx_skill_stealth				= 0;
+	arx_skill_technical				= 0;
+
+	arx_stat_armour_class			= 0;
+	arx_stat_hit_points				= 0;
+	arx_stat_mana_points			= 0;
+	arx_stat_resistance_to_magic	= 0;
+	arx_stat_resistance_to_poison	= 0;
+	arx_stat_damage_inflicted		= 0;
+
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
 
 	memset( ammo, 0, sizeof( ammo ) );
 
@@ -295,8 +335,53 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	// armor
 	dict.SetInt( "armor", armor );
 
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 	// Solarsplace - Arx EOS
 	dict.SetInt( "money", money );
+	dict.Set( "weaponUniqueName", weaponUniqueName );
+
+	for ( i = 0; i < arx_equipt_items.Num(); i++ ) {
+		sprintf( key, "arx_equipt_items_%i", i );
+		dict.Set( key, arx_equipt_items[ i ] );
+	}
+	dict.SetInt( "arx_equipt_items_num", arx_equipt_items.Num() );
+
+	dict.SetInt( "arx_player_level", arx_player_level );
+
+	dict.SetInt( "arx_player_x_points", arx_player_x_points );
+	
+	dict.SetInt( "arx_attribute_points", arx_attribute_points );
+	dict.SetInt( "arx_skill_points", arx_skill_points );
+
+	dict.SetInt( "arx_attr_strength", arx_attr_strength );
+	dict.SetInt( "arx_attr_mental", arx_attr_mental );
+	dict.SetInt( "arx_attr_dexterity", arx_attr_dexterity );
+	dict.SetInt( "arx_attr_constitution", arx_attr_constitution );
+
+	dict.SetInt( "arx_skill_casting", arx_skill_casting );
+	dict.SetInt( "arx_skill_close_combat", arx_skill_close_combat );
+	dict.SetInt( "arx_skill_defense", arx_skill_defense );
+	dict.SetInt( "arx_skill_ethereal_link", arx_skill_ethereal_link );
+	dict.SetInt( "arx_skill_intuition", arx_skill_intuition );
+	dict.SetInt( "arx_skill_intelligence", arx_skill_intelligence );
+	dict.SetInt( "arx_skill_projectile", arx_skill_projectile );
+	dict.SetInt( "arx_skill_stealth", arx_skill_stealth );
+	dict.SetInt( "arx_skill_technical", arx_skill_technical );
+
+	dict.SetInt( "arx_stat_armour_class", arx_stat_armour_class );
+	dict.SetInt( "arx_stat_hit_points", arx_stat_hit_points );
+	dict.SetInt( "arx_stat_mana_points", arx_stat_mana_points );
+	dict.SetInt( "arx_stat_resistance_to_magic", arx_stat_resistance_to_magic );
+	dict.SetInt( "arx_stat_resistance_to_poison", arx_stat_resistance_to_poison );
+	dict.SetInt( "arx_stat_damage_inflicted", arx_stat_damage_inflicted );
+
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 
     // don't bother with powerups, maxhealth, maxarmor, or the clip
 
@@ -413,8 +498,53 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	deplete_rate	= dict.GetFloat( "deplete_rate", "2.0" );
 	deplete_ammount	= dict.GetInt( "deplete_ammount", "1" );
 
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 	// Solarsplace - Arx EOS
-	money			= dict.GetInt( "money", "0" );
+	money							= dict.GetInt( "money", "0" );
+	weaponUniqueName				= dict.GetString( "weaponUniqueName", "" );
+
+	num = dict.GetInt( "arx_equipt_items_num" );
+	arx_equipt_items.SetNum( num );
+	for ( i = 0; i < num; i++ ) {
+		sprintf( itemname, "arx_equipt_items_%i", i );
+		arx_equipt_items[i] = dict.GetString( itemname, "" );
+	}
+
+	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
+
+	arx_player_x_points				= dict.GetInt( "arx_player_x_points", "0" );
+
+	arx_attribute_points			= dict.GetInt( "arx_attribute_points", "0" );
+	arx_skill_points				= dict.GetInt( "arx_skill_points", "0" );
+
+	arx_attr_strength				= dict.GetInt( "arx_attr_strength", "0" );
+	arx_attr_mental					= dict.GetInt( "arx_attr_mental", "0" );
+	arx_attr_dexterity				= dict.GetInt( "arx_attr_dexterity", "0" );
+	arx_attr_constitution			= dict.GetInt( "arx_attr_constitution", "0" );
+
+	arx_skill_casting				= dict.GetInt( "arx_skill_casting", "0" );
+	arx_skill_close_combat			= dict.GetInt( "arx_skill_close_combat", "0" );
+	arx_skill_defense				= dict.GetInt( "arx_skill_defense", "0" );
+	arx_skill_ethereal_link			= dict.GetInt( "arx_skill_ethereal_link", "0" );
+	arx_skill_intuition				= dict.GetInt( "arx_skill_intuition", "0" );
+	arx_skill_intelligence			= dict.GetInt( "arx_skill_intelligence", "0" );
+	arx_skill_projectile			= dict.GetInt( "arx_skill_projectile", "0" );
+	arx_skill_stealth				= dict.GetInt( "arx_skill_stealth", "0" );
+	arx_skill_technical				= dict.GetInt( "arx_skill_technical", "0" );
+
+	arx_stat_armour_class			= dict.GetInt( "arx_stat_armour_class", "0" );
+	arx_stat_hit_points				= dict.GetInt( "arx_stat_hit_points", "0" );
+	arx_stat_mana_points			= dict.GetInt( "arx_stat_mana_points", "0" );
+	arx_stat_resistance_to_magic	= dict.GetInt( "arx_stat_resistance_to_magic", "0" );
+	arx_stat_resistance_to_poison	= dict.GetInt( "arx_stat_resistance_to_poison", "0" );
+	arx_stat_damage_inflicted		= dict.GetInt( "arx_stat_damage_inflicted", "0" );
+
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
 
 	// the clip and powerups aren't restored
 
@@ -522,8 +652,51 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( deplete_ammount );
 	savefile->WriteInt( nextArmorDepleteTime );
 
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 	// Solarsplace - Arx EOS
 	savefile->WriteInt( money );
+	savefile->WriteString( weaponUniqueName );
+
+	savefile->WriteInt( arx_equipt_items.Num() );
+	for( i = 0; i < arx_equipt_items.Num(); i++ ) {
+		savefile->WriteString( arx_equipt_items[ i ] );
+	}
+
+	savefile->WriteInt( arx_player_level );
+
+	savefile->WriteInt( arx_player_x_points );
+	
+	savefile->WriteInt( arx_attribute_points );
+	savefile->WriteInt( arx_skill_points );
+
+	savefile->WriteInt( arx_attr_strength );
+	savefile->WriteInt( arx_attr_mental );
+	savefile->WriteInt( arx_attr_dexterity );
+	savefile->WriteInt( arx_attr_constitution );
+
+	savefile->WriteInt( arx_skill_casting );
+	savefile->WriteInt( arx_skill_close_combat );
+	savefile->WriteInt( arx_skill_defense );
+	savefile->WriteInt( arx_skill_ethereal_link );
+	savefile->WriteInt( arx_skill_intuition );
+	savefile->WriteInt( arx_skill_intelligence );
+	savefile->WriteInt( arx_skill_projectile );
+	savefile->WriteInt( arx_skill_stealth );
+	savefile->WriteInt( arx_skill_technical );
+
+	savefile->WriteInt( arx_stat_armour_class );
+	savefile->WriteInt( arx_stat_hit_points );
+	savefile->WriteInt( arx_stat_mana_points );
+	savefile->WriteInt( arx_stat_resistance_to_magic );
+	savefile->WriteInt( arx_stat_resistance_to_poison );
+	savefile->WriteInt( arx_stat_damage_inflicted );
+
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
 
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
 		savefile->WriteInt( ammo[ i ] );
@@ -621,8 +794,53 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( deplete_ammount );
 	savefile->ReadInt( nextArmorDepleteTime );
 
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
+
 	// Solarsplace - Arx EOS
 	savefile->ReadInt( money );
+	savefile->ReadString( weaponUniqueName );
+
+	savefile->ReadInt( num );
+	for( i = 0; i < num; i++ ) {
+		idStr equipedItem;
+		savefile->ReadString( equipedItem );
+		arx_equipt_items.Append( equipedItem );
+	}
+
+	savefile->ReadInt( arx_player_level );
+
+	savefile->ReadInt( arx_player_x_points );
+
+	savefile->ReadInt( arx_attribute_points );
+	savefile->ReadInt( arx_skill_points );
+
+	savefile->ReadInt( arx_attr_strength );
+	savefile->ReadInt( arx_attr_mental );
+	savefile->ReadInt( arx_attr_dexterity );
+	savefile->ReadInt( arx_attr_constitution );
+
+	savefile->ReadInt( arx_skill_casting );
+	savefile->ReadInt( arx_skill_close_combat );
+	savefile->ReadInt( arx_skill_defense );
+	savefile->ReadInt( arx_skill_ethereal_link );
+	savefile->ReadInt( arx_skill_intuition );
+	savefile->ReadInt( arx_skill_intelligence );
+	savefile->ReadInt( arx_skill_projectile );
+	savefile->ReadInt( arx_skill_stealth );
+	savefile->ReadInt( arx_skill_technical );
+
+	savefile->ReadInt( arx_stat_armour_class );
+	savefile->ReadInt( arx_stat_hit_points );
+	savefile->ReadInt( arx_stat_mana_points );
+	savefile->ReadInt( arx_stat_resistance_to_magic );
+	savefile->ReadInt( arx_stat_resistance_to_poison );
+	savefile->ReadInt( arx_stat_damage_inflicted );
+
+	// ****************************************************
+	// ****************************************************
+	// ****************************************************
 
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
 		savefile->ReadInt( ammo[ i ] );
@@ -1341,8 +1559,7 @@ void idPlayer::Init( void ) {
 
 	//WIP
 	int poison_duration = spawnArgs.GetInt( "arx_poison_duration", "120" ) * 1000;
-	int stats_update_rate = spawnArgs.GetInt( "arx_poison_duration", "2" ) * 1000;
-
+	int stats_update_rate = spawnArgs.GetInt( "arx_stats_update_rate", "2" ) * 1000;
 
 	// Solarsplace - End
 
@@ -2569,11 +2786,15 @@ Saves any inventory and player stats when changing levels.
 ===============
 */
 void idPlayer::SavePersistantInfo( void ) {
+
 	idDict &playerInfo = gameLocal.persistentPlayerInfo[entityNumber];
 
 	playerInfo.Clear();
+
 	inventory.GetPersistantData( playerInfo );
+
 	playerInfo.SetInt( "health", health );
+
 	playerInfo.SetInt( "current_weapon", currentWeapon );
 
 	// SP - Arx - 21st Feb 2013
@@ -2588,6 +2809,7 @@ Restores any inventory and player stats when changing levels.
 ===============
 */
 void idPlayer::RestorePersistantInfo( void ) {
+
 	if ( gameLocal.isMultiplayer ) {
 		gameLocal.persistentPlayerInfo[entityNumber].Clear();
 	}
@@ -2595,8 +2817,11 @@ void idPlayer::RestorePersistantInfo( void ) {
 	spawnArgs.Copy( gameLocal.persistentPlayerInfo[entityNumber] );
 
 	inventory.RestoreInventory( this, spawnArgs );
+
 	health = spawnArgs.GetInt( "health", "100" );
+
 	if ( !gameLocal.isClient ) {
+
 		idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
 
 		// SP - Arx - 21st Feb 2013
@@ -8161,7 +8386,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		}
 
 		// Un-equip the item if equiped
-		inventory.equiptItems.Remove( inventory.items[invItemIndex]->GetString( "inv_unique_name" ) );
+		inventory.arx_equipt_items.Remove( inventory.items[invItemIndex]->GetString( "inv_unique_name" ) );
 
 		// Now remove the item from the players inventory
 		RemoveInventoryItem( droppingItem ); 
@@ -10465,6 +10690,7 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 	}
 
+	return returnChance;
 }
 
 /*
