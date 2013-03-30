@@ -4,6 +4,14 @@
 #ifndef __GAME_PLAYER_H__
 #define __GAME_PLAYER_H__
 
+/*
+===============================================================================
+
+	Player entity.
+	
+===============================================================================
+*/
+
 //-----------------------------------------------------------------------------
 // ---> ARX (EERIEmath.h)
 //-----------------------------------------------------------------------------
@@ -92,13 +100,19 @@
 // <--- ARX
 //-----------------------------------------------------------------------------
 
-/*
-===============================================================================
 
-	Player entity.
-	
-===============================================================================
-*/
+// <---- *** Arx ***
+
+const int ARX_EQUIPED_ITEMS_MAX = 4;
+
+enum {
+	ARX_EQUIPED_RING_LEFT = 0,
+	ARX_EQUIPED_RING_RIGHT,
+	ARX_EQUIPED_SUIT,
+	ARX_EQUIPED_WEAPON
+};
+
+// ----> *** Arx ***
 
 extern const idEventDef EV_Player_GetButtons;
 extern const idEventDef EV_Player_GetMove;
@@ -186,9 +200,10 @@ public:
 
 	// Solarsplace - Arx EOS
 	int						money;
+
 	idStr					weaponUniqueName; // Store unique string name of current active weapon
 
-	idStrList				arx_equipt_items;
+	idStr					arx_equiped_items[ ARX_EQUIPED_ITEMS_MAX ];
 
 	int						arx_player_level;
 	int						arx_player_x_points;
@@ -217,6 +232,9 @@ public:
 	int						arx_stat_resistance_to_magic;
 	int						arx_stat_resistance_to_poison;
 	int						arx_stat_damage_inflicted;
+
+	int						arx_timer_player_poison;
+	int						arx_timer_player_invisible;
 
 	// mp
 	int						ammoPredictTime;
@@ -388,9 +406,6 @@ public:
 	idUserInterface *		shoppingSystem;
 	bool					shoppingSystemOpen;
 	idEntity *				lastShopEntity;
-
-	// Solarsplace - Poison related
-	bool					playerPoisoned;
 
 	// Solarsplace - Water related
 	int						waterScreenFinishTime;
@@ -572,6 +587,7 @@ public:
 	bool					UpdateInventoryItem_health( int newWeaponHealth );
 	bool					UpdateInventoryItem_health_max( int newWeaponHealthMax ); // Think of it as max health / durability an item can be repaired to
 	const char *			GetInventoryItemHealthIcon( int health, int health_max, const idDict itemDict );
+	idStr					GetInventoryItemString( const char *uniqueItemName, const char *dictKey );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
@@ -756,10 +772,8 @@ private:
 	int						landTime;
 
 	int						currentWeapon;
-	int						currentWeaponHealth;	// SP - Arx - 21st Feb 2013 - Weapon health related
 	int						idealWeapon;
 	int						previousWeapon;
-	int						previousWeaponHealth;	// SP - Arx - 21st Feb 2013 - Weapon health related
 	int						weaponSwitchTime;
 	bool					weaponEnabled;
 	bool					showWeaponViewModel;

@@ -507,7 +507,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 
 	// May take further some day, but messing with RGB and alpha here seems to make no noticable difference.
 
-	if ( player->playerPoisoned ) {
+	if ( player->inventory.arx_timer_player_poison >= gameLocal.time ) {
 		renderSystem->CaptureRenderToImage( "_currentRender" );
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, poisonMaterial );

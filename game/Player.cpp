@@ -170,6 +170,11 @@ const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW"; // Must mirror in scripts 
 const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;		// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
 const float ARX_MAX_ITEM_PICKUP_DISTANCE_TELE = 364;	// Solarsplace 15th June 2012  - The max trace distance for a pickup item with telekinesis 
 
+const int ARX_EQUIPMENT_LEFT_RING = 1;
+const int ARX_EQUIPMENT_RIGHT_RING = 2;
+const int ARX_EQUIPMENT_SUIT = 3;
+const int ARX_EQUIPMENT_WEAPON = 4;
+
 //*****************************************************************
 //*****************************************************************
 
@@ -205,7 +210,10 @@ void idInventory::Clear( void ) {
 	money							= 0;
 	weaponUniqueName				= "";
 
-	arx_equipt_items.Clear();
+	int i;
+	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+		arx_equiped_items[ i ] = "";
+	}
 
 	arx_player_level				= 0;
 
@@ -235,6 +243,9 @@ void idInventory::Clear( void ) {
 	arx_stat_resistance_to_magic	= 0;
 	arx_stat_resistance_to_poison	= 0;
 	arx_stat_damage_inflicted		= 0;
+
+	arx_timer_player_poison			= 0;
+	arx_timer_player_invisible		= 0;
 
 	// ****************************************************
 	// ****************************************************
@@ -343,11 +354,13 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "money", money );
 	dict.Set( "weaponUniqueName", weaponUniqueName );
 
+	/*
 	for ( i = 0; i < arx_equipt_items.Num(); i++ ) {
 		sprintf( key, "arx_equipt_items_%i", i );
 		dict.Set( key, arx_equipt_items[ i ] );
 	}
 	dict.SetInt( "arx_equipt_items_num", arx_equipt_items.Num() );
+	*/
 
 	dict.SetInt( "arx_player_level", arx_player_level );
 
@@ -377,6 +390,9 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_stat_resistance_to_magic", arx_stat_resistance_to_magic );
 	dict.SetInt( "arx_stat_resistance_to_poison", arx_stat_resistance_to_poison );
 	dict.SetInt( "arx_stat_damage_inflicted", arx_stat_damage_inflicted );
+
+	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
+	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
 
 	// ****************************************************
 	// ****************************************************
@@ -506,12 +522,14 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	money							= dict.GetInt( "money", "0" );
 	weaponUniqueName				= dict.GetString( "weaponUniqueName", "" );
 
+	/*
 	num = dict.GetInt( "arx_equipt_items_num" );
 	arx_equipt_items.SetNum( num );
 	for ( i = 0; i < num; i++ ) {
 		sprintf( itemname, "arx_equipt_items_%i", i );
 		arx_equipt_items[i] = dict.GetString( itemname, "" );
 	}
+	*/
 
 	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
 
@@ -541,6 +559,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_stat_resistance_to_magic	= dict.GetInt( "arx_stat_resistance_to_magic", "0" );
 	arx_stat_resistance_to_poison	= dict.GetInt( "arx_stat_resistance_to_poison", "0" );
 	arx_stat_damage_inflicted		= dict.GetInt( "arx_stat_damage_inflicted", "0" );
+
+	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "0" );
+	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "0" );
 
 	// ****************************************************
 	// ****************************************************
@@ -660,10 +681,13 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( money );
 	savefile->WriteString( weaponUniqueName );
 
+	/*
 	savefile->WriteInt( arx_equipt_items.Num() );
 	for( i = 0; i < arx_equipt_items.Num(); i++ ) {
-		savefile->WriteString( arx_equipt_items[ i ] );
+		savefile->WriteString( arx_equipt_items[ i ].unique_name );
+		savefile->WriteInt( arx_equipt_items[ i ].equipment_position );
 	}
+	*/
 
 	savefile->WriteInt( arx_player_level );
 
@@ -693,6 +717,9 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_stat_resistance_to_magic );
 	savefile->WriteInt( arx_stat_resistance_to_poison );
 	savefile->WriteInt( arx_stat_damage_inflicted );
+
+	savefile->WriteInt( arx_timer_player_poison );
+	savefile->WriteInt( arx_timer_player_invisible );
 
 	// ****************************************************
 	// ****************************************************
@@ -802,12 +829,14 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( money );
 	savefile->ReadString( weaponUniqueName );
 
+	/*
 	savefile->ReadInt( num );
 	for( i = 0; i < num; i++ ) {
 		idStr equipedItem;
 		savefile->ReadString( equipedItem );
 		arx_equipt_items.Append( equipedItem );
 	}
+	*/
 
 	savefile->ReadInt( arx_player_level );
 
@@ -837,6 +866,9 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_stat_resistance_to_magic );
 	savefile->ReadInt( arx_stat_resistance_to_poison );
 	savefile->ReadInt( arx_stat_damage_inflicted );
+
+	savefile->ReadInt( arx_timer_player_poison );
+	savefile->ReadInt( arx_timer_player_invisible );
 
 	// ****************************************************
 	// ****************************************************
@@ -1278,7 +1310,6 @@ idPlayer::idPlayer() {
 	// *********************************************************************************
 	// Solarsplace - Arx End Of Sun
 
-	playerPoisoned			= false;				// Poison related
 	magicWand				= NULL;					// Spell casting related
 	magicWandTrail			= NULL;					// Spell casting related
 	magicModeActive			= false;				// Spell casting related
@@ -1286,14 +1317,16 @@ idPlayer::idPlayer() {
 	magicAttackInProgress	= false;				// Spell casting related
 	magicDoingPreCastSpellProjectile	= false;	// Spell casting related			
 
-	invItemGroupCount = new idDict();
-	invItemGroupPointer = new idDict();
+	invItemGroupCount			= new idDict();
+	invItemGroupPointer			= new idDict();
 
-	waterScreenFinishTime = 0;
-	playerUnderWater = false;
+	waterScreenFinishTime		= 0;
+	playerUnderWater			= false;
 
-	playerInvisibleEndTime = 0;
-	playerTelekinesisEndTime = 0;
+	playerInvisibleEndTime		= 0;
+	playerTelekinesisEndTime	= 0;
+
+	heroStatsTime				= 0;
 
 	// *********************************************************************************
 	// *********************************************************************************
@@ -1378,10 +1411,8 @@ idPlayer::idPlayer() {
 	landTime				= 0;
 
 	currentWeapon			= -1;
-	currentWeaponHealth		=  0;	// SP - Arx
 	idealWeapon				= -1;
 	previousWeapon			= -1;
-	previousWeaponHealth	=  0;	// SP - Arx
 	weaponSwitchTime		=  0;
 	weaponEnabled			= true;
 	weapon_soulcube			= -1;
@@ -1536,10 +1567,6 @@ void idPlayer::SetupWeaponEntity( void ) {
 		currentWeapon = -1;
 	}
 
-	// SP - Arx - 21st Feb 2013
-	currentWeaponHealth = 0;
-	previousWeaponHealth = 0;
-
 	for( w = 0; w < MAX_WEAPONS; w++ ) {
 		weap = spawnArgs.GetString( va( "def_weapon%d", w ) );
 		if ( weap && *weap ) {
@@ -1557,9 +1584,7 @@ void idPlayer::Init( void ) {
 
 	// Solarsplace - Start
 
-	//WIP
-	int poison_duration = spawnArgs.GetInt( "arx_poison_duration", "120" ) * 1000;
-	int stats_update_rate = spawnArgs.GetInt( "arx_stats_update_rate", "2" ) * 1000;
+	heroStatsTime			= 0;
 
 	// Solarsplace - End
 
@@ -2238,14 +2263,13 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	//*****************************************************************************
 	// Begin - Solarsplace - Arx End Of Sun
 
-	// Poison related
-	savefile->WriteBool( playerPoisoned );
-
 	// Magic related
 	savefile->WriteBool( magicModeActive );
 	savefile->WriteBool( lastMagicModeActive );
 	savefile->WriteObject( magicWand );
 	savefile->WriteObject( magicWandTrail );
+
+	savefile->WriteInt( heroStatsTime );
 
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************
@@ -2534,14 +2558,13 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	//*****************************************************************************
 	// Begin - Solarsplace - Arx End Of Sun
 
-	// Poison related
-	savefile->ReadBool( playerPoisoned );
-
 	// Magic related
 	savefile->ReadBool( magicModeActive );
 	savefile->ReadBool( lastMagicModeActive );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( magicWand ) );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( magicWandTrail ) );
+
+	savefile->ReadInt( heroStatsTime );
 
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************
@@ -2796,9 +2819,6 @@ void idPlayer::SavePersistantInfo( void ) {
 	playerInfo.SetInt( "health", health );
 
 	playerInfo.SetInt( "current_weapon", currentWeapon );
-
-	// SP - Arx - 21st Feb 2013
-	playerInfo.SetInt( "current_weapon_health", currentWeaponHealth );
 }
 
 /*
@@ -2823,9 +2843,6 @@ void idPlayer::RestorePersistantInfo( void ) {
 	if ( !gameLocal.isClient ) {
 
 		idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
-
-		// SP - Arx - 21st Feb 2013
-		currentWeaponHealth = spawnArgs.GetInt( "current_weapon_health", "100" );
 	}
 }
 
@@ -3044,11 +3061,10 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	_hud->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 	// Solarsplace 17th May 2010 - Poison related
-	if ( playerPoisoned )
+	if ( inventory.arx_timer_player_poison >= gameLocal.time )
 	{ _hud->SetStateString( "poisoned", "1" ); }
 	else
 	{ _hud->SetStateString( "poisoned", "0" ); }
-	//_hud->SetStateBool( "poisoned", playerPoisoned );
 	
 	_hud->SetStateBool( "player_ammo_empty", ( ammoamount == 0 ) );
 	_hud->SetStateBool( "player_clip_empty", ( weapon.GetEntity()->ClipSize() ? inclip == 0 : false ) );
@@ -4226,6 +4242,38 @@ bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dict
 	}
 
 	return updated;
+}
+
+/*
+===============
+idPlayer::GetInventoryItemValue - Solarsplace - 31st Mar 2013
+===============
+*/
+idStr idPlayer::GetInventoryItemString( const char *uniqueItemName, const char *dictKey ) {
+
+	// The inventory item is usually identified via uniqueItemName = inv_unique_name key
+
+	idStr returnValue = "";
+
+	// Loop through all inventory items
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+
+		// Get the unique name for this item
+		const char *inv_uniqueName = inventory.items[i]->GetString( "inv_unique_name" );
+
+		// Do we have a unique inventory name key?
+		if ( inv_uniqueName && *inv_uniqueName ) {
+
+			// Does the unique inventory item name match the unique name we are looking for?
+			if ( idStr::Icmp( uniqueItemName, inv_uniqueName ) == 0 ) {
+
+				inventory.items[i]->GetString( idStr(dictKey), "", returnValue );
+				break;
+			}
+		}
+	}
+
+	return returnValue;
 }
 
 /*
@@ -6351,7 +6399,7 @@ void idPlayer::ProcessMagic()
 				if ( strcmp( customMagicSpell, "remove_poison" ) == 0 )
 				{
 					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-					playerPoisoned = false;
+					inventory.arx_timer_player_poison = gameLocal.time;
 				}
 
 				// Telekinesis
@@ -8374,19 +8422,23 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// Populate dictionary with key vals of dropping item
 		idDict *droppingItem = inventory.items[invItemIndex];
 
-		// Is the current weapon the player is holding is the same type as the one just dropped?
-		if ( strcmp( weapon.GetEntity()->spawnArgs.GetString( "inv_weapon", "" ), droppingItem->GetString( "inv_weapon" ) ) == 0 )
-		{
-			// If after the drop we no longer have any weapons of this type in the inventory, then select the fists.
-			if ( FindInventoryItemCount( droppingItem->GetString( "inv_name" ) ) <= 1 )
-			{
+		// Dropping the weapon the player is currently using?
+		if ( strcmp( inventory.weaponUniqueName, droppingItem->GetString( "inv_unique_name" ) ) == 0 ) {
 
+				// Clear the inventory / weapon unique name
+				inventory.weaponUniqueName = "";
+
+				// Now select the fists
 				SelectWeapon( 0, true );
-			}
 		}
 
-		// Un-equip the item if equiped
-		inventory.arx_equipt_items.Remove( inventory.items[invItemIndex]->GetString( "inv_unique_name" ) );
+		// Un-equip the item if equiped (if any match)
+		int i;
+		for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+			if ( inventory.arx_equiped_items[ i ] == droppingItem->GetString( "inv_unique_name" ) ) {
+				inventory.arx_equiped_items[ i ] == "";
+			}
+		}
 
 		// Now remove the item from the players inventory
 		RemoveInventoryItem( droppingItem ); 
@@ -8415,7 +8467,7 @@ void idPlayer::UpdateShoppingSystem( void )
 		shoppingSystem->SetStateString( "player_money", va( "%i", inventory.money ) );
 
 		// Solarsplace - 16th May 2010 - Poison related
-		if ( playerPoisoned )
+		if ( inventory.arx_timer_player_poison >= gameLocal.time )
 		{ shoppingSystem->SetStateString( "poisoned", "1" ); }
 		else
 		{ shoppingSystem->SetStateString( "poisoned", "0" ); }
@@ -8575,7 +8627,7 @@ void idPlayer::UpdateInventoryGUI( void )
 		inventorySystem->SetStateString( "player_money", va( "%i", inventory.money ) );
 
 		// Solarsplace - 16th May 2010 - Poison related
-		if ( playerPoisoned )
+		if ( inventory.arx_timer_player_poison >= gameLocal.time )
 		{ inventorySystem->SetStateString( "poisoned", "1" ); }
 		else
 		{ inventorySystem->SetStateString( "poisoned", "0" ); }
@@ -8680,7 +8732,7 @@ void idPlayer::UpdateJournalGUI( void )
 		int totalMana; // Solarsplace 16th May 2010 - Journal related
 
 		// Solarsplace - 16th May 2010 - Poison related
-		if ( playerPoisoned )
+		if ( inventory.arx_timer_player_poison >= gameLocal.time )
 		{ objectiveSystem->SetStateString( "poisoned", "1" ); }
 		else
 		{ objectiveSystem->SetStateString( "poisoned", "0" ); }
@@ -8693,6 +8745,15 @@ void idPlayer::UpdateJournalGUI( void )
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
 		objectiveSystem->SetStateInt( "player_health", health );
+
+		// Equiped items
+		idStr equipedItemIcon;
+
+		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ], "inv_icon" );
+		objectiveSystem->SetStateString( "ring_left_icon", equipedItemIcon.c_str() );
+
+		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ], "inv_icon" );
+		objectiveSystem->SetStateString( "ring_right_icon", equipedItemIcon.c_str() );
 
 		// Runes -- Not sure if this is efficient? suspect not.... Don't see the game doing it anywhere :(
 		const char *result;
@@ -8927,62 +8988,123 @@ Returns false if the item shouldn't be consumed
 */
 bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 
-	// Solarsplace 16th Mar 2010
+	// Solarsplace - Arx End Of Sun
 
-	// Don't bother trying any of this if there is nothing in the inventory.
-	if ( inventory.items.Num() <= 0 )
+	//  Inventory safety
+	if ( inventory.items.Num() <= 0 || invItemIndex < 0 || invItemIndex > inventory.items.Num() )
 	{ return false; }
 
-	// Solarsplace 2nd July 2010 - Another safety net!
-	if ( invItemIndex < 0 )
-	{ return false; }
-
-	// Solarsplace 17th Mar 2010
-	// Do not attempt to consume an inventory item whose index is greater than the number of inventory items held.
-	if ( invItemIndex > inventory.items.Num() ) // Solarsplace 26th May 2010 - This probably cannot happen anymore.
-	{ return false; }
-
+	// Common D3 properties and variables
 	int					i;
 	const idKeyValue	*arg;
 	bool				gave = false;
 	const char			*sound;
 	const char			*itemAttribute;
 
-	// Get the inv_name of the item
-	const char *iname = inventory.items[invItemIndex]->GetString( "inv_name" );
+	// Common Arx properties and variables
+	bool	processedItem = false;
+	const	char *iname;
+	idStr	equipType;
+	idStr	uniqueName;
+	int		itemHealth;
+	int		itemHealthMax;
 
-	// Locate the item and put its spawn args in item
+	// Get the inv_name of the item and use this to put its spawn args in item
+	iname = inventory.items[invItemIndex]->GetString( "inv_name" );
 	idDict *item = FindInventoryItem( iname );
 
-	// Solarsplace - 14th Aug 2010 - Weapons
-	// Solarsplace - 2nd Jul 2012 - Updated if condition to be more specific. Not sure how it ever worked before now....
+	// Gather common information
+	inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
+	inventory.items[invItemIndex]->GetInt( "inv_health_max", "100", itemHealthMax );
+	inventory.items[invItemIndex]->GetString( "inv_arx_equipable_type", "", equipType );
+	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
+
+	// ********************************************************************************************
+	// ********************************************************************************************
+	// ********************************************************************************************
+	// *** WEAPONS
+
 	if ( !strcmp( item->GetString( "inv_weapon", "" ), "" ) == 0 )
 	{
 
-		// SP - Arx - 21st Feb 2013 - Weapon health related
-		previousWeaponHealth = weapon.GetEntity()->health;
+		if ( itemHealth > 0 ) {
 
-		int weaponId = item->GetInt( "inv_weapon_def" );
-		SelectWeapon( weaponId, false );
+			// Clear any previous equiped weapon 
+			inventory.arx_equiped_items[ ARX_EQUIPED_WEAPON ] = "";
 
-		// SP - Arx - 21st Feb 2013 - Weapon health related
-		// Get the unique inv_name of the item
-		const char *uname = inventory.items[invItemIndex]->GetString( "inv_unique_name" );
-		inventory.weaponUniqueName = idStr( uname );
-		gameLocal.Printf( "Setting equiped weapon unique name to '%s'\n", uname ); //REMOVEME
+			// Switch to the inventory selected weapon
+			int weaponId = inventory.items[invItemIndex]->GetInt( "inv_weapon_def" );
+			SelectWeapon( weaponId, false );
 
-		int weaponHealth = inventory.items[invItemIndex]->GetInt( "inv_health", "0" );
-		weapon.GetEntity()->health = weaponHealth;
-		gameLocal.Printf( "Setting equiped weapon health to '%d'\n", weaponHealth ); //REMOVEME
+			// Set the unique name of this weapon: This is basically used to tie the weapon class with the current weapon
+			inventory.weaponUniqueName = uniqueName;
 
-		int weaponHealthMax = inventory.items[invItemIndex]->GetInt( "inv_health_max", "100" );
-		weapon.GetEntity()->health_max = weaponHealthMax;
-		gameLocal.Printf( "Setting equiped weapon health_max to '%d'\n", weaponHealthMax ); //REMOVEME
+			// Set the weapon health
+			weapon.GetEntity()->health = itemHealth;
 
-		// Optional, may wish to play an equip sound.
-		sound = item->GetString( "snd_consume" );
-		if ( sound )
-		{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
+			// Set the weapon max health
+			weapon.GetEntity()->health_max = itemHealthMax;
+
+			// Optional, may wish to play an equip sound.
+			sound = item->GetString( "snd_consume" );
+			if ( sound )
+			{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
+
+		}
+
+		processedItem = true;
+	}
+
+	// ********************************************************************************************
+	// ********************************************************************************************
+	// ********************************************************************************************
+	// *** EQUIPABLE ITEMS
+
+	if ( item->GetBool( "inv_arx_equipable_item", "0" ) ) {
+
+		bool itemEquiped = false;
+
+		if ( equipType == "ring" ) {
+
+			bool leftRingFull = false;
+			bool rightRingFull = false;
+
+			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] != "" ) { leftRingFull = true; }
+			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] != "" ) { rightRingFull = true; }
+
+			// If left and right rings are already equiped swap the left one.
+			if ( leftRingFull && rightRingFull ) {
+				inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = uniqueName;
+				itemEquiped = true;
+			} else {
+				// Else file the empty ring slot
+				if ( !leftRingFull ) {
+					inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = uniqueName;
+					itemEquiped = true;
+				} else {
+					inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = uniqueName;
+					itemEquiped = true;
+				}
+			}
+
+		} else if ( equipType == "weapon" ) {
+
+			inventory.arx_equiped_items[ ARX_EQUIPED_WEAPON ] = uniqueName;
+			itemEquiped = true;
+		}
+
+		if ( itemEquiped ) {
+			// Optional, may wish to play an equip sound.
+			sound = item->GetString( "snd_consume" );
+			if ( sound )
+			{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
+		}
+
+		processedItem = true;
+	}
+
+	// SP - Arx EOS - Return if item handled above.
+	if ( processedItem ) {
 		return true;
 	}
 
@@ -9026,7 +9148,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				// Cure poison
 				if ( strcmp( itemAttribute, "remove_poison" ) == 0 )
 				{
-					playerPoisoned = false;
+					inventory.arx_timer_player_poison = gameLocal.time;
 					gave = true;
 				}
 
@@ -10700,14 +10822,25 @@ idPlayer::UpdateHeroStats
 */
 void idPlayer::UpdateHeroStats( void ) {
 
+	const int poisonDamageAmount = 5;
 	const int heroUpdateRate = 2000;
 	int now = gameLocal.time;
 
 	if ( now >= heroStatsTime ) {
 
-		heroStatsTime = now;
+		heroStatsTime = now + heroUpdateRate;
 
+		// Damages
+		if ( health > 0 ) {
 
+			// Poison damage
+			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
+				if ( CalculateHeroChance( "add_poison" ) ) {
+					health -= poisonDamageAmount;
+				}
+			}
+
+		}
 	}
 
 	/*
@@ -11139,11 +11272,12 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	}
 	
 	// Solarsplace - 16th May 2010 - Poision related
-	if ( damageDef->dict.GetBool( "poisoned" ) )
+	int poisonTime = damageDef->dict.GetInt( "poisoned", "0" );
+	if ( poisonTime > 0 )
 	{
 		// SP - Updated 15th Mar 2013 - Player skills related
 		if ( CalculateHeroChance( "add_poison" ) ) {
-			playerPoisoned = true;
+			inventory.arx_timer_player_poison += SEC2MS( poisonTime );
 		}
 	}
 
