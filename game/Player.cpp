@@ -4139,7 +4139,7 @@ bool idPlayer::UpdateInventoryItem_health( int newWeaponHealth ) {
 	sprintf( weaponHealth, "%d", newWeaponHealth );
 	weaponUniqueName = inventory.weaponUniqueName;
 
-	gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
+	//gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() );
 
 	return UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health", weaponHealth.c_str() );
 
@@ -4223,7 +4223,7 @@ bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dict
 		// Get the unique name for this item
 		const char *inv_uniqueName = inventory.items[i]->GetString( "inv_unique_name" );
 
-		gameLocal.Printf( "idPlayer::UpdateInventoryItem inventory.items[%d] unique name is '%s' updated\n", i, inv_uniqueName ); //REMOVEME
+		//gameLocal.Printf( "idPlayer::UpdateInventoryItem inventory.items[%d] unique name is '%s' updated\n", i, inv_uniqueName );
 
 		// Do we have a unique inventory name key?
 		if ( inv_uniqueName && *inv_uniqueName ) {
@@ -4234,7 +4234,7 @@ bool idPlayer::UpdateInventoryItem( const char *uniqueItemName, const char *dict
 				// Add new or update original key val
 				inventory.items[i]->Set( dictKey, dictValue );
 
-				gameLocal.Printf( "idPlayer::UpdateInventoryItem '%s', '%s', '%s' updated\n", uniqueItemName, dictKey, dictValue ); //REMOVEME
+				//gameLocal.Printf( "idPlayer::UpdateInventoryItem '%s', '%s', '%s' updated\n", uniqueItemName, dictKey, dictValue );
 
 				updated = true;
 			}
@@ -8727,8 +8727,95 @@ void idPlayer::UpdateInventoryGUI( void )
 
 void idPlayer::UpdateJournalGUI( void )
 {
+	// Solarsplace - Arx End Of Sun
+
 	if ( objectiveSystem && objectiveSystemOpen )
 	{
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *** Book skills
+
+		// *** Equipped armour
+		// LOGIC TODO
+		const int ARX_PLAYER_ARMOUR_NONE = 0;
+		const int ARX_PLAYER_ARMOUR_GOBINSKINS = 1;
+		const int ARX_PLAYER_ARMOUR_HUMANGUARD = 2;
+		const int ARX_PLAYER_ARMOUR_TRAVELERS = 3;
+		objectiveSystem->SetStateInt( "arx_player_armour", ARX_PLAYER_ARMOUR_GOBINSKINS );
+
+		idStr equipedItemIcon;
+
+		// *** Left ring equipment
+		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ], "inv_icon" );
+		if ( strcmp( equipedItemIcon, "" ) == 0 ) {
+			objectiveSystem->SetStateBool( "ring_left_equipped", false );
+			objectiveSystem->SetStateString( "ring_left_icon", "" );
+		} else {
+			objectiveSystem->SetStateBool( "ring_left_equipped", true );
+			objectiveSystem->SetStateString( "ring_left_icon", equipedItemIcon.c_str() );
+		}
+
+		// *** Right ring equipment
+		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ], "inv_icon" );
+		if ( strcmp( equipedItemIcon, "" ) == 0 ) {
+			objectiveSystem->SetStateBool( "ring_right_equipped", false );
+			objectiveSystem->SetStateString( "ring_right_icon", "" );
+		} else {
+			objectiveSystem->SetStateBool( "ring_right_equipped", true );
+			objectiveSystem->SetStateString( "ring_right_icon", equipedItemIcon.c_str() );
+		}
+
+		// Level and XP's
+		objectiveSystem->SetStateInt( "arx_player_level", inventory.arx_player_level );
+		objectiveSystem->SetStateInt( "arx_player_x_points", inventory.arx_player_x_points );
+
+		bool hasAttributePointsToSpend = false;
+		if ( inventory.arx_attribute_points > 0 ) {
+			hasAttributePointsToSpend = true;
+		}
+
+		bool hasSkillPointsToSpend = false;
+		if ( inventory.arx_skill_points > 0 ) {
+			hasSkillPointsToSpend = true;
+		}
+
+		// Attributes & attribute points
+		objectiveSystem->SetStateBool( "arx_attribute_points_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateInt( "arx_attribute_points", inventory.arx_attribute_points );
+		objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.arx_attr_constitution ); // 4
+		objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.arx_attr_dexterity ); // 3
+		objectiveSystem->SetStateInt( "arx_attr_mental", inventory.arx_attr_mental ); // 2
+		objectiveSystem->SetStateInt( "arx_attr_strength", inventory.arx_attr_strength ); // 1
+
+		// Skills & skill points
+		objectiveSystem->SetStateBool( "arx_skill_points_visible", hasSkillPointsToSpend && !hasAttributePointsToSpend );
+		objectiveSystem->SetStateInt( "arx_skill_points", inventory.arx_skill_points );
+		objectiveSystem->SetStateInt( "arx_skill_casting", inventory.arx_skill_casting ); // 10
+		objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.arx_skill_close_combat ); // 11
+		objectiveSystem->SetStateInt( "arx_skill_defense", inventory.arx_skill_defense ); // 13
+		objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.arx_skill_ethereal_link ); // 8
+		objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.arx_skill_intelligence ); // 9
+		objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.arx_skill_intuition ); // 7
+		objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.arx_skill_projectile ); // 12
+		objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.arx_skill_stealth ); // 5
+		objectiveSystem->SetStateInt( "arx_skill_technical", inventory.arx_skill_technical ); // 6
+
+		// Apply button for skills and attributes
+		objectiveSystem->SetStateBool( "arx_points_apply_button_visible", true ); // LOGIC = TODO
+
+		// Player class totals
+		objectiveSystem->SetStateInt( "arx_stat_armour_class", inventory.arx_stat_armour_class ); // 1
+		objectiveSystem->SetStateInt( "arx_stat_damage_inflicted", inventory.arx_stat_damage_inflicted ); // 6
+		objectiveSystem->SetStateInt( "arx_stat_hit_points", inventory.arx_stat_hit_points ); // 2
+		objectiveSystem->SetStateInt( "arx_stat_mana_points", inventory.arx_stat_mana_points ); // 4
+		objectiveSystem->SetStateInt( "arx_stat_resistance_to_magic", inventory.arx_stat_resistance_to_magic ); // 3
+		objectiveSystem->SetStateInt( "arx_stat_resistance_to_poison", inventory.arx_stat_resistance_to_poison ); // 5
+
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+
 		int totalMana; // Solarsplace 16th May 2010 - Journal related
 
 		// Solarsplace - 16th May 2010 - Poison related
@@ -8745,15 +8832,6 @@ void idPlayer::UpdateJournalGUI( void )
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
 		objectiveSystem->SetStateInt( "player_health", health );
-
-		// Equiped items
-		idStr equipedItemIcon;
-
-		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ], "inv_icon" );
-		objectiveSystem->SetStateString( "ring_left_icon", equipedItemIcon.c_str() );
-
-		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ], "inv_icon" );
-		objectiveSystem->SetStateString( "ring_right_icon", equipedItemIcon.c_str() );
 
 		// Runes -- Not sure if this is efficient? suspect not.... Don't see the game doing it anywhere :(
 		const char *result;

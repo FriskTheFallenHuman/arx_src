@@ -5299,8 +5299,7 @@ void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &
 		return;
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "idAE::AddDamageEffect - AI (%s) is using damageDefName (%s)\n", this->name.c_str(), damageDefName );
+	//gameLocal.Printf( "idAE::AddDamageEffect - AI (%s) is using damageDefName (%s)\n", this->name.c_str(), damageDefName );
 
 	dir = velocity;
 	dir.Normalize();

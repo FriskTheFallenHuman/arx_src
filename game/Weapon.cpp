@@ -1302,7 +1302,7 @@ void idWeapon::Think( void ) {
 
 				int healthPercentage = ( (float)health / (float)health_max ) * 100;
 
-				gameLocal.Printf( "idWeapon::Think healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max ); //REMOVEME
+				//gameLocal.Printf( "idWeapon::Think healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max );
 
 				if ( healthPercentage >= 81 ) {
 
@@ -1340,7 +1340,7 @@ void idWeapon::Think( void ) {
 
 				// If the weapon has damage skin(s) then set the new damage skin
 				if ( !strcmp( damageSkinKey, "" ) == 0 ) {
-					gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey ); // REMOVEME
+					//gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey );
 					Event_SetSkin( damageSkinKey );
 				}
 
@@ -3150,8 +3150,7 @@ void idWeapon::Event_Melee( void ) {
 			damageWeapon = gameLocal.random.RandomInt( damageWeapon );
 			health -= damageWeapon;
 
-			//REMOVEME
-			gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+			//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
 
 			// ************************************************
 
