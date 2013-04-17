@@ -233,6 +233,24 @@ public:
 	int						arx_stat_resistance_to_poison;
 	int						arx_stat_damage_inflicted;
 
+	int						tmp_arx_attribute_points;
+	int						tmp_arx_skill_points;
+
+	int						tmp_arx_attr_strength;
+	int						tmp_arx_attr_mental;
+	int						tmp_arx_attr_dexterity;
+	int						tmp_arx_attr_constitution;
+
+	int						tmp_arx_skill_casting;
+	int						tmp_arx_skill_close_combat;
+	int						tmp_arx_skill_defense;
+	int						tmp_arx_skill_ethereal_link;
+	int						tmp_arx_skill_intuition;
+	int						tmp_arx_skill_intelligence;
+	int						tmp_arx_skill_projectile;
+	int						tmp_arx_skill_stealth;
+	int						tmp_arx_skill_technical;
+
 	int						arx_timer_player_poison;
 	int						arx_timer_player_invisible;
 

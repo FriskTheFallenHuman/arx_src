@@ -5473,6 +5473,103 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	/*****************************************************************************************/
 	/*****************************************************************************************/
 	/*****************************************************************************************/
+	// *** Journal
+
+	if ( token.Icmp( "arx_attr_strength_dec" ) == 0 ) {
+		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attr_strength --;
+	}
+
+	if ( token.Icmp( "arx_attr_mental_dec" ) == 0 ) {
+		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attr_mental --;
+	}
+
+	if ( token.Icmp( "arx_attr_dexterity_dec" ) == 0 ) {
+		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attr_dexterity --;
+	}
+
+	if ( token.Icmp( "arx_attr_constitution_dec" ) == 0 ) {
+		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attr_constitution --;
+	}
+
+	if ( token.Icmp( "arx_skill_casting_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_casting --;
+	}
+
+	if ( token.Icmp( "arx_skill_close_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_close_combat --;
+	}
+
+	if ( token.Icmp( "arx_skill_defense_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_defense --;
+	}
+
+	if ( token.Icmp( "arx_skill_ethereal_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_ethereal_link --;
+	}
+
+	if ( token.Icmp( "arx_skill_intuition_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_intuition --;
+	}
+
+	if ( token.Icmp( "arx_skill_intelligence_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_intelligence --;
+	}
+
+	if ( token.Icmp( "arx_skill_projectile_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_projectile --;
+	}
+
+	if ( token.Icmp( "arx_skill_stealth_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_stealth --;
+	}
+
+	if ( token.Icmp( "arx_skill_technical_dec" ) == 0 ) {
+		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_technical --;
+	}
+
+	if ( token.Icmp( "arx_apply_attr_skill_points" ) == 0 ) {
+
+		inventory.arx_attribute_points = 0;
+		inventory.tmp_arx_attribute_points = 0;
+
+		inventory.arx_skill_points = 0;
+		inventory.tmp_arx_skill_points = 0;
+
+		inventory.arx_attr_strength = inventory.tmp_arx_attr_strength;
+		inventory.arx_attr_mental = inventory.tmp_arx_attr_mental;
+		inventory.arx_attr_dexterity = inventory.tmp_arx_attr_dexterity;
+		inventory.arx_attr_constitution = inventory.tmp_arx_attr_constitution;
+
+		inventory.arx_skill_casting = inventory.tmp_arx_skill_casting;
+		inventory.arx_skill_close_combat = inventory.tmp_arx_skill_close_combat;
+		inventory.arx_skill_defense = inventory.tmp_arx_skill_defense;
+		inventory.arx_skill_ethereal_link = inventory.tmp_arx_skill_ethereal_link;
+		inventory.arx_skill_intuition = inventory.tmp_arx_skill_intuition;
+		inventory.arx_skill_intelligence = inventory.tmp_arx_skill_intelligence;
+		inventory.arx_skill_projectile = inventory.tmp_arx_skill_projectile;
+		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
+		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
+
+	}
+
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
 
 	src->UnreadToken( &token );
 	return false;
@@ -7231,6 +7328,25 @@ void idPlayer::ToggleJournalSystem(void)
 
 	if( !journalSystemOpen )
 	{
+		// Intalise any variables
+		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
+		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
+
+		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
+		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
+		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
+		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
+
+		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
+		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
+		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
+		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
+		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
+		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
+		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
+		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
+		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
+
 		journalSystem->Activate( true, gameLocal.time );
 		journalSystemOpen = true;
 	}
@@ -8780,29 +8896,109 @@ void idPlayer::UpdateJournalGUI( void )
 			hasSkillPointsToSpend = true;
 		}
 
+		/*
+		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
+		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
+
+		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
+		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
+		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
+		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
+
+		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
+		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
+		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
+		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
+		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
+		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
+		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
+		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
+		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
+		*/
+
+		// *** Start - dont allow decrement lower than current value
+		objectiveSystem->SetStateBool( "arx_attr_strength_dec_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_mental_dec_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_dexterity_dec_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_constitution_dec_visible", hasAttributePointsToSpend );
+
+		objectiveSystem->SetStateBool( "arx_skill_casting_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_close_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_defense_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_ethereal_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_intuition_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_intelligence_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_projectile_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_stealth_dec_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_technical_dec_visible", hasSkillPointsToSpend );
+		// *** End - dont allow decrement lower than current value
+
+		// *** Start - Only allow increment if attr or skill points to spend
+		bool allowIncrement;
+		allowIncrement = !( inventory.tmp_arx_attr_strength == inventory.arx_attr_strength );
+		objectiveSystem->SetStateBool( "arx_attr_strength_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_attr_mental == inventory.arx_attr_mental );
+		objectiveSystem->SetStateBool( "arx_attr_mental_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_attr_dexterity == inventory.arx_attr_dexterity );
+		objectiveSystem->SetStateBool( "arx_attr_dexterity_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_attr_constitution == inventory.arx_attr_constitution );
+		objectiveSystem->SetStateBool( "arx_attr_constitution_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_casting == inventory.arx_skill_casting );
+		objectiveSystem->SetStateBool( "arx_skill_casting_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_close_combat == inventory.arx_skill_close_combat );
+		objectiveSystem->SetStateBool( "arx_skill_close_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_defense == inventory.arx_skill_defense );
+		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_ethereal_link == inventory.arx_skill_ethereal_link );
+		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_intuition == inventory.arx_skill_intuition );
+		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_intelligence == inventory.arx_skill_intelligence );
+		objectiveSystem->SetStateBool( "arx_skill_intelligence_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_projectile == inventory.arx_skill_projectile );
+		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_stealth == inventory.arx_skill_stealth );
+		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", allowIncrement );
+
+		allowIncrement = !( inventory.tmp_arx_skill_technical == inventory.arx_skill_technical );
+		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", allowIncrement );
+		// *** End - dont allow decrement lower than current value
+
 		// Attributes & attribute points
 		objectiveSystem->SetStateBool( "arx_attribute_points_visible", hasAttributePointsToSpend );
-		objectiveSystem->SetStateInt( "arx_attribute_points", inventory.arx_attribute_points );
-		objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.arx_attr_constitution ); // 4
-		objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.arx_attr_dexterity ); // 3
-		objectiveSystem->SetStateInt( "arx_attr_mental", inventory.arx_attr_mental ); // 2
-		objectiveSystem->SetStateInt( "arx_attr_strength", inventory.arx_attr_strength ); // 1
+		objectiveSystem->SetStateInt( "arx_attribute_points", inventory.tmp_arx_attribute_points );
+		objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.tmp_arx_attr_constitution ); // 4
+		objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.tmp_arx_attr_dexterity ); // 3
+		objectiveSystem->SetStateInt( "arx_attr_mental", inventory.tmp_arx_attr_mental ); // 2
+		objectiveSystem->SetStateInt( "arx_attr_strength", inventory.tmp_arx_attr_strength ); // 1
 
 		// Skills & skill points
 		objectiveSystem->SetStateBool( "arx_skill_points_visible", hasSkillPointsToSpend && !hasAttributePointsToSpend );
-		objectiveSystem->SetStateInt( "arx_skill_points", inventory.arx_skill_points );
-		objectiveSystem->SetStateInt( "arx_skill_casting", inventory.arx_skill_casting ); // 10
-		objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.arx_skill_close_combat ); // 11
-		objectiveSystem->SetStateInt( "arx_skill_defense", inventory.arx_skill_defense ); // 13
-		objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.arx_skill_ethereal_link ); // 8
-		objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.arx_skill_intelligence ); // 9
-		objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.arx_skill_intuition ); // 7
-		objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.arx_skill_projectile ); // 12
-		objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.arx_skill_stealth ); // 5
-		objectiveSystem->SetStateInt( "arx_skill_technical", inventory.arx_skill_technical ); // 6
+		objectiveSystem->SetStateInt( "arx_skill_points", inventory.tmp_arx_skill_points );
+		objectiveSystem->SetStateInt( "arx_skill_casting", inventory.tmp_arx_skill_casting ); // 10
+		objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.tmp_arx_skill_close_combat ); // 11
+		objectiveSystem->SetStateInt( "arx_skill_defense", inventory.tmp_arx_skill_defense ); // 13
+		objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.tmp_arx_skill_ethereal_link ); // 8
+		objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.tmp_arx_skill_intelligence ); // 9
+		objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.tmp_arx_skill_intuition ); // 7
+		objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.tmp_arx_skill_projectile ); // 12
+		objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.tmp_arx_skill_stealth ); // 5
+		objectiveSystem->SetStateInt( "arx_skill_technical", inventory.tmp_arx_skill_technical ); // 6
 
 		// Apply button for skills and attributes
-		objectiveSystem->SetStateBool( "arx_points_apply_button_visible", true ); // LOGIC = TODO
+		bool allowStatsAttrApply = ( inventory.arx_attribute_points > 0 && inventory.arx_skill_points > 0 && inventory.tmp_arx_attribute_points == 0 && inventory.tmp_arx_skill_points == 0 );
+		objectiveSystem->SetStateBool( "arx_points_apply_button_visible", allowStatsAttrApply ); // LOGIC = TODO
 
 		// Player class totals
 		objectiveSystem->SetStateInt( "arx_stat_armour_class", inventory.arx_stat_armour_class ); // 1
