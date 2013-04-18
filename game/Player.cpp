@@ -5475,6 +5475,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	/*****************************************************************************************/
 	// *** Journal
 
+	// *** Decrement values
 	if ( token.Icmp( "arx_attr_strength_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_strength --;
@@ -5540,6 +5541,73 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.tmp_arx_skill_technical --;
 	}
 
+	// *** Increment values
+	if ( token.Icmp( "arx_attr_strength_inc" ) == 0 ) {
+		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attr_strength ++;
+	}
+
+	if ( token.Icmp( "arx_attr_mental_inc" ) == 0 ) {
+		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attr_mental ++;
+	}
+
+	if ( token.Icmp( "arx_attr_dexterity_inc" ) == 0 ) {
+		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attr_dexterity ++;
+	}
+
+	if ( token.Icmp( "arx_attr_constitution_inc" ) == 0 ) {
+		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attr_constitution ++;
+	}
+
+	if ( token.Icmp( "arx_skill_casting_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_casting ++;
+	}
+
+	if ( token.Icmp( "arx_skill_close_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_close_combat ++;
+	}
+
+	if ( token.Icmp( "arx_skill_defense_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_defense ++;
+	}
+
+	if ( token.Icmp( "arx_skill_ethereal_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_ethereal_link ++;
+	}
+
+	if ( token.Icmp( "arx_skill_intuition_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_intuition ++;
+	}
+
+	if ( token.Icmp( "arx_skill_intelligence_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_intelligence ++;
+	}
+
+	if ( token.Icmp( "arx_skill_projectile_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_projectile ++;
+	}
+
+	if ( token.Icmp( "arx_skill_stealth_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_stealth ++;
+	}
+
+	if ( token.Icmp( "arx_skill_technical_inc" ) == 0 ) {
+		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_technical ++;
+	}
+
+	// *** Apply values
 	if ( token.Icmp( "arx_apply_attr_skill_points" ) == 0 ) {
 
 		inventory.arx_attribute_points = 0;
@@ -5563,6 +5631,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
 
+		ShowHudMessage( "#str_book_00005" ); // "Your points have been applied!"
 	}
 
 	/*****************************************************************************************/
@@ -8916,63 +8985,63 @@ void idPlayer::UpdateJournalGUI( void )
 		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
 		*/
 
-		// *** Start - dont allow decrement lower than current value
-		objectiveSystem->SetStateBool( "arx_attr_strength_dec_visible", hasAttributePointsToSpend );
-		objectiveSystem->SetStateBool( "arx_attr_mental_dec_visible", hasAttributePointsToSpend );
-		objectiveSystem->SetStateBool( "arx_attr_dexterity_dec_visible", hasAttributePointsToSpend );
-		objectiveSystem->SetStateBool( "arx_attr_constitution_dec_visible", hasAttributePointsToSpend );
+		// *** Start - Only show increment button if their are appropriate points to spend
+		objectiveSystem->SetStateBool( "arx_attr_strength_inc_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_mental_inc_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_dexterity_inc_visible", hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_attr_constitution_inc_visible", hasAttributePointsToSpend );
 
-		objectiveSystem->SetStateBool( "arx_skill_casting_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_close_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_defense_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_ethereal_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_intuition_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_intelligence_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_projectile_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_stealth_dec_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_technical_dec_visible", hasSkillPointsToSpend );
-		// *** End - dont allow decrement lower than current value
+		objectiveSystem->SetStateBool( "arx_skill_casting_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_close_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_intelligence_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", hasSkillPointsToSpend );
+		// *** End - Only show increment button if their are appropriate points to spend
 
 		// *** Start - Only allow increment if attr or skill points to spend
-		bool allowIncrement;
-		allowIncrement = !( inventory.tmp_arx_attr_strength == inventory.arx_attr_strength );
-		objectiveSystem->SetStateBool( "arx_attr_strength_inc_visible", allowIncrement );
+		bool allowDecrement;
+		allowDecrement = ( inventory.tmp_arx_attr_strength > inventory.arx_attr_strength );
+		objectiveSystem->SetStateBool( "arx_attr_strength_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_attr_mental == inventory.arx_attr_mental );
-		objectiveSystem->SetStateBool( "arx_attr_mental_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_attr_mental > inventory.arx_attr_mental );
+		objectiveSystem->SetStateBool( "arx_attr_mental_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_attr_dexterity == inventory.arx_attr_dexterity );
-		objectiveSystem->SetStateBool( "arx_attr_dexterity_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_attr_dexterity > inventory.arx_attr_dexterity );
+		objectiveSystem->SetStateBool( "arx_attr_dexterity_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_attr_constitution == inventory.arx_attr_constitution );
-		objectiveSystem->SetStateBool( "arx_attr_constitution_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_attr_constitution > inventory.arx_attr_constitution );
+		objectiveSystem->SetStateBool( "arx_attr_constitution_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_casting == inventory.arx_skill_casting );
-		objectiveSystem->SetStateBool( "arx_skill_casting_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_casting > inventory.arx_skill_casting );
+		objectiveSystem->SetStateBool( "arx_skill_casting_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_close_combat == inventory.arx_skill_close_combat );
-		objectiveSystem->SetStateBool( "arx_skill_close_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_close_combat > inventory.arx_skill_close_combat );
+		objectiveSystem->SetStateBool( "arx_skill_close_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_defense == inventory.arx_skill_defense );
-		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_defense > inventory.arx_skill_defense );
+		objectiveSystem->SetStateBool( "arx_skill_defense_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_ethereal_link == inventory.arx_skill_ethereal_link );
-		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_ethereal_link > inventory.arx_skill_ethereal_link );
+		objectiveSystem->SetStateBool( "arx_skill_ethereal_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_intuition == inventory.arx_skill_intuition );
-		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_intuition > inventory.arx_skill_intuition );
+		objectiveSystem->SetStateBool( "arx_skill_intuition_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_intelligence == inventory.arx_skill_intelligence );
-		objectiveSystem->SetStateBool( "arx_skill_intelligence_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_intelligence > inventory.arx_skill_intelligence );
+		objectiveSystem->SetStateBool( "arx_skill_intelligence_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_projectile == inventory.arx_skill_projectile );
-		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_projectile > inventory.arx_skill_projectile );
+		objectiveSystem->SetStateBool( "arx_skill_projectile_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_stealth == inventory.arx_skill_stealth );
-		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_stealth > inventory.arx_skill_stealth );
+		objectiveSystem->SetStateBool( "arx_skill_stealth_dec_visible", allowDecrement );
 
-		allowIncrement = !( inventory.tmp_arx_skill_technical == inventory.arx_skill_technical );
-		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", allowIncrement );
+		allowDecrement = ( inventory.tmp_arx_skill_technical > inventory.arx_skill_technical );
+		objectiveSystem->SetStateBool( "arx_skill_technical_dec_visible", allowDecrement );
 		// *** End - dont allow decrement lower than current value
 
 		// Attributes & attribute points
