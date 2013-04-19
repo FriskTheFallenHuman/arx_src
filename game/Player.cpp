@@ -5475,6 +5475,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	/*****************************************************************************************/
 	// *** Journal
 
+	//REMOVEME
+	gameLocal.Printf( "Journal updated at %d\n", gameLocal.time );
+	gameLocal.Printf( "Journal token is %s\n", token.c_str() );
+
 	// *** Decrement values
 	if ( token.Icmp( "arx_attr_strength_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
@@ -7397,25 +7401,6 @@ void idPlayer::ToggleJournalSystem(void)
 
 	if( !journalSystemOpen )
 	{
-		// Intalise any variables
-		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
-		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
-
-		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
-		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
-		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
-		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
-
-		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
-		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
-		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
-		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
-		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
-		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
-		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
-		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
-		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
-
 		journalSystem->Activate( true, gameLocal.time );
 		journalSystemOpen = true;
 	}
@@ -7570,9 +7555,6 @@ idPlayer::TogglePDA
 */
 void idPlayer::TogglePDA( void ) {
 
-	//REMOVEME
-	gameLocal.Printf("Entered TogglePDA\n" );
-
 	if ( objectiveSystem == NULL ) {
 		return;
 	}
@@ -7630,8 +7612,28 @@ void idPlayer::TogglePDA( void ) {
 		UpdatePDAInfo( false );
 		UpdateObjectiveInfo();
 
-		//REMOVEME
-		gameLocal.Printf("TogglePDA objectiveSystem->Activate( true )\n" );
+		// *** Start - Solarsplace - Arx End Of Sun
+
+		// Init any variables
+		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
+		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
+
+		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
+		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
+		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
+		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
+
+		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
+		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
+		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
+		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
+		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
+		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
+		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
+		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
+		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
+
+		// *** End - Solarsplace - Arx End Of Sun
 
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
@@ -7641,9 +7643,6 @@ void idPlayer::TogglePDA( void ) {
 		inventory.selVideo = objectiveSystem->State().GetInt( "listPDAVideo_sel_0" );
 		inventory.selAudio = objectiveSystem->State().GetInt( "listPDAAudio_sel_0" );
 		inventory.selEMail = objectiveSystem->State().GetInt( "listPDAEmail_sel_0" );
-
-		//REMOVEME
-		gameLocal.Printf("TogglePDA objectiveSystem->Activate( false )\n" );
 
 		objectiveSystem->Activate( false, gameLocal.time );
 	}
