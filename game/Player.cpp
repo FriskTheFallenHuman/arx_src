@@ -5382,8 +5382,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// Solarsplace 17th Nov 2011 - Shop related
 	if ( token.Icmp( "shop_buyitem" ) == 0 ) {
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
+		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
 
 		//arxShopFunctions.AddShopItem( "item_arx_potion_health" );
 
@@ -5433,15 +5432,13 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// Solarsplace 11th April 2010 - Inventory related
 	if ( token.Icmp( "inventoryitemuse" ) == 0 ) {
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemuse\n" );
+		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemuse\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
 
 			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
 
 			if ( kv ) {
-				//REMOVED
 				//gameLocal.Printf( "&token2 = %s\n", token2.c_str() );
 				ConsumeInventoryItem( atoi( kv->GetValue() ) );
 			}
@@ -5452,8 +5449,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// Solarsplace 15th April 2010 - Inventory related
 	if ( token.Icmp( "inventoryitemdrop" ) == 0 ) {
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemdrop\n" );
+		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - inventoryitemdrop\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
 
@@ -5475,140 +5471,165 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	/*****************************************************************************************/
 	// *** Journal
 
-	//REMOVEME
-	gameLocal.Printf( "Journal updated at %d\n", gameLocal.time );
-	gameLocal.Printf( "Journal token is %s\n", token.c_str() );
+	//gameLocal.Printf( "Journal updated at time %d\n", gameLocal.time );
+	//gameLocal.Printf( "Journal token is %s\n", token.c_str() );
 
 	// *** Decrement values
 	if ( token.Icmp( "arx_attr_strength_dec" ) == 0 ) {
-		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_strength --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_mental_dec" ) == 0 ) {
-		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_mental --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_dexterity_dec" ) == 0 ) {
-		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_dexterity --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_constitution_dec" ) == 0 ) {
-		inventory.tmp_arx_attribute_points --;
+		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_constitution --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_casting_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_casting --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_close_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_close_combat --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_defense_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_defense --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_ethereal_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_ethereal_link --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intuition_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_intuition --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intelligence_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_intelligence --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_projectile_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_projectile --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_stealth_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_stealth --;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_technical_dec" ) == 0 ) {
-		inventory.tmp_arx_skill_points --;
+		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_technical --;
+		return true;
 	}
 
 	// *** Increment values
 	if ( token.Icmp( "arx_attr_strength_inc" ) == 0 ) {
-		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_strength ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_mental_inc" ) == 0 ) {
-		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_mental ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_dexterity_inc" ) == 0 ) {
-		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_dexterity ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_constitution_inc" ) == 0 ) {
-		inventory.tmp_arx_attribute_points ++;
+		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_constitution ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_casting_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_casting ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_close_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_close_combat ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_defense_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_defense ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_ethereal_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_ethereal_link ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intuition_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_intuition ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intelligence_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_intelligence ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_projectile_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_projectile ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_stealth_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_stealth ++;
+		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_technical_inc" ) == 0 ) {
-		inventory.tmp_arx_skill_points ++;
+		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_technical ++;
+		return true;
 	}
 
 	// *** Apply values
@@ -5636,7 +5657,22 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
 
 		ShowHudMessage( "#str_book_00005" ); // "Your points have been applied!"
+
+		return true;
 	}
+
+	// *** Unequip items
+	if ( token.Icmp( "unequip_left_ring" ) == 0 ) {
+		inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = "";
+		return true;
+	}
+
+	if ( token.Icmp( "unequip_right_ring" ) == 0 ) {
+		inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = "";
+		return true;
+	}
+
+	
 
 	/*****************************************************************************************/
 	/*****************************************************************************************/
