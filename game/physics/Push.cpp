@@ -1147,23 +1147,74 @@ float idPush::ClipTranslationalPush( trace_t &results, idEntity *pusher, const i
 			continue;
 		}
 
+		// Solarsplace - Arx End Of Sun - Nothing in the code EVER sets this!!!
 		// if blocking entities should be crushed
 		if ( flags & PUSHFL_CRUSH ) {
 			check->Damage( clipModel->GetEntity(), clipModel->GetEntity(), vec3_origin, "damage_crush", 1.0f, CLIPMODEL_ID_TO_JOINT_HANDLE( pushResults.c.id ) );
 			continue;
 		}
 
+		// Solarsplace - Original D3 code
 		// if the entity is an active articulated figure and gibs
+		/*
 		if ( check->IsType( idAFEntity_Base::Type ) && check->spawnArgs.GetBool( "gib" ) ) {
 			if ( static_cast<idAFEntity_Base *>(check)->IsActiveAF() ) {
 				check->ProcessEvent( &EV_Gib, "damage_Gib" );
 			}
 		}
+		*/
 
+		// Solarsplace - Original D3 code
 		// if the entity is a moveable item and gibs
+		/*
 		if ( check->IsType( idMoveableItem::Type ) && check->spawnArgs.GetBool( "gib" ) ) {
 			check->ProcessEvent( &EV_Gib, "damage_Gib" );
 		}
+		*/
+
+		// ----> Solarsplace - Arx End Of Sun - Modified versions of above code.
+
+		// Added to remove items that block crushers.
+		bool is_AF = check->IsType( idAFEntity_Base::Type );
+		bool is_Gibber = check->spawnArgs.GetBool( "gib" );
+		bool is_MoveableItem = check->IsType( idMoveableItem::Type );
+		bool is_Moveable = check->IsType( idMoveable::Type );
+		bool is_LocalPlayer = check->IsType( idPlayer::Type );
+
+
+		// Duplicate of above with only one check of spawn args
+		if ( is_AF && is_Gibber ) {
+			if ( static_cast<idAFEntity_Base *>(check)->IsActiveAF() ) {
+				check->ProcessEvent( &EV_Gib, "damage_Gib" );
+			}
+		}
+
+		// Remove non gibbing AF from blocking mover
+		if ( is_AF && !is_Gibber && !is_LocalPlayer ) {
+			check->PostEventMS( &EV_Remove, 0 );
+		}
+
+		// Duplicate of above with only one check of spawn args
+		if ( is_MoveableItem && is_Gibber ) {
+			check->ProcessEvent( &EV_Gib, "damage_Gib" );
+		}
+
+		// Remove non gibbing moveableitem from blocking mover
+		if ( is_MoveableItem && !is_Gibber ) {
+			check->PostEventMS( &EV_Remove, 0 );
+		}
+
+		// New variation of above with only one check of spawn args
+		if ( is_Moveable && is_Gibber ) {
+			check->ProcessEvent( &EV_Gib, "damage_Gib" );
+		}
+
+		// Remove non gibbing moveable from blocking mover
+		if ( is_Moveable && !is_Gibber ) {
+			check->PostEventMS( &EV_Remove, 0 );
+		}
+
+		// <---- Solarsplace - Arx End Of Sun - Modified versions of above code.
 
 		// blocked
 		results = pushResults;
