@@ -1180,6 +1180,7 @@ float idPush::ClipTranslationalPush( trace_t &results, idEntity *pusher, const i
 		bool is_MoveableItem = check->IsType( idMoveableItem::Type );
 		bool is_Moveable = check->IsType( idMoveable::Type );
 		bool is_LocalPlayer = check->IsType( idPlayer::Type );
+		bool is_arx_crusher = pusher->spawnArgs.GetBool( "arx_crusher" );
 
 
 		// Duplicate of above with only one check of spawn args
@@ -1190,7 +1191,7 @@ float idPush::ClipTranslationalPush( trace_t &results, idEntity *pusher, const i
 		}
 
 		// Remove non gibbing AF from blocking mover
-		if ( is_AF && !is_Gibber && !is_LocalPlayer ) {
+		if ( is_AF && !is_Gibber && !is_LocalPlayer && is_arx_crusher ) {
 			check->PostEventMS( &EV_Remove, 0 );
 		}
 
@@ -1200,7 +1201,7 @@ float idPush::ClipTranslationalPush( trace_t &results, idEntity *pusher, const i
 		}
 
 		// Remove non gibbing moveableitem from blocking mover
-		if ( is_MoveableItem && !is_Gibber ) {
+		if ( is_MoveableItem && !is_Gibber && is_arx_crusher ) {
 			check->PostEventMS( &EV_Remove, 0 );
 		}
 
@@ -1210,7 +1211,7 @@ float idPush::ClipTranslationalPush( trace_t &results, idEntity *pusher, const i
 		}
 
 		// Remove non gibbing moveable from blocking mover
-		if ( is_Moveable && !is_Gibber ) {
+		if ( is_Moveable && !is_Gibber && is_arx_crusher ) {
 			check->PostEventMS( &EV_Remove, 0 );
 		}
 
