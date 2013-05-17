@@ -2271,6 +2271,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( heroStatsTime );
 
+	// SmartAI
+	friendsCommonEnemy.Save( savefile );
+
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************
 	//*****************************************************************************
@@ -2280,7 +2283,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 		hud->SetStateString( "message", common->GetLanguageDict()->GetString( "#str_02916" ) );
 		hud->HandleNamedEvent( "Message" );
 	}
-	friendsCommonEnemy.Save( savefile ); //ivan
 }
 
 /*
@@ -2541,7 +2543,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( lastSpectateChange );
 	savefile->ReadInt( lastTeleFX );
 
-	friendsCommonEnemy.Restore( savefile ); //ivan
 	// set the pm_ cvars
 	const idKeyValue	*kv;
 	kv = spawnArgs.MatchPrefix( "pm_", NULL );
@@ -2565,6 +2566,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadObject( reinterpret_cast<idClass *&>( magicWandTrail ) );
 
 	savefile->ReadInt( heroStatsTime );
+
+	// SmartAI
+	friendsCommonEnemy.Restore( savefile );
 
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************

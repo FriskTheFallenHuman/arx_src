@@ -1283,8 +1283,7 @@ void idWeapon::Think( void ) {
 	if ( allowWeaponDamage ) {
 
 		idStr weaponHealth;
-		const char *damageSkin;
-		const char *damageSkinKey;
+		const char *damageSkinKey = "";
 
 		if ( health != lastHealth ) {
 
@@ -1304,7 +1303,7 @@ void idWeapon::Think( void ) {
 
 				//gameLocal.Printf( "idWeapon::Think healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max );
 
-				if ( healthPercentage >= 81 ) {
+				if ( healthPercentage >= 81 && healthPercentage < 100 ) {
 
 					damageSkinKey = weaponDef->dict.GetString( "skin_damage_0", "" );
 
