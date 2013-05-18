@@ -1176,6 +1176,10 @@ bool idWeapon::UpdateSkin( void ) {
 	gameLocal.frameCommandThread->CallFunction( this, func, true );
 	gameLocal.frameCommandThread->Execute();
 
+	// Solarsplace - Arx End Of Sun
+	// Force the damage skin code to run in the next weapon think
+	lastHealth = health -1; // Just make lastHealth != health
+
 	return true;
 }
 
@@ -1282,7 +1286,6 @@ void idWeapon::Think( void ) {
 	// Solarsplace - Arx End Of Sun
 	if ( allowWeaponDamage ) {
 
-		idStr weaponHealth;
 		const char *damageSkinKey = "";
 
 		if ( health != lastHealth ) {
@@ -1337,10 +1340,18 @@ void idWeapon::Think( void ) {
 
 				}
 
-				// If the weapon has damage skin(s) then set the new damage skin
-				if ( !strcmp( damageSkinKey, "" ) == 0 ) {
-					//gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey );
-					Event_SetSkin( damageSkinKey );
+				if ( owner->playerInvisibleEndTime > gameLocal.time ) {
+
+					// Make sure we use the invisible skin
+					UpdateSkin(); // Causes the weapon script object to set invisible skin if invisible == true
+
+				} else {
+
+					// If the weapon has damage skin(s) then set the new damage skin
+					if ( !strcmp( damageSkinKey, "" ) == 0 ) {
+						//gameLocal.Printf( "idWeapon::Think - Setting weapon damage skin to '%s'\n", damageSkinKey );
+						Event_SetSkin( damageSkinKey );
+					}
 				}
 
 			} // if ( health <= 0 )
