@@ -4178,11 +4178,8 @@ const char *idPlayer::GetInventoryItemHealthIcon( int health, int health_max, co
 	int healthPercentage;
 	const char *assetName;
 
-	// Prevent divide by 0 exception - health_max should never be 0 - something went wrong if it is.
-	if ( health_max == 0 ) {
-		gameLocal.Warning( "GetInventoryItemHealthIcon: health_max was 0. Set to 100\n" );
-		health_max = 100;
-	}
+	// Prevent divide by 0 exception set health_max to 100 if it is 0.
+	if ( health_max == 0 ) { health_max = 100; }
 
 	healthPercentage = ( (float)health / (float)health_max ) * 100; // Just in case health_max is some how 0.
 

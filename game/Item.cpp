@@ -260,7 +260,15 @@ void idItem::Spawn( void ) {
 		GetPhysics()->SetContents( 0 );
 		Hide();
 	} else {
-		GetPhysics()->SetContents( CONTENTS_TRIGGER );
+
+		// Solarsplace - Arx End Of Sun - 26th May 2013 - We want the ability to have solid idItem's put a condition around this so we can override it.
+		// Also we have to set CONTENTS_SOLID so our item trace will detect the item however.
+		if ( spawnArgs.GetBool( "arx_force_solid_iditem", "0" ) ) {
+			GetPhysics()->SetContents( CONTENTS_SOLID);
+		} else {
+			// Default original path
+			GetPhysics()->SetContents( CONTENTS_TRIGGER );
+		}
 	}
 
 	giveTo = spawnArgs.GetString( "owner" );
