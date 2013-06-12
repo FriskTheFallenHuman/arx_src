@@ -4200,10 +4200,24 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 	// Original D3 code
 	if ( !isMultiplayer || !spawnSpots.Num() )
 	{
-		// Solarsplace 4th Oct 2010 - Level transition related
+		// Solarsplace - Arx End Of Sun - Level Transition Related
+		idStr DEFAULT_ENTRY_POINT = "info_player_start";
+
+		// Get spawn location entity name from the persistent dictionary (EntryPoint). Default = "info_player_start"
 		idStr spawnPoint = player->GetMapEntryPoint();
 
-		if ( idStr::Icmp( spawnPoint, "info_player_start" ) == 0 )
+		if ( !idStr::Icmp( spawnPoint, GetMapName() ) == 0 ) {
+			// Map name at the start of 'spawnPoint' is not this map!
+			// Clear the EntryPoint & reset the spawnPoint variable to default values.
+			player->SetMapEntryPoint( DEFAULT_ENTRY_POINT );
+			spawnPoint = DEFAULT_ENTRY_POINT;
+
+		} else {
+			// Remove the map name part from the variable.
+			spawnPoint.StripLeadingOnce( GetMapName() );
+		}
+		
+		if ( idStr::Icmp( spawnPoint, DEFAULT_ENTRY_POINT ) == 0 )
 		{
 			// Original D3 code
 			//spot.ent = FindEntityUsingDef( NULL, "info_player_start" );
@@ -4211,19 +4225,13 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 			// Changed this to be more consistent, as depending on the order of ents in the .map player start 2 could be found befort start 1
 			spot.ent = FindEntity( "info_player_start_1" );
 
-		}
-		else
-		{
+		} else {
 			spot.ent = FindEntity( spawnPoint );
 		}
 
-		if ( !spot.ent )
-		{
+		if ( !spot.ent ) {
 			Error( "No info_player_start (%s) on map.\n", spawnPoint.c_str() ); // SP - Make error message more helpful.
 		}
-
-		// Solarsplace - 18th June 2012 - Clear the saved entry point now we have used it.
-		player->SetMapEntryPoint( "info_player_start" );
 
 		return spot.ent;
 	}

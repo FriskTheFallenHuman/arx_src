@@ -9952,6 +9952,7 @@ void idPlayer::GetEntityByViewRay( void )
 			// Solarsplace - Added and tested on 20th Nov 2010
 
 			idStr nextMap;
+			idStr nextMapGameLocalFormat;
 			idStr levelTransitionSpawnPoint;
 			
 			if ( !target->spawnArgs.GetString( "nextMap", "", nextMap ) )
@@ -9965,7 +9966,11 @@ void idPlayer::GetEntityByViewRay( void )
 			// Save level transition data just before we send a session command to change levels.
 			SaveTransitionInfo();
 			levelTransitionSpawnPoint = target->spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
-			SetMapEntryPoint( levelTransitionSpawnPoint );
+
+			// SP - 12th June 1013 - Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
+			nextMapGameLocalFormat = "maps/" + nextMap + ".map";
+
+			SetMapEntryPoint( nextMapGameLocalFormat + levelTransitionSpawnPoint );
 
 			// Does this level change require that the player has something in their inventory?
 			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
