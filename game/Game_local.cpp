@@ -4200,13 +4200,14 @@ idEntity *idGameLocal::SelectInitialSpawnPoint( idPlayer *player ) {
 	// Original D3 code
 	if ( !isMultiplayer || !spawnSpots.Num() )
 	{
-		// Solarsplace - Arx End Of Sun - Level Transition Related
+		// Solarsplace - Arx End Of Sun - Level Transition Related - Last modified 13th June 2013
 		idStr DEFAULT_ENTRY_POINT = "info_player_start";
+		idStr currentMapName = GetMapName();
 
 		// Get spawn location entity name from the persistent dictionary (EntryPoint). Default = "info_player_start"
 		idStr spawnPoint = player->GetMapEntryPoint();
 
-		if ( !idStr::Icmp( spawnPoint, GetMapName() ) == 0 ) {
+		if ( !spawnPoint.IcmpPrefixPath( currentMapName ) == 0 ) {
 			// Map name at the start of 'spawnPoint' is not this map!
 			// Clear the EntryPoint & reset the spawnPoint variable to default values.
 			player->SetMapEntryPoint( DEFAULT_ENTRY_POINT );

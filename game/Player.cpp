@@ -421,8 +421,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 				sprintf( key, "item_%i %s", num, kv->GetKey().c_str() );
 				dict.Set( key, kv->GetValue() );
 
-				//REMOVEME
-				gameLocal.Printf("kv = (%s) - (%s)\n", key.c_str(), kv->GetValue().c_str() );
+				//gameLocal.Printf("kv = (%s) - (%s)\n", key.c_str(), kv->GetValue().c_str() );
 
 				kv = item->MatchPrefix( "inv_", kv );
 
@@ -4162,7 +4161,7 @@ bool idPlayer::UpdateInventoryItem_health_max( int newWeaponHealthMax ) {
 	sprintf( weaponHealth, "%d", newWeaponHealthMax );
 	weaponUniqueName = inventory.weaponUniqueName;
 
-	gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health_max', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() ); //REMOVEME
+	//gameLocal.Printf( "idPlayer::UpdateInventoryItem_health '%s', 'inv_health_max', '%s'\n", weaponUniqueName.c_str(), weaponHealth.c_str() );
 
 	return UpdateInventoryItem( weaponUniqueName.c_str() , "inv_health_max", weaponHealth.c_str() );
 
@@ -5395,8 +5394,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 				int itemPrice = atoi( arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", atoi( token2 ) ), "") );
 
-				//REMOVEME
-				gameLocal.Printf( "itemPrice = %i\n", itemPrice );
+				//gameLocal.Printf( "itemPrice = %i\n", itemPrice );
 
 				if ( inventory.money - itemPrice >= 0 )
 				{
@@ -7086,7 +7084,7 @@ void idPlayer::UpdateAir( void ) {
 			// Solarsplace
 			if (phys->GetWaterLevel() == WATERLEVEL_HEAD)
 			{
-				//REMOVEMEx
+
 				//gameLocal.Printf( "!airless snd_footstep_underwater\n" );
 				
 				playerUnderWater = true;
@@ -7095,7 +7093,6 @@ void idPlayer::UpdateAir( void ) {
 			}
 			else
 			{
-				//REMOVEMEx
 				//gameLocal.Printf( "snd_decompress\n" );
 
 				// Original D3 sounds
@@ -7137,7 +7134,6 @@ void idPlayer::UpdateAir( void ) {
 			}
 			else
 			{
-				//REMOVEMEx
 				//gameLocal.Printf( "snd_recompress\n" );
 
 				StartSound( "snd_recompress", SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
@@ -9968,9 +9964,9 @@ void idPlayer::GetEntityByViewRay( void )
 			levelTransitionSpawnPoint = target->spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
 
 			// SP - 12th June 1013 - Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
-			nextMapGameLocalFormat = "maps/" + nextMap + ".map";
+			nextMapGameLocalFormat = "maps/" + nextMap + ".map" + levelTransitionSpawnPoint;
 
-			SetMapEntryPoint( nextMapGameLocalFormat + levelTransitionSpawnPoint );
+			SetMapEntryPoint( nextMapGameLocalFormat );
 
 			// Does this level change require that the player has something in their inventory?
 			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
