@@ -11657,7 +11657,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	{
 		// SP - Updated 15th Mar 2013 - Player skills related
 		if ( CalculateHeroChance( "add_poison" ) ) {
-			inventory.arx_timer_player_poison += SEC2MS( poisonTime );
+			inventory.arx_timer_player_poison += gameLocal.time + SEC2MS( poisonTime );
 		}
 	}
 
