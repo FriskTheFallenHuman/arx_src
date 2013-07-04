@@ -232,6 +232,7 @@ public:
 	int						arx_stat_resistance_to_magic;
 	int						arx_stat_resistance_to_poison;
 	int						arx_stat_damage_inflicted;
+	int						arx_stat_secrets_found;
 
 	int						tmp_arx_attribute_points;
 	int						tmp_arx_skill_points;

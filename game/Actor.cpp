@@ -2222,7 +2222,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		Dexterity determines the accuracy in combat and your speed and increases the chance for a
 		Critical Hit, which represents the percentage of chance to double the damages on a succesful hit. 
 		*/
-		float chanceOfCriticalHit = 10.0f;
+		float chanceOfCriticalHit = 60.0f;
 		if ( gameLocal.random.RandomFloat() * 100 > chanceOfCriticalHit ) {
 			damage = damage + ( damage * 0.5 ); // This is cumulative if you get a backstab too.
 			player->ShowHudMessage( "#str_general_00003" ); // "! Critical hit !"

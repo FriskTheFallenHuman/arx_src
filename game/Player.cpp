@@ -243,6 +243,7 @@ void idInventory::Clear( void ) {
 	arx_stat_resistance_to_magic	= 0;
 	arx_stat_resistance_to_poison	= 0;
 	arx_stat_damage_inflicted		= 0;
+	arx_stat_secrets_found			= 0;
 
 	arx_timer_player_poison			= 0;
 	arx_timer_player_invisible		= 0;
@@ -390,6 +391,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_stat_resistance_to_magic", arx_stat_resistance_to_magic );
 	dict.SetInt( "arx_stat_resistance_to_poison", arx_stat_resistance_to_poison );
 	dict.SetInt( "arx_stat_damage_inflicted", arx_stat_damage_inflicted );
+    dict.SetInt( "arx_stat_secrets_found", arx_stat_secrets_found );
 
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
@@ -558,6 +560,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_stat_resistance_to_magic	= dict.GetInt( "arx_stat_resistance_to_magic", "0" );
 	arx_stat_resistance_to_poison	= dict.GetInt( "arx_stat_resistance_to_poison", "0" );
 	arx_stat_damage_inflicted		= dict.GetInt( "arx_stat_damage_inflicted", "0" );
+	arx_stat_secrets_found			= dict.GetInt( "arx_stat_secrets_found", "0" );
 
 	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "0" );
 	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "0" );
@@ -716,6 +719,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_stat_resistance_to_magic );
 	savefile->WriteInt( arx_stat_resistance_to_poison );
 	savefile->WriteInt( arx_stat_damage_inflicted );
+	savefile->WriteInt( arx_stat_secrets_found );
 
 	savefile->WriteInt( arx_timer_player_poison );
 	savefile->WriteInt( arx_timer_player_invisible );
@@ -865,6 +869,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_stat_resistance_to_magic );
 	savefile->ReadInt( arx_stat_resistance_to_poison );
 	savefile->ReadInt( arx_stat_damage_inflicted );
+	savefile->ReadInt( arx_stat_secrets_found );
 
 	savefile->ReadInt( arx_timer_player_poison );
 	savefile->ReadInt( arx_timer_player_invisible );
@@ -8581,6 +8586,15 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	if ( invItemIndex > inventory.items.Num() )
 	{ return; }
 
+	// Solarsplace 4th July 2013
+	// Items which the player cannot drop from their inventory
+	bool noInvDrop = inventory.items[invItemIndex]->GetString( "inv_arx_noinvdrop", "0" );
+	if ( noInvDrop ) {
+		ShowHudMessage( "#str_general_00011" ); // "This item can not be dropped"
+		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+		return;
+	}
+
 	idVec3 forward, up, playerOrigin, throwVector, dropPoint;
 	idDict args;
 	idEntity *spawnedItem;
@@ -9108,6 +9122,9 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateInt( "arx_stat_mana_points", inventory.arx_stat_mana_points ); // 4
 		objectiveSystem->SetStateInt( "arx_stat_resistance_to_magic", inventory.arx_stat_resistance_to_magic ); // 3
 		objectiveSystem->SetStateInt( "arx_stat_resistance_to_poison", inventory.arx_stat_resistance_to_poison ); // 5
+
+		// Secrets found
+		objectiveSystem->SetStateInt( "arx_stat_secrets_found", inventory.arx_stat_secrets_found );
 
 		// *****************************************************************
 		// *****************************************************************

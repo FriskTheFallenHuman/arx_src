@@ -3183,6 +3183,16 @@ This is a virtual function that subclasses are expected to implement.
 ============
 */
 void idEntity::Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
+
+	// SP - 4th July 2013 - Gain XPs
+	idPlayer * player = gameLocal.GetLocalPlayer();
+	if ( attacker == player ) {
+		int xps = spawnArgs.GetInt( "arx_xp_value", "0" );
+		if ( xps > 0 ) {
+			player->inventory.arx_skill_points += xps;
+			player->ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
+		}
+	}
 }
 
 

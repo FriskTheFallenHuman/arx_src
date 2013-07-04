@@ -426,6 +426,18 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 		// Solarsplace - Arx End Of Sun - Level transition related.
 		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
 
+		// SP - 4th July 2013 - Secret area found?
+		idPlayer * player = gameLocal.GetLocalPlayer();
+		if ( activator == player ) {
+			bool secretArea = spawnArgs.GetBool( "arx_secret_area", "0" );
+			if ( secretArea ) {
+				player->inventory.arx_stat_secrets_found ++;
+				const idSoundShader *shader = declManager->FindSound( spawnArgs.GetString( "snd_arx_secret_area" ) );
+				player->StartSoundShader( shader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
+				player->ShowHudMessage( "#str_general_00010" );	// "You found a secret area"
+			}
+		}
+
 		// we can't just remove (this) here, because this is a touch function
 		// called while looping through area links...
 		nextTriggerTime = gameLocal.time + 1;
