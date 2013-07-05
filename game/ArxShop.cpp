@@ -186,7 +186,7 @@ bool idArxShop::AddShopItem( const char *className )
 	const idDeclEntityDef *shopItemDef = NULL;
 
 	// Check whether the shop is full up
-	if ( FindShopItemsCount() >= ARX_MAX_SHOP_SLOTS ) {
+	if ( CountUsedShopSlots() >= ARX_MAX_SHOP_SLOTS ) {
 		return false;
 	}
 
@@ -337,7 +337,7 @@ int idArxShop::FindShopItem( const char *name, bool useMaxGroup ) {
 	return -1;
 }
 
-int idArxShop::FindShopItemsCount( void ) {
+int idArxShop::CountUsedShopSlots( void ) {
 
 	int totalSlotsUsed = 0;
 	const char *shop_item;

@@ -86,6 +86,9 @@ const idEventDef EV_Thread_DebugBounds( "debugBounds", "vvvf" );
 const idEventDef EV_Thread_DrawText( "drawText", "svfvdf" );
 const idEventDef EV_Thread_InfluenceActive( "influenceActive", NULL, 'd' );
 
+// Solarsplace - Arx End Of Sun
+const idEventDef EV_Thread_SpawnSmokeParticles( "spawnSmokeParticles", "sv" );
+
 CLASS_DECLARATION( idClass, idThread )
 	EVENT( EV_Thread_Execute,				idThread::Event_Execute )
 	EVENT( EV_Thread_TerminateThread,		idThread::Event_TerminateThread )
@@ -165,6 +168,11 @@ CLASS_DECLARATION( idClass, idThread )
 	EVENT( EV_Thread_DebugBounds,			idThread::Event_DebugBounds )
 	EVENT( EV_Thread_DrawText,				idThread::Event_DrawText )
 	EVENT( EV_Thread_InfluenceActive,		idThread::Event_InfluenceActive )
+
+	// Solarsplace - Arx End Of Sun
+
+	EVENT( EV_Thread_SpawnSmokeParticles,	idThread::Event_SpawnSmokeParticles )
+
 END_CLASS
 
 idThread			*idThread::currentThread = NULL;
@@ -1815,4 +1823,26 @@ void idThread::Event_InfluenceActive( void ) {
 	} else {
 		idThread::ReturnInt( false );
 	}
+}
+
+
+/*
+================
+idThread::Event_SpawnSmokeParticles
+================
+*/
+void idThread::Event_SpawnSmokeParticles( const char *smokeParticleName, const idVec3 &particleOrigin ) {
+
+	// Solarsplace - Arx End Of Sun
+
+	const idDecl *declaration;
+
+	declaration = declManager->FindType( DECL_PARTICLE, smokeParticleName );
+
+	if ( !declaration ) {
+		gameLocal.Warning( "Event_SpawnSmokeParticles smoke particle decl '%s' was not found.", smokeParticleName );	
+		return;
+	}
+
+	gameLocal.smokeParticles->EmitSmoke( static_cast<const idDeclParticle *>( declaration ), gameLocal.time, gameLocal.random.RandomFloat(), particleOrigin, idMat3( 1,0,0,0,0,0,0,0,0 ) );
 }

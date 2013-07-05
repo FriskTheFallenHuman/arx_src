@@ -126,7 +126,7 @@ const int RAGDOLL_DEATH_TIME = 3000;
 const int MAX_PDAS = 256;							// Solarsplace - 15th JUne 2012 increased from 64
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
-const int MAX_INVENTORY_ITEMS = 48;					// Solarsplace - 12th Oct 2011 - Inventory related - Increaced to 48 to expand inventory capacity a lot
+const int MAX_INVENTORY_ITEMS = 512;				// Solarsplace - 5th July 2013 - Inventory related - Increaced to 512 to expand inventory capacity a lot
 
 const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
@@ -8729,6 +8729,11 @@ void idPlayer::UpdateShoppingSystem( void )
 		invItemGroupCount->Clear();
 		invItemGroupPointer->Clear();
 
+		bool hasInventoryKeyRing = false;
+		if ( FindInventoryItemCount( "#str_item_00450" ) > 0 ) {
+			hasInventoryKeyRing = true;
+		}
+
 		int itemGroupCount;
 
 		for ( j = 0; j < c; j++ ) {
@@ -8736,6 +8741,13 @@ void idPlayer::UpdateShoppingSystem( void )
 			idDict *item = inventory.items[j];
 
 			if ( !item->GetBool( "inv_pda" ) ) {
+
+				// Solarsplace - 5th July 2013 - Hide inventory keys if the player has a key ring.
+				if ( hasInventoryKeyRing ) {
+					if ( item->GetBool( "inv_arx_key", "0" ) ) {
+						continue;
+					}
+				}
 
 				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 				const char *iicon = item->GetString( "inv_icon" );
@@ -9913,6 +9925,12 @@ void idPlayer::GetEntityByViewRay( void )
 						// Solarsplace -> Remember target the trigger here and NOT the real door entity.
 						// Call this to make sure the door script plays the locked sound.
 						target->ActivateTargets( player );
+
+						// SP - 5th July 2013 - Display on hud what the locked object requires to make it easier for the player.
+						idStr lockedMessage = common->GetLanguageDict()->GetString( "#str_general_00013" ); // "Object is locked and requires "
+						lockedMessage += requiredItemInvName;
+						ShowHudMessage( lockedMessage );
+
 					}
 				}
 				// If no required item is set the just unlock it, other wise it can never be unlocked. Set the required item to something

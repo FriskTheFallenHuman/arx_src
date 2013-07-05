@@ -35,7 +35,7 @@ class idArxShop : public idClass
 	private:
 
 		int		FindShopItem			( const char *name, bool useMaxGroup );
-		int		FindShopItemsCount		( void );
+		int		CountUsedShopSlots		( void );
 
 };
 #endif   /* !_PLAYER_ARXSHOP_H_ */
