@@ -3186,11 +3186,11 @@ void idEntity::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 
 	// SP - 4th July 2013 - Gain XPs
 	idPlayer * player = gameLocal.GetLocalPlayer();
+	
 	if ( attacker == player ) {
 		int xps = spawnArgs.GetInt( "arx_xp_value", "0" );
 		if ( xps > 0 ) {
-			player->inventory.arx_skill_points += xps;
-			player->ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
+			player->ModifyPlayerXPs( xps );
 		}
 	}
 }

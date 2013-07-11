@@ -438,6 +438,9 @@ public:
 	// AI related
 	void					AlertAI( bool playerVisible, float alertRadius, int aiTeam, int teamAlertOptions );
 
+	// Skills & stats related
+	void					ModifyPlayerXPs( int XPs );
+
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
 	*****************************************************************************************************
@@ -968,7 +971,7 @@ private:
 	void					Event_GiveJournal( const char *name );								// 13th Sep 2012 - Solarsplace
 	void					Event_GetMapName( void );											// 22nd Sep 2012 - Solarsplace
 
-	// Inventory Related
+	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
 	idStr					lastUsableName;													// solarsplace 7th June 2010
 	bool					lastUsableTraceWasNothing;										// solarsplace 7th June 2010
@@ -978,9 +981,13 @@ private:
 	void					DropInventoryItem( int invItemIndex );							// solarsplace 15th Apr 2010
 	idDict					*invItemGroupCount;												// solarsplace 24th Sep 2011
 	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011
+
+	// Skills related
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	int						heroStatsTime;													// solarsplace 15th Mar 2013
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
+	int						GetRequiredXPForLevel( int level );
+	void					ArxPlayerLevelUp( void );
 
 	// Magic related
 	int						GetPlayerManaAmount( void );									// Solarsplace 28th Feb 2010

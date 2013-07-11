@@ -135,6 +135,8 @@ const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every sp
 const int ARX_INVIS_TIME = 60 * 1000;				// Solarsplace - 6th June 2010 - Time invis magic lasts 
 const int ARX_TELEKENESIS_TIME = 60 * 1000;			// Solarsplace - 15th June 2012 - Time telekenesis magic lasts 
 
+const int ARX_MAX_PLAYER_LEVELS = 14;
+
 //*****************************************************************
 //*****************************************************************
 // Solarsplace 2nd Sep 2010 - Arx - Level transition related
@@ -11206,101 +11208,6 @@ void idPlayer::Think( void ) {
 
 /*
 =================
-idPlayer::CalculateHeroChance
-=================
-*/
-bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
-
-	// Use the format add_xxxx or remove_xxxx
-
-	bool returnChance = false;
-
-	// Chance of getting poisoned
-	if ( strcmp( chanceDescription, "add_poison" ) == 0 ) {
-
-		//REMOVEME
-		int poison_resistance_chance = 20; // 20%
-
-		if ( gameLocal.random.RandomFloat() * 100 > poison_resistance_chance ) {
-			returnChance = true;
-		}
-
-	}
-
-	return returnChance;
-}
-
-/*
-=================
-idPlayer::UpdateHeroStats
-=================
-*/
-void idPlayer::UpdateHeroStats( void ) {
-
-	const int poisonDamageAmount = 5;
-	const int heroUpdateRate = 2000;
-	int now = gameLocal.time;
-
-	if ( now >= heroStatsTime ) {
-
-		heroStatsTime = now + heroUpdateRate;
-
-		// Damages
-		if ( health > 0 ) {
-
-			// Poison damage
-			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
-				if ( CalculateHeroChance( "add_poison" ) ) {
-					health -= poisonDamageAmount;
-				}
-			}
-
-		}
-	}
-
-	/*
-
-	int healthDecrementAmount = 5;
-	int healthDecrementDelaySecs = 5;
-
-	if ( playerPoisoned )
-	{
-		if ( health > 0 )
-		{
-			if ( gameLocal.time >= healthNextDecreaseTime )
-			{
-				health -= healthDecrementAmount;
-				healthNextDecreaseTime = gameLocal.time + SEC2MS( healthDecrementAmount);
-			}
-		}
-	}
-
-
-	*/
-
-
-	/*
-
-	*** Mana
-
-	int ammo_mana;
-	int max_mana;
-
-	ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
-	max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
-
-	if ( inventory.ammo[ ammo_mana ] < 100 )
-	{
-		inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] + manaIncrementAmount;
-	}
-
-	*/
-
-
-}
-
-/*
-=================
 idPlayer::RouteGuiMouse
 =================
 */
@@ -13661,3 +13568,248 @@ void idPlayer::Event_GetCommonEnemy( void ) {
 }
 
 //ivan end
+
+
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
+// ARX EoS - Start
+
+
+// ==================================================================
+// ==================================================================
+// Skill, stats etc...
+
+/*
+=================
+idPlayer::CalculateHeroChance
+=================
+*/
+bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
+
+	// Use the format add_xxxx or remove_xxxx
+
+	bool returnChance = false;
+
+	// Chance of getting poisoned
+	if ( strcmp( chanceDescription, "add_poison" ) == 0 ) {
+
+		//REMOVEME
+		int poison_resistance_chance = 20; // 20%
+
+		if ( gameLocal.random.RandomFloat() * 100 > poison_resistance_chance ) {
+			returnChance = true;
+		}
+
+	}
+
+	return returnChance;
+}
+
+/*
+=================
+idPlayer::UpdateHeroStats
+=================
+*/
+void idPlayer::UpdateHeroStats( void ) {
+
+	const int poisonDamageAmount = 5;
+	const int heroUpdateRate = 2000;
+	int now = gameLocal.time;
+
+	if ( now >= heroStatsTime ) {
+
+		heroStatsTime = now + heroUpdateRate;
+
+		// Damages
+		if ( health > 0 ) {
+
+			// Poison damage
+			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
+				if ( CalculateHeroChance( "add_poison" ) ) {
+					health -= poisonDamageAmount;
+				}
+			}
+
+		}
+	}
+
+	/*
+
+	int healthDecrementAmount = 5;
+	int healthDecrementDelaySecs = 5;
+
+	if ( playerPoisoned )
+	{
+		if ( health > 0 )
+		{
+			if ( gameLocal.time >= healthNextDecreaseTime )
+			{
+				health -= healthDecrementAmount;
+				healthNextDecreaseTime = gameLocal.time + SEC2MS( healthDecrementAmount);
+			}
+		}
+	}
+
+
+	*/
+
+
+	/*
+
+	*** Mana
+
+	int ammo_mana;
+	int max_mana;
+
+	ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+
+	if ( inventory.ammo[ ammo_mana ] < 100 )
+	{
+		inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] + manaIncrementAmount;
+	}
+
+	*/
+
+
+}
+
+/*
+=================
+idPlayer::GetRequiredXPForLevel
+=================
+*/
+int	idPlayer::GetRequiredXPForLevel( int level ) {
+
+	switch ( level )
+	{
+		case 0:
+			return 0;
+			break;
+		case 1:
+			return 2000;
+			break;
+		case 2:
+			return 4000;
+			break;
+		case 3:
+			return 6000;
+			break;
+		case 4:
+			return 10000;
+			break;
+		case 5:
+			return 16000;
+			break;
+		case 6:
+			return 26000;
+			break;
+		case 7:
+			return 42000;
+			break;
+		case 8:
+			return 68000;
+			break;
+		case 9:
+			return 110000;
+			break;
+		case 10:
+			return 178000;
+			break;
+		case 11:
+			return 300000;
+			break;
+		case 12:
+			return 450000;
+			break;
+		case 13:
+			return 600000;
+			break;
+		case 14:
+			return 750000;
+			break;
+		default:
+			return level * 60000;
+	}
+
+	return LONG_MAX;
+}
+
+/*
+=================
+idPlayer::GetRequiredXPForLevel
+=================
+*/
+void idPlayer::ModifyPlayerXPs( int XPs )
+{
+	inventory.arx_skill_points += XPs;				
+
+	for ( int i = 1; i < ARX_MAX_PLAYER_LEVELS; i++ )
+	{
+		int levelUp = 0;
+
+		if ( i > inventory.arx_player_level )
+		{
+			if ( ( inventory.arx_skill_points >= GetRequiredXPForLevel( i ) ) )
+			{
+				levelUp = 1;
+			}
+
+			if ( levelUp ) {
+				ArxPlayerLevelUp();
+			} else {
+				ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
+			}
+		}
+	}
+}
+
+/*
+=================
+idPlayer::ArxPlayerLevelUp
+=================
+*/
+void idPlayer::ArxPlayerLevelUp( void ) {
+
+	ShowHudMessage( "##str_general_00014" );	// "!!! You Level Up !!!"
+
+	// Play a sound to level up. Cached in player.def
+	StartSound( "snd_arx_level_up", SND_CHANNEL_ANY, 0, false, NULL );
+
+	inventory.arx_player_level ++;
+
+	inventory.arx_attribute_points = spawnArgs.GetInt( "arx_levelup_attribute_points", "1" );
+	inventory.arx_skill_points = spawnArgs.GetInt( "arx_levelup_skill_points", "15" );
+
+	// Give max health
+	health = inventory.maxHealth;
+
+	// Give max mana
+	int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+	inventory.ammo[ ammo_mana ] = max_mana;
+
+	// Compute player stats here
+
+	/*
+	player.Old_Skill_Stealth			=	player.Skill_Stealth;
+	player.Old_Skill_Mecanism			=	player.Skill_Mecanism;
+	player.Old_Skill_Intuition			=	player.Skill_Intuition;
+	player.Old_Skill_Etheral_Link		=	player.Skill_Etheral_Link;
+	player.Old_Skill_Object_Knowledge	=	player.Skill_Object_Knowledge;
+	player.Old_Skill_Casting			=	player.Skill_Casting;
+	player.Old_Skill_Projectile			=	player.Skill_Projectile;
+	player.Old_Skill_Close_Combat		=	player.Skill_Close_Combat;
+	player.Old_Skill_Defense			=	player.Skill_Defense;
+	*/
+
+}

@@ -435,6 +435,7 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 				const idSoundShader *shader = declManager->FindSound( spawnArgs.GetString( "snd_arx_secret_area" ) );
 				player->StartSoundShader( shader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
 				player->ShowHudMessage( "#str_general_00010" );	// "You found a secret area"
+				player->ModifyPlayerXPs( spawnArgs.GetInt( "arx_xp_value", "0") ); // Award XPs
 			}
 		}
 
