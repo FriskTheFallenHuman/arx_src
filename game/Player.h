@@ -970,6 +970,7 @@ private:
 	void					Event_FindInventoryItemCount( const char *name );					// 2nd Jan 2011 - Solarsplace
 	void					Event_GiveJournal( const char *name );								// 13th Sep 2012 - Solarsplace
 	void					Event_GetMapName( void );											// 22nd Sep 2012 - Solarsplace
+	void					Event_ModifyPlayerXPs( int XPs );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

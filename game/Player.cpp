@@ -74,6 +74,7 @@ const idEventDef EV_GiveInventoryItem( "GiveInventoryItem", "s", NULL );
 const idEventDef EV_FindInventoryItemCount( "FindInventoryItemCount", "s", 'f' );
 const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
 const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
+const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
 
 //*****************************************************************
 //*****************************************************************
@@ -116,6 +117,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_FindInventoryItemCount )
 	EVENT( EV_GiveJournal,						idPlayer::Event_GiveJournal )
 	EVENT( EV_GetMapName,						idPlayer::Event_GetMapName )
+	EVENT( EV_ModifyPlayerXPs,					idPlayer::Event_ModifyPlayerXPs )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -13745,31 +13747,42 @@ int	idPlayer::GetRequiredXPForLevel( int level ) {
 }
 
 /*
+================
+2nd Jan 2010 - Solarsplace
+idPlayer::Event_InventoryContainsItem
+================
+*/
+void idPlayer::Event_ModifyPlayerXPs( int XPs )
+{
+	ModifyPlayerXPs( XPs );
+}
+
+/*
 =================
-idPlayer::GetRequiredXPForLevel
+idPlayer::ModifyPlayerXPs
 =================
 */
 void idPlayer::ModifyPlayerXPs( int XPs )
 {
-	inventory.arx_skill_points += XPs;				
+	int levelUp = 0;
+
+	inventory.arx_player_x_points += XPs;				
 
 	for ( int i = 1; i < ARX_MAX_PLAYER_LEVELS; i++ )
 	{
-		int levelUp = 0;
-
 		if ( i > inventory.arx_player_level )
 		{
 			if ( ( inventory.arx_skill_points >= GetRequiredXPForLevel( i ) ) )
-			{
-				levelUp = 1;
-			}
+			{ levelUp = 1; }
 
-			if ( levelUp ) {
-				ArxPlayerLevelUp();
-			} else {
-				ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
-			}
+			if ( levelUp )
+			{ ArxPlayerLevelUp(); }
 		}
+	}
+
+	if ( !levelUp ) {
+		// Don't wipe out the 'level up' message. Only show this if we did not level up.
+		ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
 	}
 }
 
