@@ -3190,7 +3190,7 @@ void idEntity::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 	if ( attacker == player ) {
 		int xps = spawnArgs.GetInt( "arx_xp_value", "0" );
 		if ( xps > 0 ) {
-			player->ModifyPlayerXPs( xps );
+			player->ModifyPlayerXPs( xps, true );
 		}
 	}
 }

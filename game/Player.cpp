@@ -13754,7 +13754,7 @@ idPlayer::Event_InventoryContainsItem
 */
 void idPlayer::Event_ModifyPlayerXPs( int XPs )
 {
-	ModifyPlayerXPs( XPs );
+	ModifyPlayerXPs( XPs, true );
 }
 
 /*
@@ -13762,8 +13762,10 @@ void idPlayer::Event_ModifyPlayerXPs( int XPs )
 idPlayer::ModifyPlayerXPs
 =================
 */
-void idPlayer::ModifyPlayerXPs( int XPs )
+void idPlayer::ModifyPlayerXPs( int XPs, bool showMessage )
 {
+	if ( XPs <= 0 ) { return; }
+
 	int levelUp = 0;
 
 	inventory.arx_player_x_points += XPs;				
@@ -13782,7 +13784,9 @@ void idPlayer::ModifyPlayerXPs( int XPs )
 
 	if ( !levelUp ) {
 		// Don't wipe out the 'level up' message. Only show this if we did not level up.
-		ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
+		if ( showMessage ) {
+			ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
+		}
 	}
 }
 

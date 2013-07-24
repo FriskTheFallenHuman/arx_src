@@ -439,7 +439,7 @@ public:
 	void					AlertAI( bool playerVisible, float alertRadius, int aiTeam, int teamAlertOptions );
 
 	// Skills & stats related
-	void					ModifyPlayerXPs( int XPs );
+	void					ModifyPlayerXPs( int XPs, bool showMessage );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
