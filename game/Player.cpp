@@ -7261,6 +7261,38 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 
 	assert( hud );
 
+	// *************************************************
+	// Start - Solarsplace - Arx End Of Sun - Blacksmith
+
+	// TODO - Get blacksmith skill
+	int blackSmithSkill = 90;
+
+	// TODO - Get item repair cost
+	int blackSmithRepairCost = 25;
+
+	if ( inventory.money - blackSmithRepairCost >= 0 ) {
+
+		// Perform repair
+
+	} else {
+		ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
+	}
+
+	objectiveSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
+
+	// "cmd"	"arx_select_repair_item"
+	// "cmd"	"arx_perform_repair_item"
+
+	// Get the selected display item
+	int repairItemListId = objectiveSystem->State().GetInt( "listRepairItems_sel_0", "0" );
+
+	// Select the corresponding item in the hidden inventory id list
+	objectiveSystem->SetStateInt( "listRepairItemsHidden_sel_0", repairItemListId );
+
+	
+	// End - Solarsplace - Arx End Of Sun - Blacksmith
+	// ***********************************************
+
 	int currentPDA = objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
 	if ( currentPDA == -1 ) {
 		currentPDA = 0;
@@ -7310,7 +7342,8 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 
 		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
 			// This pda has been read already, mark in gray
-			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GRAY "%s", pda->GetPdaName()) );
+			// SP - Arx EOS - Changed to black.
+			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", pda->GetPdaName()) );
 		} else {
 			// This pda has not been read yet
 		objectiveSystem->SetStateString( va( "listPDA_item_%i", index), pda->GetPdaName() );
