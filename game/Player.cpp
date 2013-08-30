@@ -9810,6 +9810,14 @@ void idPlayer::GetEntityByViewRay( void )
 				}
 			}
 
+			bool arx_no_pickup = target->spawnArgs.GetBool( "arx_no_pickup", "0" );
+			if ( arx_no_pickup ) {
+				// Play a sound to indicate nothing to pickup.
+				StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+				ShowHudMessage(  target->spawnArgs.GetString( "arx_no_pickup_message", common->GetLanguageDict()->GetString( "#str_general_00015" ) ) ); // Default: This object cannot be picked up
+				return;
+			}
+
 			//*** Start - Solarsplace 13th Oct 2011 - Should we alert AI?
 			bool alertai;
 			bool alertaifov;
