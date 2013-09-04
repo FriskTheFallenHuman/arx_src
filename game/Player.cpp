@@ -3072,6 +3072,14 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	totalMana = GetPlayerManaAmount();
 	_hud->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
+	// Solarsplace 4th Sep 2013
+	// Hide the mana meter unless the player has the snake compass
+	bool hasSnakeCompass = false;
+	if ( FindInventoryItemCount( "#str_item_00099" ) > 0 ) {
+		hasSnakeCompass = true;
+	}
+	_hud->SetStateBool( "player_mana_visible", ( hasSnakeCompass ) );
+
 	// Solarsplace 17th May 2010 - Poison related
 	if ( inventory.arx_timer_player_poison >= gameLocal.time )
 	{ _hud->SetStateString( "poisoned", "1" ); }
@@ -10928,8 +10936,9 @@ Called every tic for each player
 ==============
 */
 void idPlayer::Think( void ) {
-	renderEntity_t *headRenderEnt;
 
+	bool allowAttack = false;
+	renderEntity_t *headRenderEnt;
 	UpdatePlayerIcons();
 
 	// latch button actions
@@ -10940,6 +10949,13 @@ void idPlayer::Think( void ) {
 	usercmd = gameLocal.usercmds[ entityNumber ];
 	buttonMask &= usercmd.buttons;
 	usercmd.buttons &= ~buttonMask;
+
+	// Solarsplace - 4th Sep 2013 - http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
+	if ( ! (gameLocal.mainMenuExitHasDisabledAttack && ( usercmd.buttons & BUTTON_ATTACK )) )
+	{
+		allowAttack = true;
+		gameLocal.mainMenuExitHasDisabledAttack = false;
+	}
 
 	if ( gameLocal.inCinematic && gameLocal.skipCinematic ) {
 		return;
@@ -11076,7 +11092,7 @@ void idPlayer::Think( void ) {
 
 	if ( spectating ) {
 		UpdateSpectating();
-	} else if ( health > 0 ) {
+	} else if ( health > 0  && allowAttack ) {
 		UpdateWeapon();
 	}
 
@@ -11158,7 +11174,19 @@ void idPlayer::Think( void ) {
 			if ( magicModeActive != lastMagicModeActive )
 			{
 				lastMagicModeActive = magicModeActive;
-				ToggleMagicMode();
+
+				// SP - 4th Sep 2013 - Only allow magic mode if has snake compass
+				bool hasSnakeCompass = false;
+				if ( FindInventoryItemCount( "#str_item_00099" ) > 0 ) {
+					hasSnakeCompass = true;
+				} else {
+					ShowHudMessage( "#str_general_00016" ); // "You cannot yet speak the words of power"
+					StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
+				}
+
+				if ( hasSnakeCompass ) {
+					ToggleMagicMode();
+				}
 			}
 		}
 		else

@@ -221,6 +221,9 @@ void idGameLocal::Clear( void ) {
 	portalSkyEnt			= NULL;
 	portalSkyActive			= false;
 	//neuro end
+
+	// Solarsplace - 4th Sep 2013 - http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
+	mainMenuExitHasDisabledAttack = false;
 }
 
 /*
@@ -2539,6 +2542,9 @@ idGameLocal::HandleMainMenuCommands
 void idGameLocal::HandleMainMenuCommands( const char *menuCommand, idUserInterface *gui )
 {
 	//gameLocal.Printf( "idGameLocal::HandleMainMenuCommands ( %s )\n", menuCommand );
+
+	// Solarsplace - 4th Sep 2013 - http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
+	mainMenuExitHasDisabledAttack = true;
 
 	// Solarsplace - 4th Oct 2010 - Level transition related
 	if ( idStr::Icmp( menuCommand, "startgame" ) == 0 )
