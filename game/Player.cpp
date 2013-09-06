@@ -4082,21 +4082,27 @@ idPlayer::FindInventoryItemCount
 int idPlayer::FindInventoryItemCount( const char *name ) {
 
 	int itemCount = 0;
+	idStr name_idstr;
+	idStr iname_idstr;
+
+	// SP - 6th Sep 2013 - Make names and string conversions consistent.
+	if ( idStr::FindText( name, "#str_" ) == 0 ) {
+		name_idstr = common->GetLanguageDict()->GetString( name );
+	}
 
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
 		const char *iname = inventory.items[i]->GetString( "inv_name" );
 		if ( iname && *iname ) {
 		
-			if ( idStr::FindText( name, "#str_" ) == 0 )
-			{
-				if ( idStr::Icmp( common->GetLanguageDict()->GetString( name ), iname ) == 0 ) {
-					itemCount ++;
-				}
-			} else {
-				if ( idStr::Icmp( name, iname ) == 0 ) {
-					itemCount ++;
-				}
+			// SP - 6th Sep 2013 - Make names and string conversions consistent.
+			if ( idStr::FindText( iname, "#str_" ) == 0 ) {
+				iname_idstr = common->GetLanguageDict()->GetString( iname );
 			}
+
+			if ( idStr::Icmp( name_idstr, iname_idstr ) == 0 ) {
+				itemCount ++;
+			}
+
 		}
 	}
 	return itemCount;
@@ -11181,7 +11187,7 @@ void idPlayer::Think( void ) {
 					hasSnakeCompass = true;
 				} else {
 					ShowHudMessage( "#str_general_00016" ); // "You cannot yet speak the words of power"
-					StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
+					//StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
 				}
 
 				if ( hasSnakeCompass ) {
