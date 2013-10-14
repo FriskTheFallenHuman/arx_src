@@ -8887,6 +8887,9 @@ void idPlayer::UpdateShoppingSystem( void )
 
 void idPlayer::UpdateConversationSystem( void )
 {
+	int j, c, tempHealth, tempHealthMax, counter;
+	idStr tempInvName;
+	const int MAX_BLACKSMITH_REPAIR_ITEMS = 255;
 
 	if ( conversationSystem && conversationSystemOpen )
 	{
@@ -8895,8 +8898,49 @@ void idPlayer::UpdateConversationSystem( void )
 
 		conversationSystem->SetStateString( "quest_visible_window", questWindow );
 
-	}
+		// ***********************************************************************************************************
+		// ***********************************************************************************************************
+		// ***********************************************************************************************************
+		// Blacksmith
 
+		// listRepairItemsHidden_sel_0
+		// listRepairItems_sel_0
+
+
+		for ( j = 0; j < MAX_BLACKSMITH_REPAIR_ITEMS; j++ ) {
+			objectiveSystem->SetStateString( va( "listRepairItems_item_%i", j ), "" );
+			objectiveSystem->SetStateString( va( "listRepairItemsHidden_item_%i", j ), "" );
+		}
+
+		c = inventory.items.Num();
+		counter = 0;
+		for ( j = 0; j < c; j++ ) {
+
+			idDict *item = inventory.items[j];
+
+			if ( item->GetBool( "inv_allow_blacksmith", "0" ) ) {
+			
+				// Display current health / max health in repair list box
+				tempHealth = item->GetInt( "inv_health", "0" );
+				tempHealthMax = item->GetInt( "inv_health_max", "100" );
+
+				if ( tempHealth >= tempHealthMax ) { continue; } // >= Just in case tempHeath is boosted by magic or something above max? 
+
+				sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
+
+
+				objectiveSystem->SetStateString( va( "listRepairItems_item_%i", counter ), tempInvName );
+				objectiveSystem->SetStateString( va( "listRepairItemsHidden_item_%i", counter ), idStr(j) );
+			
+				counter ++;
+			}
+		}
+
+		// ***********************************************************************************************************
+		// ***********************************************************************************************************
+		// ***********************************************************************************************************
+
+	}
 }
 
 void idPlayer::UpdateInventoryGUI( void )
@@ -13678,6 +13722,8 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 	// Chance of getting poisoned
 	if ( strcmp( chanceDescription, "add_poison" ) == 0 ) {
+
+		if ( godmode ) { return false; }
 
 		//REMOVEME
 		int poison_resistance_chance = 20; // 20%

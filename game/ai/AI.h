@@ -259,6 +259,7 @@ protected:
 	// Solarsplace - Arx End Of Sun
 	bool					sendAlertSignals;
 	int						lastAlertSignal;
+	bool					painTriggerDone;
 
 	// navigation
 	idAAS *					aas;

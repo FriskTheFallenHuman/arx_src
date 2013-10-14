@@ -359,6 +359,7 @@ idAI::idAI() {
 	// Solarsplace - Arx End Of Sun
 	sendAlertSignals = false;
 	lastAlertSignal = 0;
+	painTriggerDone = false;
 }
 
 /*
@@ -510,6 +511,7 @@ void idAI::Save( idSaveGame *savefile ) const {
 	// Solarsplace - Arx End Of Sun
 	savefile->WriteBool( sendAlertSignals);
 	savefile->WriteInt( lastAlertSignal );
+	savefile->WriteBool( painTriggerDone );
 }
 
 /*
@@ -662,6 +664,7 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	// Solarsplace - Arx End Of Sun
 	savefile->ReadBool( sendAlertSignals);
 	savefile->ReadInt( lastAlertSignal );
+	savefile->ReadBool( painTriggerDone );
 
 	// Set the AAS if the character has the correct gravity vector
 	idVec3 gravity = spawnArgs.GetVector( "gravityDir", "0 0 -1" );
@@ -3221,7 +3224,8 @@ idAI::Pain
 =====================
 */
 bool idAI::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location ) {
-	idActor	*actor;
+	idActor *actor;
+	idEntity *ent;
 
 	AI_PAIN = idActor::Pain( inflictor, attacker, damage, dir, location );
 	AI_DAMAGE = true;
@@ -3239,14 +3243,29 @@ bool idAI::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVe
 
 		if ( enemy.GetEntity() != attacker && attacker->IsType( idActor::Type ) ) {
 			actor = ( idActor * )attacker;
+
 			if ( ReactionTo( actor ) & ATTACK_ON_DAMAGE ) {
 				gameLocal.AlertAI( actor );
 				SetEnemy( actor );
 
+				// Solarsplace - Arx End Of Sun
 				if ( actor == gameLocal.GetLocalPlayer() ) {
-					sendAlertSignals = true;
-				}
 
+					sendAlertSignals = true;
+
+					// Solarsplace - Arx End Of Sun - Added option to trigger something like a trigger once for example if hurt by the player.
+					if ( !painTriggerDone ) {
+						painTriggerDone = true;
+
+						ent = gameLocal.FindEntity( spawnArgs.GetString( "pain_trigger_ent", "" ) );
+						if ( ent ) {
+							if ( ent->RespondsTo( EV_Activate ) || ent->HasSignal( SIG_TRIGGER ) ) {
+								ent->Signal( SIG_TRIGGER );
+								ent->ProcessEvent( &EV_Activate, this );
+							} 
+						}
+					}
+				}
 			}
 		}
 	}
@@ -3386,6 +3405,13 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	physicsObj.GetClipModel()->Unlink();
 
 	Unbind();
+
+	// SP - Arx End Of Sun - 20th Sep 2013
+	idStr deathSkin;
+	if ( spawnArgs.GetString( "skin_death", "", deathSkin ) ) {
+		renderEntity.customSkin = declManager->FindSkin( deathSkin );
+		UpdateVisuals();
+	}
 
 	if ( StartRagdoll() ) {
 		StartSound( "snd_death", SND_CHANNEL_VOICE, 0, false, NULL );

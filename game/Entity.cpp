@@ -501,6 +501,9 @@ void idEntity::Spawn( void ) {
 		UpdateGuiParms( renderEntity.gui[ i ], &spawnArgs );
 	}
 
+	// Solarsplace - Arx End Of Sun -  Other AI will not target this AI which may be on a different team.
+	fl.notarget = spawnArgs.GetBool( "notarget", "0" );
+
 	fl.solidForTeam = spawnArgs.GetBool( "solidForTeam", "0" );
 	fl.neverDormant = spawnArgs.GetBool( "neverDormant", "0" );
 	fl.hidden = spawnArgs.GetBool( "hide", "0" );
