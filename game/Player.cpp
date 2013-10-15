@@ -7530,6 +7530,9 @@ void idPlayer::ToggleConversationSystem(void)
 	// Solarsplace 2nd Nov 2011 - NPC GUI Related
 	if( !conversationSystemOpen )
 	{
+		conversationSystem->SetStateInt( "listRepairItems_sel_0", -1 );
+		conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", -1 );
+
 		conversationSystem->Activate( true, gameLocal.time );
 		conversationSystemOpen = true;
 	}
@@ -8639,7 +8642,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 	// Solarsplace 4th July 2013
 	// Items which the player cannot drop from their inventory
-	bool noInvDrop = inventory.items[invItemIndex]->GetString( "inv_arx_noinvdrop", "0" );
+	bool noInvDrop = inventory.items[invItemIndex]->GetBool( "inv_arx_noinvdrop", "0" );
 	if ( noInvDrop ) {
 		ShowHudMessage( "#str_general_00011" ); // "This item can not be dropped"
 		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
@@ -8889,7 +8892,7 @@ void idPlayer::UpdateConversationSystem( void )
 {
 	int j, c, tempHealth, tempHealthMax, counter;
 	idStr tempInvName;
-	const int MAX_BLACKSMITH_REPAIR_ITEMS = 255;
+	const int MAX_BLACKSMITH_REPAIR_ITEMS = 255; // This value set to a high level that should never be exceeded by the inventory items for repair total.
 
 	if ( conversationSystem && conversationSystemOpen )
 	{
@@ -8906,10 +8909,10 @@ void idPlayer::UpdateConversationSystem( void )
 		// listRepairItemsHidden_sel_0
 		// listRepairItems_sel_0
 
-
+		// Need to clear out the list incase anything has been repaired / removed.
 		for ( j = 0; j < MAX_BLACKSMITH_REPAIR_ITEMS; j++ ) {
-			objectiveSystem->SetStateString( va( "listRepairItems_item_%i", j ), "" );
-			objectiveSystem->SetStateString( va( "listRepairItemsHidden_item_%i", j ), "" );
+			conversationSystem->SetStateString( va( "listRepairItems_item_%i", j ), "" );
+			conversationSystem->SetStateString( va( "listRepairItemsHidden_item_%i", j ), "" );
 		}
 
 		c = inventory.items.Num();
@@ -8924,13 +8927,12 @@ void idPlayer::UpdateConversationSystem( void )
 				tempHealth = item->GetInt( "inv_health", "0" );
 				tempHealthMax = item->GetInt( "inv_health_max", "100" );
 
-				if ( tempHealth >= tempHealthMax ) { continue; } // >= Just in case tempHeath is boosted by magic or something above max? 
+				//if ( tempHealth >= tempHealthMax ) { continue; } // >= Just in case tempHeath is boosted by magic or something above max? 
 
 				sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
 
-
-				objectiveSystem->SetStateString( va( "listRepairItems_item_%i", counter ), tempInvName );
-				objectiveSystem->SetStateString( va( "listRepairItemsHidden_item_%i", counter ), idStr(j) );
+				conversationSystem->SetStateString( va( "listRepairItems_item_%i", counter ), tempInvName );
+				conversationSystem->SetStateString( va( "listRepairItemsHidden_item_%i", counter ), idStr(j) );
 			
 				counter ++;
 			}
@@ -8940,6 +8942,8 @@ void idPlayer::UpdateConversationSystem( void )
 		// ***********************************************************************************************************
 		// ***********************************************************************************************************
 
+		// !!! Critical - MUST DO THIS !!!
+		conversationSystem->StateChanged( gameLocal.time );
 	}
 }
 
