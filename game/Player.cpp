@@ -5695,6 +5695,65 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	}
 
 	
+	// *************************************************
+	// Start - Solarsplace - Arx End Of Sun - Blacksmith
+
+	// TODO - Get blacksmith skill
+	int blackSmithSkill = 0;
+
+	if ( focusCharacter ) {
+
+		blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", "90" );
+
+	}
+
+	// TODO - Get item repair cost
+	int blackSmithRepairCost = 25;
+
+	int selectedListKey = -1;
+	int repairListValue = -1;
+
+	if ( token.Icmp( "arx_select_repair_item" ) == 0 ) {
+
+		// Get the selected display item
+		selectedListKey = objectiveSystem->State().GetInt( "listRepairItems_sel_0", "-1" );
+
+		if ( selectedListKey != -1 ) {
+			// Select the corresponding item in the hidden inventory id list
+			objectiveSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey );
+		}
+
+		return true;
+	}
+
+	if ( token.Icmp( "arx_perform_repair_item" ) == 0 ) {
+
+
+		if ( inventory.money - blackSmithRepairCost >= 0 ) {
+
+			// Get the inventory item id from the hidden list box
+			repairListValue = atoi( objectiveSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" ) );
+
+			//REMOVEME
+			idStr tmp = objectiveSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" );
+			ShowHudMessage( tmp );
+
+			if ( repairListValue != -1 ) {
+
+				//
+			}
+
+		} else {
+			ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
+		}
+
+		return true;
+	}
+
+	
+	// End - Solarsplace - Arx End Of Sun - Blacksmith
+	// ***********************************************
+
 
 	/*****************************************************************************************/
 	/*****************************************************************************************/
@@ -7274,38 +7333,6 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 	}
 
 	assert( hud );
-
-	// *************************************************
-	// Start - Solarsplace - Arx End Of Sun - Blacksmith
-
-	// TODO - Get blacksmith skill
-	int blackSmithSkill = 90;
-
-	// TODO - Get item repair cost
-	int blackSmithRepairCost = 25;
-
-	if ( inventory.money - blackSmithRepairCost >= 0 ) {
-
-		// Perform repair
-
-	} else {
-		ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
-	}
-
-	objectiveSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
-
-	// "cmd"	"arx_select_repair_item"
-	// "cmd"	"arx_perform_repair_item"
-
-	// Get the selected display item
-	int repairItemListId = objectiveSystem->State().GetInt( "listRepairItems_sel_0", "0" );
-
-	// Select the corresponding item in the hidden inventory id list
-	objectiveSystem->SetStateInt( "listRepairItemsHidden_sel_0", repairItemListId );
-
-	
-	// End - Solarsplace - Arx End Of Sun - Blacksmith
-	// ***********************************************
 
 	int currentPDA = objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
 	if ( currentPDA == -1 ) {
@@ -8905,6 +8932,15 @@ void idPlayer::UpdateConversationSystem( void )
 		// ***********************************************************************************************************
 		// ***********************************************************************************************************
 		// Blacksmith
+
+		// Display the blacksmith skill
+			// TODO - Get blacksmith skill
+		int blackSmithSkill = 0;
+		
+		if ( focusCharacter ) {
+			blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", "90" );
+			objectiveSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
+		}
 
 		// listRepairItemsHidden_sel_0
 		// listRepairItems_sel_0
