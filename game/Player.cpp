@@ -5716,12 +5716,18 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	if ( token.Icmp( "arx_select_repair_item" ) == 0 ) {
 
 		// Get the selected display item
-		selectedListKey = objectiveSystem->State().GetInt( "listRepairItems_sel_0", "-1" );
-
-		if ( selectedListKey != -1 ) {
-			// Select the corresponding item in the hidden inventory id list
-			objectiveSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey );
+		selectedListKey = conversationSystem->State().GetInt( "listRepairItems_sel_0", "0" );
+		if ( selectedListKey == -1 ) {
+			selectedListKey = 0;
 		}
+		// The hidden list is not 0, 1, 2, 3 etc it could be 1, 9, 14 which is the inventory id.
+		conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey );
+
+
+		//REMOVEME
+		ShowHudMessage( conversationSystem->State().GetString( va( "listRepairItemsHidden_item_%i", selectedListKey ), "-1" ) );
+		//ShowHudMessage( idStr(selectedListKey) );
+
 
 		return true;
 	}
@@ -5732,10 +5738,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		if ( inventory.money - blackSmithRepairCost >= 0 ) {
 
 			// Get the inventory item id from the hidden list box
-			repairListValue = atoi( objectiveSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" ) );
+			repairListValue = atoi( conversationSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" ) );
 
 			//REMOVEME
-			idStr tmp = objectiveSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" );
+			idStr tmp = conversationSystem->GetStateString( "listRepairItemsHidden_item_0", "-1" );
 			ShowHudMessage( tmp );
 
 			if ( repairListValue != -1 ) {
@@ -8939,7 +8945,7 @@ void idPlayer::UpdateConversationSystem( void )
 		
 		if ( focusCharacter ) {
 			blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", "90" );
-			objectiveSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
+			conversationSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
 		}
 
 		// listRepairItemsHidden_sel_0
