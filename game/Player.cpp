@@ -5698,14 +5698,6 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// *************************************************
 	// Start - Solarsplace - Arx End Of Sun - Blacksmith
 
-	// TODO - Get blacksmith skill
-	int blackSmithSkill = 0;
-
-	if ( focusCharacter ) {
-
-		blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", "90" );
-
-	}
 
 	// TODO - Get item repair cost
 	int blackSmithRepairCost = 25;
@@ -5720,13 +5712,19 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		if ( selectedListKey == -1 ) {
 			selectedListKey = 0;
 		}
-		// The hidden list is not 0, 1, 2, 3 etc it could be 1, 9, 14 which is the inventory id.
-		conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey );
+
+		// Using the visible list def selected item, programatically select the same row in the hidden list def's
+		conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey ); // The hidden list is not 0, 1, 2, 3 etc it could be 1, 9, 14 which is the inventory id.
+		conversationSystem->SetStateInt( "listRepairItemsHiddenCost_item_", selectedListKey );
 
 
 		//REMOVEME
-		ShowHudMessage( conversationSystem->State().GetString( va( "listRepairItemsHidden_item_%i", selectedListKey ), "-1" ) );
+		//ShowHudMessage( conversationSystem->State().GetString( va( "listRepairItemsHidden_item_%i", selectedListKey ), "-1" ) );
 		//ShowHudMessage( idStr(selectedListKey) );
+
+		blackSmithRepairCost = atoi( conversationSystem->State().GetString( va( "listRepairItemsHiddenCost_item_%i", selectedListKey ), "-1" ) );
+
+		//conversationSystem->SetStateString( va( "listRepairItemsHiddenCost_item_%i", counter ), idStr( blackSmithCost ) );
 
 
 		return true;
@@ -5735,6 +5733,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	if ( token.Icmp( "arx_perform_repair_item" ) == 0 ) {
 
 
+		selectedListKey = conversationSystem->State().GetInt( "listRepairItems_sel_0", "0" );
+		ShowHudMessage( idStr(selectedListKey) );
+
+		/*
 		if ( inventory.money - blackSmithRepairCost >= 0 ) {
 
 			// Get the inventory item id from the hidden list box
@@ -5752,6 +5754,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		} else {
 			ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
 		}
+		*/
 
 		return true;
 	}
@@ -8923,9 +8926,14 @@ void idPlayer::UpdateShoppingSystem( void )
 
 void idPlayer::UpdateConversationSystem( void )
 {
-	int j, c, tempHealth, tempHealthMax, counter;
+	int j, c, tempHealth, tempHealthMax, tempHealthPercent, tempItemValue, counter;
 	idStr tempInvName;
 	const int MAX_BLACKSMITH_REPAIR_ITEMS = 255; // This value set to a high level that should never be exceeded by the inventory items for repair total.
+	const int defaultBlackSmithSkill = 94;
+	const float defaultblackSmithMultiply = 0.9;
+	int blackSmithSkill = 0;
+	int blackSmithCost = 0;
+	float blackSmithMultiply = 0;
 
 	if ( conversationSystem && conversationSystemOpen )
 	{
@@ -8940,16 +8948,19 @@ void idPlayer::UpdateConversationSystem( void )
 		// Blacksmith
 
 		// Display the blacksmith skill
-			// TODO - Get blacksmith skill
-		int blackSmithSkill = 0;
+
 		
 		if ( focusCharacter ) {
-			blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", "90" );
-			conversationSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
+			blackSmithSkill = focusCharacter->spawnArgs.GetInt( "blacksmith_skill", idStr(defaultBlackSmithSkill) );
+			blackSmithMultiply = focusCharacter->spawnArgs.GetFloat( "blacksmith_multiply", idStr(defaultblackSmithMultiply) );
+		} else {
+			// This should never happen, but just in case.
+			blackSmithSkill = defaultBlackSmithSkill;
+			blackSmithMultiply = defaultblackSmithMultiply;
 		}
+		conversationSystem->SetStateInt( "blackSmithSkill", blackSmithSkill );
 
-		// listRepairItemsHidden_sel_0
-		// listRepairItems_sel_0
+
 
 		// Need to clear out the list incase anything has been repaired / removed.
 		for ( j = 0; j < MAX_BLACKSMITH_REPAIR_ITEMS; j++ ) {
@@ -8968,13 +8979,21 @@ void idPlayer::UpdateConversationSystem( void )
 				// Display current health / max health in repair list box
 				tempHealth = item->GetInt( "inv_health", "0" );
 				tempHealthMax = item->GetInt( "inv_health_max", "100" );
+				if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
+				tempHealthPercent = ( tempHealth / tempHealthMax ) * 100;
+				tempItemValue = item->GetInt( "inv_shop_item_value", "999999" ); // Set very high to make it obvious no proper value set
 
-				//if ( tempHealth >= tempHealthMax ) { continue; } // >= Just in case tempHeath is boosted by magic or something above max? 
+				if ( tempHealth >= tempHealthMax && tempHealthPercent < blackSmithSkill ) { continue; } // >= Just in case tempHeath is boosted by magic or something above max? 
 
-				sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
+				blackSmithCost = BlackSmithRepairComputeCost( tempHealthMax, tempHealth, tempItemValue, blackSmithMultiply );
+
+				// e.g. Iron Sword (25/100) - 245 Gold
+				sprintf( tempInvName, "%s (%d/%d) - %d %s", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ),
+					tempHealth, tempHealthMax, blackSmithCost, common->GetLanguageDict()->GetString( "#str_item_00010" ) );
 
 				conversationSystem->SetStateString( va( "listRepairItems_item_%i", counter ), tempInvName );
-				conversationSystem->SetStateString( va( "listRepairItemsHidden_item_%i", counter ), idStr(j) );
+				conversationSystem->SetStateString( va( "listRepairItemsHidden_item_%i", counter ), idStr( j ) );
+				conversationSystem->SetStateString( va( "listRepairItemsHiddenCost_item_%i", counter ), idStr( blackSmithCost ) );
 			
 				counter ++;
 			}
@@ -8987,6 +9006,23 @@ void idPlayer::UpdateConversationSystem( void )
 		// !!! Critical - MUST DO THIS !!!
 		conversationSystem->StateChanged( gameLocal.time );
 	}
+}
+
+int idPlayer::BlackSmithRepairComputeCost( int maxHealth, int currentHealth, int itemValue, float blackSmithMultiply )
+{
+	float repairRatio = 0;
+	float repairCost = 0;
+
+	repairRatio = ( maxHealth - currentHealth ) / maxHealth;
+	repairCost = itemValue * repairRatio;
+
+	if ( blackSmithMultiply != 0.f ) {
+		repairCost *= blackSmithMultiply;
+	}
+
+	if ((repairCost > 0.f) && (repairCost < 1.f)) repairCost = 1.f;
+
+	return (int)repairCost;
 }
 
 void idPlayer::UpdateInventoryGUI( void )

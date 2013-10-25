@@ -1035,6 +1035,10 @@ private:
 	// Spell related
 	void					RadiusSpell( idStr scriptAction, float alertRadius );
 
+	// Blacksmith related
+	int						BlackSmithRepairComputeCost( int maxHealth, int currentHealth, int itemValue, float blackSmithMultiply );
+
+
 	/*
 	*** END - Solarsplace - Arx EOS - Private
 	*****************************************************************************************************
