@@ -82,6 +82,7 @@ private:
 	const idMaterial *	justLeftWaterMaterial;	// Player water drops effect
 	const idMaterial *	blurMaterial;			// Player underwater blur effect
 	const idMaterial *	filmgrainMaterial;		// Player view filmgrain material
+	const idMaterial *	fireScreenMaterial;		// Plaver fire damage effect
 	// <--- Arx
 
 	const idMaterial *	tunnelMaterial;		// health tunnel vision

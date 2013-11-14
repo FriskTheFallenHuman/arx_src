@@ -254,6 +254,7 @@ public:
 
 	int						arx_timer_player_poison;
 	int						arx_timer_player_invisible;
+	int						arx_timer_player_onfire;
 
 	// mp
 	int						ammoPredictTime;

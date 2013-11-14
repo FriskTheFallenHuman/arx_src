@@ -254,6 +254,7 @@ void idInventory::Clear( void ) {
 
 	arx_timer_player_poison			= 0;
 	arx_timer_player_invisible		= 0;
+	arx_timer_player_onfire			= 0;
 
 	// ****************************************************
 	// ****************************************************
@@ -402,6 +403,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
+	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
 
 	// ****************************************************
 	// ****************************************************
@@ -571,6 +573,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 
 	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "0" );
 	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "0" );
+	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "0" );
 
 	// ****************************************************
 	// ****************************************************
@@ -730,6 +733,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( arx_timer_player_poison );
 	savefile->WriteInt( arx_timer_player_invisible );
+	savefile->WriteInt( arx_timer_player_onfire );
 
 	// ****************************************************
 	// ****************************************************
@@ -880,6 +884,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadInt( arx_timer_player_poison );
 	savefile->ReadInt( arx_timer_player_invisible );
+	savefile->ReadInt( arx_timer_player_onfire );
 
 	// ****************************************************
 	// ****************************************************
@@ -11938,6 +11943,12 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 			// physics is turned off by calling af.Rest()
 			BecomeActive( TH_PHYSICS );
 		}
+	}
+
+	// Solarsplace - 14th Nov 2013 - Fire related
+	if ( damageDef->dict.GetBool( "onFire" ) ) {
+		int fireDamageDuration = (int)( ( (float)damage / 6.0f ) + 0.5f ); // Duration based on damage. Should never be less than 1 second.
+		inventory.arx_timer_player_onfire += gameLocal.time + SEC2MS( fireDamageDuration );
 	}
 
 	lastDamageDef = damageDef->Index();

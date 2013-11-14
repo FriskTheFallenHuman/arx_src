@@ -33,6 +33,7 @@ idPlayerView::idPlayerView()
 	justLeftWaterMaterial = declManager->FindMaterial( "textures/arx/water/screen" );
 	blurMaterial = declManager->FindMaterial( "textures/arx/sfx/blur" );
 	filmgrainMaterial = declManager->FindMaterial( "textures/arx/postProcess/filmgrain" );
+	fireScreenMaterial = declManager->FindMaterial( "textures/arx/sfx/fire_damage" );
 	// <--- Arx
 
 	dvMaterial = declManager->FindMaterial( "_scratch" );
@@ -99,6 +100,8 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteMaterial( poisonMaterial );
 	savefile->WriteMaterial( justLeftWaterMaterial );
 	savefile->WriteMaterial( blurMaterial );
+	savefile->WriteMaterial( filmgrainMaterial );
+	savefile->WriteMaterial( fireScreenMaterial );
 	// <--- Arx
 
 	savefile->WriteMaterial( irGogglesMaterial );
@@ -157,6 +160,8 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadMaterial( poisonMaterial );
 	savefile->ReadMaterial( justLeftWaterMaterial );
 	savefile->ReadMaterial( blurMaterial );
+	savefile->ReadMaterial( filmgrainMaterial );
+	savefile->ReadMaterial( fireScreenMaterial );
 	// <--- Arx
 
 	savefile->ReadMaterial( irGogglesMaterial );
@@ -558,7 +563,8 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 				fade = 1.0f;
 			}
 			if ( fade ) {
-				renderSystem->SetColor4( 1,1,1,fade );
+				renderSystem->CaptureRenderToImage( "_currentRender" );
+				renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, fade );
 				renderSystem->DrawStretchPic( blob->x, blob->y, blob->w, blob->h,blob->s1, blob->t1, blob->s2, blob->t2, blob->material );
 			}
 		}
@@ -625,6 +631,17 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, tunnelMaterial );
 		}
 
+		// Solarsplace - Arx End Of Sun - 14th Nov 2013
+		//if ( player->inventory.arx_timer_player_onfire >= gameLocal.time ) {
+			int fireDamageDuration = player->inventory.arx_timer_player_onfire - gameLocal.time;
+			// Start fading if within 1 second of finish time.
+			alpha = (fireDamageDuration < 1000) ? (float)fireDamageDuration / 1000 : 1.0f;
+			renderSystem->CaptureRenderToImage( "_currentRender" );
+			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 0.1f );
+			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, fireScreenMaterial );
+		//}
+
+		/*
 		if ( player->PowerUpActive(BERSERK) ) {
 			int berserkTime = player->inventory.powerupEndTime[ BERSERK ] - gameLocal.time;
 			if ( berserkTime > 0 ) {
@@ -639,6 +656,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
 		}
+		*/
 
 	}
 
