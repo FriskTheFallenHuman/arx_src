@@ -632,14 +632,13 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 		}
 
 		// Solarsplace - Arx End Of Sun - 14th Nov 2013
-		//if ( player->inventory.arx_timer_player_onfire >= gameLocal.time ) {
+		if ( player->inventory.arx_timer_player_onfire >= gameLocal.time ) {
 			int fireDamageDuration = player->inventory.arx_timer_player_onfire - gameLocal.time;
 			// Start fading if within 1 second of finish time.
 			alpha = (fireDamageDuration < 1000) ? (float)fireDamageDuration / 1000 : 1.0f;
-			renderSystem->CaptureRenderToImage( "_currentRender" );
-			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 0.1f );
+			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, alpha );
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, fireScreenMaterial );
-		//}
+		}
 
 		/*
 		if ( player->PowerUpActive(BERSERK) ) {

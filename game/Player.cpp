@@ -6452,6 +6452,9 @@ void idPlayer::TraceUsables()
 	//******************************************************************************************
 	//*** Solarsplace 7th June 2010
 
+	// 14th Nov 2013 - Cannot do this if dead...
+	if ( health <= 0 ) { return; }
+
 	trace_t trace;
 	idEntity * target;
 	float pickupDistance;
@@ -8115,12 +8118,12 @@ void idPlayer::PerformImpulse( int impulse ) {
 	switch( impulse )
 	{
 		case IMPULSE_16: { // Arx - Quick health
-			ConsumeInventoryItem( FindInventoryItemIndex ( "Health Potion" ) );
+			ConsumeInventoryItem( FindInventoryItemIndex ( "#str_item_00061" ) ); // "A life potion"
 			break;
 		}
 
 		case IMPULSE_17: { // Arx - Quick Mana
-			ConsumeInventoryItem( FindInventoryItemIndex ( "Mana Potion" ) );
+			ConsumeInventoryItem( FindInventoryItemIndex ( "#str_item_00059" ) ); // "A mana potion"
 			break;
 		}
 
@@ -9632,6 +9635,9 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	if ( inventory.items.Num() <= 0 || invItemIndex < 0 || invItemIndex > inventory.items.Num() )
 	{ return false; }
 
+	// 14th Nov 2013 - Cannot do this if dead...
+	if ( health <= 0 ) { return false; }
+
 	// Common D3 properties and variables
 	int					i;
 	const idKeyValue	*arg;
@@ -9941,6 +9947,9 @@ idPlayer::GetEntityByViewRay
 void idPlayer::GetEntityByViewRay( void )
 {
 	// Solarsplace - Arx End Of Sun
+
+	// 14th Nov 2013 - Cannot do this if dead...
+	if ( health <= 0 ) { return; }
 
 	// Require 'use' key to instigate NPC GUI
 	if ( focusCharacter && ( focusCharacter->health > 0 ) )
@@ -11948,7 +11957,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	// Solarsplace - 14th Nov 2013 - Fire related
 	if ( damageDef->dict.GetBool( "onFire" ) ) {
 		int fireDamageDuration = (int)( ( (float)damage / 6.0f ) + 0.5f ); // Duration based on damage. Should never be less than 1 second.
-		inventory.arx_timer_player_onfire += gameLocal.time + SEC2MS( fireDamageDuration );
+		inventory.arx_timer_player_onfire = gameLocal.time + SEC2MS( fireDamageDuration );
 	}
 
 	lastDamageDef = damageDef->Index();
