@@ -1340,7 +1340,7 @@ void idWeapon::Think( void ) {
 
 				}
 
-				if ( owner->playerInvisibleEndTime > gameLocal.time ) {
+				if ( owner->inventory.arx_timer_player_invisible > gameLocal.time ) {
 
 					// Make sure we use the invisible skin
 					UpdateSkin(); // Causes the weapon script object to set invisible skin if invisible == true

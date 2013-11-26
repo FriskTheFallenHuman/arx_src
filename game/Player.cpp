@@ -252,9 +252,11 @@ void idInventory::Clear( void ) {
 	arx_stat_damage_inflicted		= 0;
 	arx_stat_secrets_found			= 0;
 
+	arx_timer_player_stats_update	= 0;
 	arx_timer_player_poison			= 0;
 	arx_timer_player_invisible		= 0;
 	arx_timer_player_onfire			= 0;
+	arx_timer_player_telekinesis	= 0;
 
 	// ****************************************************
 	// ****************************************************
@@ -337,6 +339,9 @@ void idInventory::ClearPowerUps( void ) {
 		powerupEndTime[ i ] = 0;
 	}
 	powerups = 0;
+
+	// SP - Arx End Of Sun - Clear time based attributes - 25th Nov 2013
+	ClearDownTimedAttributes( true );
 }
 
 /*
@@ -401,9 +406,11 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_stat_damage_inflicted", arx_stat_damage_inflicted );
     dict.SetInt( "arx_stat_secrets_found", arx_stat_secrets_found );
 
+	dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update );
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
 	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
+	dict.SetInt( "arx_timer_player_telekinesis", arx_timer_player_telekinesis );
 
 	// ****************************************************
 	// ****************************************************
@@ -571,9 +578,11 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_stat_damage_inflicted		= dict.GetInt( "arx_stat_damage_inflicted", "0" );
 	arx_stat_secrets_found			= dict.GetInt( "arx_stat_secrets_found", "0" );
 
+	arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" );
 	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "0" );
 	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "0" );
 	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "0" );
+	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "0" );
 
 	// ****************************************************
 	// ****************************************************
@@ -731,9 +740,11 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_stat_damage_inflicted );
 	savefile->WriteInt( arx_stat_secrets_found );
 
+	savefile->WriteInt( arx_timer_player_stats_update );
 	savefile->WriteInt( arx_timer_player_poison );
 	savefile->WriteInt( arx_timer_player_invisible );
 	savefile->WriteInt( arx_timer_player_onfire );
+	savefile->WriteInt( arx_timer_player_telekinesis );
 
 	// ****************************************************
 	// ****************************************************
@@ -882,9 +893,11 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_stat_damage_inflicted );
 	savefile->ReadInt( arx_stat_secrets_found );
 
+	savefile->ReadInt( arx_timer_player_stats_update );
 	savefile->ReadInt( arx_timer_player_poison );
 	savefile->ReadInt( arx_timer_player_invisible );
 	savefile->ReadInt( arx_timer_player_onfire );
+	savefile->ReadInt( arx_timer_player_telekinesis );
 
 	// ****************************************************
 	// ****************************************************
@@ -1339,11 +1352,6 @@ idPlayer::idPlayer() {
 	waterScreenFinishTime		= 0;
 	playerUnderWater			= false;
 
-	playerInvisibleEndTime		= 0;
-	playerTelekinesisEndTime	= 0;
-
-	heroStatsTime				= 0;
-
 	// *********************************************************************************
 	// *********************************************************************************
 	// *********************************************************************************
@@ -1597,12 +1605,6 @@ idPlayer::Init
 ==============
 */
 void idPlayer::Init( void ) {
-
-	// Solarsplace - Start
-
-	heroStatsTime			= 0;
-
-	// Solarsplace - End
 
 	const char			*value;
 	const idKeyValue	*kv;
@@ -2285,8 +2287,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteObject( magicWand );
 	savefile->WriteObject( magicWandTrail );
 
-	savefile->WriteInt( heroStatsTime );
-
 	// SmartAI
 	friendsCommonEnemy.Save( savefile );
 
@@ -2581,8 +2581,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadObject( reinterpret_cast<idClass *&>( magicWand ) );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( magicWandTrail ) );
 
-	savefile->ReadInt( heroStatsTime );
-
 	// SmartAI
 	friendsCommonEnemy.Restore( savefile );
 
@@ -2863,6 +2861,9 @@ void idPlayer::RestorePersistantInfo( void ) {
 	if ( !gameLocal.isClient ) {
 
 		idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
+
+		// Solarsplace - Arx End Of Sun - 26th Nov 2013
+		UpdateWeaponHealth();
 	}
 }
 
@@ -4136,6 +4137,75 @@ int idPlayer::FindInventoryItemIndex( const char *name ) {
 
 /*
 ===============
+idPlayer::FindInventoryItemIndexUniqueName - Solarsplace - 26th Nov 2013
+===============
+*/
+int idPlayer::FindInventoryItemIndexUniqueName( const char *uniqueName ) {
+
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+		const char *iuniqueName = inventory.items[i]->GetString( "inv_unique_name" );
+		if ( iuniqueName && *iuniqueName ) {
+			if ( idStr::Icmp( iuniqueName, uniqueName ) == 0 ) {
+				return i;
+			}
+		}
+	}
+	return -1;
+}
+
+/*
+===============
+idPlayer::UpdateWeaponHealth - Solarsplace - 26th Nov 2013
+===============
+*/
+bool idPlayer::UpdateWeaponHealth( void ) {
+
+	//REMOVEME
+	gameLocal.Printf( "Entered idPlayer::UpdateWeaponHealth\n" );
+
+	idStr currentWeaponUniqueName;
+	int invItemIndex;
+
+	int itemHealth;
+	int itemHealthMax;
+
+	// Pull out from the inventory the unique name of the current & last selected weapon.
+	currentWeaponUniqueName = inventory.weaponUniqueName;
+
+	// Using the unique name, attempt to find the inventory item number / id.
+	invItemIndex = FindInventoryItemIndexUniqueName( currentWeaponUniqueName.c_str() );
+
+	//REMOVEME
+	gameLocal.Printf( "idPlayer::UpdateWeaponHealth - currentWeaponUniqueName = %s\n", currentWeaponUniqueName.c_str() );
+	gameLocal.Printf( "idPlayer::UpdateWeaponHealth - invItemIndex = %d\n", invItemIndex );
+
+	if ( invItemIndex >= 0 ) {
+
+		// Get the current & max health of the current weapon.
+		inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
+		inventory.items[invItemIndex]->GetInt( "inv_health_max", "100", itemHealthMax );
+
+		// Now we update the weapon class properties.
+
+		//REMOVEME
+		gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health = %d\ns", itemHealth );
+		gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health_max = %d\n", itemHealthMax );
+
+		// Set the weapon health
+		weapon.GetEntity()->health = itemHealth;
+
+		// Set the weapon max health
+		weapon.GetEntity()->health_max = itemHealthMax;
+
+		return true;
+	} else {
+		// The item number / id was not found base on the unique name. Most un-expected :(
+		return false;
+	}
+}
+
+/*
+===============
 idPlayer::FindInventoryWeaponIndex - Solarsplace - 6nd Aug 2012
 ===============
 */
@@ -4646,6 +4716,9 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 
 			idealWeapon = num;
 		}
+
+		// Solarsplace - Arx End Of Sun - 26th Nov 2013
+		UpdateWeaponHealth();
 
 		UpdateHudWeapon();
 	}
@@ -6459,7 +6532,7 @@ void idPlayer::TraceUsables()
 	idEntity * target;
 	float pickupDistance;
 
-	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
+	if ( inventory.arx_timer_player_telekinesis > gameLocal.GetTime() ) {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
@@ -6738,7 +6811,7 @@ void idPlayer::ProcessMagic()
 				// Telekinesis
 				if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 )
 				{
-					playerTelekinesisEndTime = gameLocal.time + ARX_TELEKENESIS_TIME;
+					inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
 				}
 
 				// Script calls
@@ -7982,7 +8055,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 				//RadiusSpell();
 
 				/*
-				if ( playerInvisibleEndTime > gameLocal.time ) // Do not alert AI or set enemy if player invisible
+				if ( inventory.arx_timer_player_invisible > gameLocal.time ) // Do not alert AI or set enemy if player invisible
 				{ break; };
 
 				int			e;
@@ -9663,6 +9736,8 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	inventory.items[invItemIndex]->GetString( "inv_arx_equipable_type", "", equipType );
 	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
 
+	sound = gameLocal.GetStringFromEntityDef( inventory.items[invItemIndex]->GetString( "inv_classname", "" ), "snd_consume" );
+
 	// ********************************************************************************************
 	// ********************************************************************************************
 	// ********************************************************************************************
@@ -9690,7 +9765,6 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			weapon.GetEntity()->health_max = itemHealthMax;
 
 			// Optional, may wish to play an equip sound.
-			sound = item->GetString( "snd_consume" );
 			if ( sound )
 			{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
 
@@ -9739,7 +9813,6 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 
 		if ( itemEquiped ) {
 			// Optional, may wish to play an equip sound.
-			sound = item->GetString( "snd_consume" );
 			if ( sound )
 			{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
 		}
@@ -9755,15 +9828,14 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	if ( item )
 	{
 		gave = false;
+
 		for( i = 0; i < item->GetNumKeyVals(); i++ ) {
+
 			arg = item->GetKeyVal( i );
 			if ( arg->GetKey().Left( 4 ) == "inv_" ) {
 				if ( Give( arg->GetKey().Right( arg->GetKey().Length() - 4 ), arg->GetValue() ) )
 				{ gave = true; }
 			}
-			else if ( arg->GetKey().Left( 11 ) == "snd_consume" )
-			{ sound = arg->GetValue(); }
-
 
 			//*********************************************************************************
 			//*********************************************************************************
@@ -9777,7 +9849,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				// Invisibility
 				if ( strcmp( itemAttribute, "add_invisibility" ) == 0 )
 				{
-					playerInvisibleEndTime = gameLocal.time + ARX_INVIS_TIME;
+					inventory.arx_timer_player_invisible = gameLocal.time + ARX_INVIS_TIME;
 					GivePowerUp( 1, ARX_INVIS_TIME );
 					gave = true;
 				}
@@ -9785,7 +9857,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				// Telekenesis
 				if ( strcmp( itemAttribute, "add_telekinesis" ) == 0 )
 				{
-					playerTelekinesisEndTime = gameLocal.time + ARX_TELEKENESIS_TIME;
+					inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
 					gave = true;
 				}
 
@@ -9829,7 +9901,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	if ( gave )
 	{
 		RemoveInventoryItem( item );
-		StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL );
+
+		if ( sound ) {
+			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL );
+		}
 	}
 
 	return gave;
@@ -9850,7 +9925,7 @@ void idPlayer::AlertAI( bool playerVisible, float alertRadius, int aiTeam, int t
 	int			numListedEntities;
 	idBounds	bounds;
 
-	if ( playerInvisibleEndTime > gameLocal.time ) // Do not alert AI or set enemy if player is invisible.
+	if ( inventory.arx_timer_player_invisible > gameLocal.time ) // Do not alert AI or set enemy if player is invisible.
 	{ return; };
 
 	bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( alertRadius );
@@ -9966,7 +10041,7 @@ void idPlayer::GetEntityByViewRay( void )
 	idStr entityClassName;
 	idStr requiredItemInvName;
 
-	if ( playerTelekinesisEndTime > gameLocal.GetTime() ) {
+	if ( inventory.arx_timer_player_telekinesis > gameLocal.GetTime() ) {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
@@ -10232,38 +10307,49 @@ void idPlayer::GetEntityByViewRay( void )
 		else if ( target->spawnArgs.GetBool( "arx_level_change" ) && !target->IsHidden() )
 		{
 			// Solarsplace - Added and tested on 20th Nov 2010
+			// Updated 25th Nov 2013
 
 			idStr nextMap;
 			idStr nextMapGameLocalFormat;
 			idStr levelTransitionSpawnPoint;
-			
-			if ( !target->spawnArgs.GetString( "nextMap", "", nextMap ) )
-			{
-				gameLocal.Printf( "idPlayer::GetEntityByViewRay: arx_level_change (%s) has no nextMap key - this is silly.\n", target->name.c_str() );
+			boolean changeLevelOK = false;
+
+			// Check pre-requisites
+			if ( !target->spawnArgs.GetString( "nextMap", "", nextMap ) ) {
+				gameLocal.Printf( "idPlayer::GetEntityByViewRay: arx_level_change (%s) has no nextMap key. Can not change level.\n", target->name.c_str() );
 				return;
 			}
 
-			target->ActivateTargets( this );
-
-			// Save level transition data just before we send a session command to change levels.
-			SaveTransitionInfo();
-			levelTransitionSpawnPoint = target->spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
-
-			// SP - 12th June 1013 - Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
-			nextMapGameLocalFormat = "maps/" + nextMap + ".map" + levelTransitionSpawnPoint;
-
-			SetMapEntryPoint( nextMapGameLocalFormat );
-
 			// Does this level change require that the player has something in their inventory?
 			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
-			if ( idStr::Icmp( requiredItemInvName, "" ) != 0 )
-			{
+			if ( idStr::Icmp( requiredItemInvName, "" ) != 0 ) {
 				inventoryItem = FindInventoryItem( target->spawnArgs.GetString( "requires_inv_item" ) );
-				if ( inventoryItem )
-				{ gameLocal.sessionCommand = "map " + nextMap; }
+				if ( inventoryItem ) {
+					changeLevelOK = true;
+				}
 			}
-			else
-			{ gameLocal.sessionCommand = "map " + nextMap; }
+			else {
+				changeLevelOK = true;
+			}
+
+			if ( changeLevelOK ) {
+
+				// Carry over timed attributes such as magic and damages.
+				inventory.ClearDownTimedAttributes( false );
+
+				// Active any targets of the change level entity.
+				target->ActivateTargets( this );
+
+				// Save level transition data just before we send a session command to change levels.
+				SaveTransitionInfo();
+
+				// SP - 12th June 1013 - Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
+				levelTransitionSpawnPoint = target->spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
+				nextMapGameLocalFormat = "maps/" + nextMap + ".map" + levelTransitionSpawnPoint;
+				SetMapEntryPoint( nextMapGameLocalFormat );
+
+				gameLocal.sessionCommand = "map " + nextMap;
+			}
 		}
 		//************************************************************************************************
 		//************************************************************************************************
@@ -13845,18 +13931,17 @@ void idPlayer::Event_GetCommonEnemy( void ) {
 //ivan end
 
 
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ************************************************************************************************************
-// ARX EoS - Start
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// Arx - End Of Sun
 
 
 // ==================================================================
@@ -13902,9 +13987,9 @@ void idPlayer::UpdateHeroStats( void ) {
 	const int heroUpdateRate = 2000;
 	int now = gameLocal.time;
 
-	if ( now >= heroStatsTime ) {
+	if ( now >= inventory.arx_timer_player_stats_update ) {
 
-		heroStatsTime = now + heroUpdateRate;
+		inventory.arx_timer_player_stats_update = now + heroUpdateRate;
 
 		// Damages
 		if ( health > 0 ) {
@@ -14104,4 +14189,54 @@ void idPlayer::ArxPlayerLevelUp( void ) {
 	player.Old_Skill_Defense			=	player.Skill_Defense;
 	*/
 
+}
+
+/*
+=================
+idPlayer::ClearDownTimedAttributes
+=================
+*/
+void idInventory::ClearDownTimedAttributes( bool clearDown ) {
+
+	// Solarsplace - 25th Nov 2013
+
+	if ( clearDown ) {
+
+		arx_timer_player_stats_update		= 0;
+		arx_timer_player_poison				= 0;
+		arx_timer_player_invisible			= 0;
+		arx_timer_player_onfire				= 0;
+		arx_timer_player_telekinesis		= 0;
+
+	} else {
+
+		// On level change gameLocal.time resets to 0
+		// Adjust timed attribues to carry over so that player
+		// cannot cheat by changing levels back and forth.
+
+		// Update time
+		if ( arx_timer_player_stats_update > gameLocal.time ) {
+			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
+		}
+
+		// Poisoned
+		if ( arx_timer_player_poison > gameLocal.time ) {
+			arx_timer_player_poison = arx_timer_player_poison - gameLocal.time;
+		}
+
+		// Invisible
+		if ( arx_timer_player_invisible > gameLocal.time ) {
+			arx_timer_player_invisible = arx_timer_player_invisible - gameLocal.time;
+		}
+
+		// Fire damage
+		if ( arx_timer_player_onfire > gameLocal.time ) {
+			arx_timer_player_onfire = arx_timer_player_onfire - gameLocal.time;
+		}
+
+		// Telekinesis
+		if ( arx_timer_player_telekinesis > gameLocal.time ) {
+			arx_timer_player_telekinesis = arx_timer_player_telekinesis - gameLocal.time;
+		}
+	}
 }

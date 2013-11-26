@@ -4463,16 +4463,6 @@ void idGameLocal::SwitchTeam( int clientNum, int team ) {
 	}
 }
 
-const char * idGameLocal::GetSafeLanguageMessage( const char *message )
-{
-	if ( idStr::FindText( message, "#str_" ) == 0 )
-	{
-		return common->GetLanguageDict()->GetString( message );
-	} else {
-		return message;
-	}
-}
-
 /*
 ===============
 idGameLocal::GetMapLoadingGUI    6th venom
@@ -4494,4 +4484,59 @@ if ( loadSoundWorld ) {
  //     loadSoundWorld->PlayShaderDirectly( "music_"+ *gui );
       loadSoundWorld->PlayShaderDirectly( gui );
    }
+}
+
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// ****************************************************************************************************************************
+// Arx - End Of Sun
+
+
+/*
+================
+idGameLocal::GetSafeLanguageMessage
+================
+*/
+const char * idGameLocal::GetSafeLanguageMessage( const char *message )
+{
+	if ( idStr::FindText( message, "#str_" ) == 0 )
+	{
+		return common->GetLanguageDict()->GetString( message );
+	} else {
+		return message;
+	}
+}
+
+/*
+================
+idGameLocal::GetStringFromEntityDef
+================
+*/
+const char * idGameLocal::GetStringFromEntityDef( idStr entityDefName, idStr searchString )
+{
+	// Just a simple method to grab out strings from entity defs.
+
+	const idDeclEntityDef *def = NULL;
+	const char *str = NULL;
+
+	def = gameLocal.FindEntityDef( entityDefName, false );
+	if ( def ) {
+		str = def->dict.GetString( searchString, "" );
+
+		//REMOVEME
+		gameLocal.Printf( "idGameLocal::GetStringFromEntityDef found %s\n", str );
+	}
+
+	if ( str == NULL ) {
+		return "";
+	} else {
+		return str;
+	}
 }

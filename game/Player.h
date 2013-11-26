@@ -252,9 +252,13 @@ public:
 	int						tmp_arx_skill_stealth;
 	int						tmp_arx_skill_technical;
 
+	int						arx_timer_player_stats_update;
 	int						arx_timer_player_poison;
 	int						arx_timer_player_invisible;
 	int						arx_timer_player_onfire;
+	int						arx_timer_player_telekinesis;
+
+	void					ClearDownTimedAttributes( bool clearDown );		// solarsplace 24th Nov 2013
 
 	// mp
 	int						ammoPredictTime;
@@ -434,8 +438,7 @@ public:
 	// Solarsplace - Magic related
 	bool					magicModeActive;
 	bool					lastMagicModeActive;
-	int						playerInvisibleEndTime;		// Solarsplace 6th June 2010
-	int						playerTelekinesisEndTime;	// Solarsplace 15th June 2012
+
 	// AI related
 	void					AlertAI( bool playerVisible, float alertRadius, int aiTeam, int teamAlertOptions );
 
@@ -605,12 +608,14 @@ public:
 	// Solarsplace - 2nd July 2010 - Needed a slightly modified version of the above function
 	int						FindInventoryItemIndex( const char *name );
 	int						FindInventoryItemCount( const char *name );
+	int						FindInventoryItemIndexUniqueName( const char *uniqueName );
 	int						FindInventoryWeaponIndex( int playerWeaponDefNumber, bool checkHealth );
 	bool					UpdateInventoryItem( const char *uniqueItemName, const char *dictKey, const char *dictValue );
 	bool					UpdateInventoryItem_health( int newWeaponHealth );
 	bool					UpdateInventoryItem_health_max( int newWeaponHealthMax ); // Think of it as max health / durability an item can be repaired to
 	const char *			GetInventoryItemHealthIcon( int health, int health_max, const idDict itemDict );
 	idStr					GetInventoryItemString( const char *uniqueItemName, const char *dictKey );
+	bool					UpdateWeaponHealth( void );
 
 	void					GivePDA( const char *pdaName, idDict *item );
 	void					GiveVideo( const char *videoName, idDict *item );
@@ -986,7 +991,6 @@ private:
 
 	// Skills related
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
-	int						heroStatsTime;													// solarsplace 15th Mar 2013
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
 	int						GetRequiredXPForLevel( int level );
 	void					ArxPlayerLevelUp( void );

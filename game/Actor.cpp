@@ -1463,7 +1463,7 @@ bool idActor::CanSee( idEntity *ent, bool useFov ) const {
 	// Solarsplace - 6th June 2010 - Magic invisible related
 	if ( ent->IsType( idPlayer::Type ) ) 
 	{
-		int invisEndTime = ( ( idPlayer * )ent )->playerInvisibleEndTime;
+		int invisEndTime = ( ( idPlayer * )ent )->inventory.arx_timer_player_invisible;
 
 		if ( invisEndTime > gameLocal.time )
 		{
