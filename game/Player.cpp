@@ -339,9 +339,6 @@ void idInventory::ClearPowerUps( void ) {
 		powerupEndTime[ i ] = 0;
 	}
 	powerups = 0;
-
-	// SP - Arx End Of Sun - Clear time based attributes - 25th Nov 2013
-	ClearDownTimedAttributes( true );
 }
 
 /*
@@ -13973,6 +13970,20 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 	}
 
+	// Chance of getting burnt
+	if ( strcmp( chanceDescription, "add_fire" ) == 0 ) {
+
+		if ( godmode ) { return false; }
+
+		//REMOVEME
+		int fire_resistance_chance = 20; // 20%
+
+		if ( gameLocal.random.RandomFloat() * 100 > fire_resistance_chance ) {
+			returnChance = true;
+		}
+
+	}
+
 	return returnChance;
 }
 
@@ -14001,6 +14012,13 @@ void idPlayer::UpdateHeroStats( void ) {
 				}
 			}
 
+			// Fire damage
+			
+			if ( inventory.arx_timer_player_onfire >= gameLocal.time ) {
+				if ( CalculateHeroChance( "add_fire" ) ) {
+					Damage( NULL, NULL, vec3_origin, "damage_arx_fire_interval", 1.0f, INVALID_JOINT );
+				}
+			}
 		}
 	}
 
@@ -14201,6 +14219,9 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 	// Solarsplace - 25th Nov 2013
 
 	if ( clearDown ) {
+
+		// This code path is not used at the moment. Retained in case of future use.
+		return;
 
 		arx_timer_player_stats_update		= 0;
 		arx_timer_player_poison				= 0;
