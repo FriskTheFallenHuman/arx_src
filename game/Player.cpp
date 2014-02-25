@@ -5847,7 +5847,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 			inventory.items[inventoryItemId]->Set( "inv_health", idStr( repairedHealth ) );
 
-			StartSound( "snd_blacksmith_success", SND_CHANNEL_ANY, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_vo_restored", SND_CHANNEL_VOICE, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_repair_success", SND_CHANNEL_WEAPON, 0, false, NULL );
 
 			// Now after repair clear the selections
 			conversationSystem->SetStateInt( "listRepairItems_sel_0", -1 );
@@ -5857,7 +5858,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 		} else {
 			ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
-			StartSound( "snd_blacksmith_fail", SND_CHANNEL_ANY, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_repair_fail", SND_CHANNEL_WEAPON, 0, false, NULL );
 		}
 
 		return true;
@@ -7689,6 +7690,11 @@ void idPlayer::ToggleConversationSystem(void)
 		conversationSystem->SetStateInt( "blackSmithCost", 0 );
 
 		conversationSystem->StateChanged( gameLocal.time, false );
+
+		// Play an optional sound on the GUI if the message window is the first one.
+		if ( atoi( conversationWindowQuestId ) == 0 ) {
+			conversationSystem->HandleNamedEvent( "playMessageSound_0" );
+		}
 
 		conversationSystemOpen = true;
 	}
@@ -14175,7 +14181,7 @@ idPlayer::ArxPlayerLevelUp
 */
 void idPlayer::ArxPlayerLevelUp( void ) {
 
-	ShowHudMessage( "##str_general_00014" );	// "!!! You Level Up !!!"
+	ShowHudMessage( "#str_general_00014" );	// "!!! You Level Up !!!"
 
 	// Play a sound to level up. Cached in player.def
 	StartSound( "snd_arx_level_up", SND_CHANNEL_ANY, 0, false, NULL );

@@ -3406,12 +3406,33 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 
 	Unbind();
 
-	// SP - Arx End Of Sun - 20th Sep 2013
+	// ======================================================
+	// ======================================================
+	// Arx End Of Sun - Solarsplace - 4th July 2013 - Gain XPs
+
+	idPlayer * player = gameLocal.GetLocalPlayer();
+	
+	if ( attacker == player ) {
+		int xps = spawnArgs.GetInt( "arx_xp_value", "0" );
+
+		if ( xps > 0 ) {
+			player->ModifyPlayerXPs( xps, true );
+		}
+	}
+	// ======================================================
+	// ======================================================
+
+	// ======================================================
+	// ======================================================
+	// Arx End Of Sun - Solarsplace - 20th Sep 2013
+
 	idStr deathSkin;
 	if ( spawnArgs.GetString( "skin_death", "", deathSkin ) ) {
 		renderEntity.customSkin = declManager->FindSkin( deathSkin );
 		UpdateVisuals();
 	}
+	// ======================================================
+	// ======================================================
 
 	if ( StartRagdoll() ) {
 		StartSound( "snd_death", SND_CHANNEL_VOICE, 0, false, NULL );
