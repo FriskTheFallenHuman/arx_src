@@ -5937,20 +5937,20 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 			return true; // Nothing selected in list def
 		}
 
+		// Get the selected display item
+		selectedListKey = conversationSystem->State().GetInt( "listRepairItems_sel_0", "0" );
+		if ( selectedListKey == -1 ) {
+			selectedListKey = 0;
+		}
+
+		// Using the visible list def selected item, programatically select the same row in the hidden list def's
+		conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey ); // The hidden list is not 0, 1, 2, 3 etc it could be 1, 9, 14 which is the inventory id.
+		conversationSystem->SetStateInt( "listRepairItemsHiddenCost_item_", selectedListKey );
+
+		blackSmithRepairCost = atoi( conversationSystem->State().GetString( va( "listRepairItemsHiddenCost_item_%i", selectedListKey ), "-1" ) );	
+		inventoryItemId = atoi( conversationSystem->State().GetString( va( "listRepairItemsHidden_item_%i", selectedListKey ), "-1" ) );
+
 		if ( inventory.money - blackSmithRepairCost >= 0 ) {
-
-			// Get the selected display item
-			selectedListKey = conversationSystem->State().GetInt( "listRepairItems_sel_0", "0" );
-			if ( selectedListKey == -1 ) {
-				selectedListKey = 0;
-			}
-
-			// Using the visible list def selected item, programatically select the same row in the hidden list def's
-			conversationSystem->SetStateInt( "listRepairItemsHidden_sel_0", selectedListKey ); // The hidden list is not 0, 1, 2, 3 etc it could be 1, 9, 14 which is the inventory id.
-			conversationSystem->SetStateInt( "listRepairItemsHiddenCost_item_", selectedListKey );
-
-			blackSmithRepairCost = atoi( conversationSystem->State().GetString( va( "listRepairItemsHiddenCost_item_%i", selectedListKey ), "-1" ) );	
-			inventoryItemId = atoi( conversationSystem->State().GetString( va( "listRepairItemsHidden_item_%i", selectedListKey ), "-1" ) );
 
 			inventory.money -= blackSmithRepairCost;
 
@@ -5977,7 +5977,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 			inventory.items[inventoryItemId]->Set( "inv_health", idStr( repairedHealth ) );
 
-			StartSound( "snd_blacksmith_success", SND_CHANNEL_ANY, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_vo_restored", SND_CHANNEL_VOICE, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_repair_success", SND_CHANNEL_WEAPON, 0, false, NULL );
 
 			// Now after repair clear the selections
 			conversationSystem->SetStateInt( "listRepairItems_sel_0", -1 );
@@ -5987,7 +5988,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 		} else {
 			ShowHudMessage( "#str_blacksmith_00004" ); // "Not enough money to pay for repair"
-			StartSound( "snd_blacksmith_fail", SND_CHANNEL_ANY, 0, false, NULL );
+			StartSound( "snd_arx_blacksmith_repair_fail", SND_CHANNEL_WEAPON, 0, false, NULL );
 		}
 
 		return true;
