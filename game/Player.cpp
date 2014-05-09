@@ -244,19 +244,21 @@ void idInventory::Clear( void ) {
 	arx_skill_stealth				= 0;
 	arx_skill_technical				= 0;
 
-	arx_stat_armour_class			= 0;
-	arx_stat_hit_points				= 0;
-	arx_stat_mana_points			= 0;
-	arx_stat_resistance_to_magic	= 0;
-	arx_stat_resistance_to_poison	= 0;
-	arx_stat_damage_inflicted		= 0;
+	arx_class_armour_points			= 0;
+	arx_class_health_points			= 0;
+	arx_class_mana_points			= 0;
+	arx_class_resistance_to_magic	= 0;
+	arx_class_resistance_to_poison	= 0;
+	arx_class_damage_points			= 0;
 	arx_stat_secrets_found			= 0;
 
 	arx_timer_player_stats_update	= 0;
-	arx_timer_player_poison			= 0;
-	arx_timer_player_invisible		= 0;
-	arx_timer_player_onfire			= 0;
-	arx_timer_player_telekinesis	= 0;
+
+	// Init to non 0 to prevent being equal to gameLocal time at start.
+	arx_timer_player_poison			= -1;
+	arx_timer_player_invisible		= -1;
+	arx_timer_player_onfire			= -1;
+	arx_timer_player_telekinesis	= -1;
 
 	// ****************************************************
 	// ****************************************************
@@ -395,12 +397,12 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_skill_stealth", arx_skill_stealth );
 	dict.SetInt( "arx_skill_technical", arx_skill_technical );
 
-	dict.SetInt( "arx_stat_armour_class", arx_stat_armour_class );
-	dict.SetInt( "arx_stat_hit_points", arx_stat_hit_points );
-	dict.SetInt( "arx_stat_mana_points", arx_stat_mana_points );
-	dict.SetInt( "arx_stat_resistance_to_magic", arx_stat_resistance_to_magic );
-	dict.SetInt( "arx_stat_resistance_to_poison", arx_stat_resistance_to_poison );
-	dict.SetInt( "arx_stat_damage_inflicted", arx_stat_damage_inflicted );
+	dict.SetInt( "arx_class_armour_points", arx_class_armour_points );
+	dict.SetInt( "arx_class_health_points", arx_class_health_points );
+	dict.SetInt( "arx_class_mana_points", arx_class_mana_points );
+	dict.SetInt( "arx_class_resistance_to_magic", arx_class_resistance_to_magic );
+	dict.SetInt( "arx_class_resistance_to_poison", arx_class_resistance_to_poison );
+	dict.SetInt( "arx_class_damage_points", arx_class_damage_points );
     dict.SetInt( "arx_stat_secrets_found", arx_stat_secrets_found );
 
 	dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update );
@@ -567,19 +569,21 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_skill_stealth				= dict.GetInt( "arx_skill_stealth", "0" );
 	arx_skill_technical				= dict.GetInt( "arx_skill_technical", "0" );
 
-	arx_stat_armour_class			= dict.GetInt( "arx_stat_armour_class", "0" );
-	arx_stat_hit_points				= dict.GetInt( "arx_stat_hit_points", "0" );
-	arx_stat_mana_points			= dict.GetInt( "arx_stat_mana_points", "0" );
-	arx_stat_resistance_to_magic	= dict.GetInt( "arx_stat_resistance_to_magic", "0" );
-	arx_stat_resistance_to_poison	= dict.GetInt( "arx_stat_resistance_to_poison", "0" );
-	arx_stat_damage_inflicted		= dict.GetInt( "arx_stat_damage_inflicted", "0" );
+	arx_class_armour_points			= dict.GetInt( "arx_class_armour_points", "0" );
+	arx_class_health_points			= dict.GetInt( "arx_class_health_points", "0" );
+	arx_class_mana_points			= dict.GetInt( "arx_class_mana_points", "0" );
+	arx_class_resistance_to_magic	= dict.GetInt( "arx_class_resistance_to_magic", "0" );
+	arx_class_resistance_to_poison	= dict.GetInt( "arx_class_resistance_to_poison", "0" );
+	arx_class_damage_points			= dict.GetInt( "arx_class_damage_points", "0" );
 	arx_stat_secrets_found			= dict.GetInt( "arx_stat_secrets_found", "0" );
 
 	arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" );
-	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "0" );
-	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "0" );
-	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "0" );
-	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "0" );
+
+	// Init to non 0 to prevent being equal to gameLocal time at start.
+	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "-1" );
+	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "-1" );
+	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "-1" );
+	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "-1" );
 
 	// ****************************************************
 	// ****************************************************
@@ -729,12 +733,12 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_skill_stealth );
 	savefile->WriteInt( arx_skill_technical );
 
-	savefile->WriteInt( arx_stat_armour_class );
-	savefile->WriteInt( arx_stat_hit_points );
-	savefile->WriteInt( arx_stat_mana_points );
-	savefile->WriteInt( arx_stat_resistance_to_magic );
-	savefile->WriteInt( arx_stat_resistance_to_poison );
-	savefile->WriteInt( arx_stat_damage_inflicted );
+	savefile->WriteInt( arx_class_armour_points );
+	savefile->WriteInt( arx_class_health_points );
+	savefile->WriteInt( arx_class_mana_points );
+	savefile->WriteInt( arx_class_resistance_to_magic );
+	savefile->WriteInt( arx_class_resistance_to_poison );
+	savefile->WriteInt( arx_class_damage_points );
 	savefile->WriteInt( arx_stat_secrets_found );
 
 	savefile->WriteInt( arx_timer_player_stats_update );
@@ -882,12 +886,12 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_skill_stealth );
 	savefile->ReadInt( arx_skill_technical );
 
-	savefile->ReadInt( arx_stat_armour_class );
-	savefile->ReadInt( arx_stat_hit_points );
-	savefile->ReadInt( arx_stat_mana_points );
-	savefile->ReadInt( arx_stat_resistance_to_magic );
-	savefile->ReadInt( arx_stat_resistance_to_poison );
-	savefile->ReadInt( arx_stat_damage_inflicted );
+	savefile->ReadInt( arx_class_armour_points );
+	savefile->ReadInt( arx_class_health_points );
+	savefile->ReadInt( arx_class_mana_points );
+	savefile->ReadInt( arx_class_resistance_to_magic );
+	savefile->ReadInt( arx_class_resistance_to_poison );
+	savefile->ReadInt( arx_class_damage_points );
 	savefile->ReadInt( arx_stat_secrets_found );
 
 	savefile->ReadInt( arx_timer_player_stats_update );
@@ -9566,12 +9570,12 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateBool( "arx_points_apply_button_visible", allowStatsAttrApply ); // LOGIC = TODO
 
 		// Player class totals
-		objectiveSystem->SetStateInt( "arx_stat_armour_class", inventory.arx_stat_armour_class ); // 1
-		objectiveSystem->SetStateInt( "arx_stat_damage_inflicted", inventory.arx_stat_damage_inflicted ); // 6
-		objectiveSystem->SetStateInt( "arx_stat_hit_points", inventory.arx_stat_hit_points ); // 2
-		objectiveSystem->SetStateInt( "arx_stat_mana_points", inventory.arx_stat_mana_points ); // 4
-		objectiveSystem->SetStateInt( "arx_stat_resistance_to_magic", inventory.arx_stat_resistance_to_magic ); // 3
-		objectiveSystem->SetStateInt( "arx_stat_resistance_to_poison", inventory.arx_stat_resistance_to_poison ); // 5
+		objectiveSystem->SetStateInt( "arx_class_armour_points", inventory.arx_class_armour_points ); // 1
+		objectiveSystem->SetStateInt( "arx_class_damage_points", inventory.arx_class_damage_points ); // 6
+		objectiveSystem->SetStateInt( "arx_class_health_points", inventory.arx_class_health_points ); // 2
+		objectiveSystem->SetStateInt( "arx_class_mana_points", inventory.arx_class_mana_points ); // 4
+		objectiveSystem->SetStateInt( "arx_class_resistance_to_magic", inventory.arx_class_resistance_to_magic ); // 3
+		objectiveSystem->SetStateInt( "arx_class_resistance_to_poison", inventory.arx_class_resistance_to_poison ); // 5
 
 		// Secrets found
 		objectiveSystem->SetStateInt( "arx_stat_secrets_found", inventory.arx_stat_secrets_found );
@@ -14361,11 +14365,11 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// This code path is not used at the moment. Retained in case of future use.
 		return;
 
-		arx_timer_player_stats_update		= 0;
-		arx_timer_player_poison				= 0;
-		arx_timer_player_invisible			= 0;
-		arx_timer_player_onfire				= 0;
-		arx_timer_player_telekinesis		= 0;
+		arx_timer_player_stats_update		= -1;
+		arx_timer_player_poison				= -1;
+		arx_timer_player_invisible			= -1;
+		arx_timer_player_onfire				= -1;
+		arx_timer_player_telekinesis		= -1;
 
 	} else {
 
