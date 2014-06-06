@@ -1052,6 +1052,8 @@ private:
 	// Blacksmith related
 	int						BlackSmithRepairComputeCost( int maxHealth, int currentHealth, int itemValue, float blackSmithMultiply );
 
+	// Quest related
+	bool					GetQuestState( idStr questObjectQuestName );
 
 	/*
 	*** END - Solarsplace - Arx EOS - Private

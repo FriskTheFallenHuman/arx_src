@@ -331,6 +331,7 @@ idCVar g_enablePortalSky			( "g_enablePortalSky",			"1",			CVAR_GAME | CVAR_BOOL
 
 // ---> Arx
 idCVar g_levelFog					( "g_levelFog",					"1",			CVAR_GAME | CVAR_BOOL, "Enables level fog if level has fog" );
+idCVar g_showCompletedQuests		( "g_showCompletedQuests",		"0",			CVAR_GAME | CVAR_BOOL, "Show or hide completed quests in player journal" );
 // <--- Arx
 
 // sikk - New Cvars -

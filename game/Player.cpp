@@ -168,8 +168,19 @@ const idStr ARX_PROP_MAPENTRYPOINT = "ARX_MAPENTRYPOINT";
 const idStr ARX_PROP_MAP_ANY = "ARX_MAP_ANY";
 const idStr ARX_PROP_ENT_ANY = "ARX_ENT_ANY";
 
-// "ARX_CHAR_QUEST_WINDOW" = This length crashes the game. The engine will not load the .dll
-const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW"; // Must mirror in scripts too.
+// ***** MIRRORED IN arx_quest_base.script *****
+const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW";
+const idStr ARX_QUEST_STATE = "ARX_QUEST_STATE"; // Must mirror in scripts too.
+
+const int ARX_ENTITY_STATE_NOTSTORED = 0; // This is the default return value if no persistent value has been stored.
+const int ARX_ENTITY_STATE_USED = 1;
+const int ARX_ENTITY_STATE_UNLOCKED = 666;
+const int ARX_ENTITY_STATE_LOCKED = 999;
+const int ARX_ENTITY_STATE_DOUSE = 666;
+const int ARX_ENTITY_STATE_IGNITE = 999;
+
+const int ARX_QUEST_STATE_INITIAL = 0;
+const int ARX_QUEST_STATE_COMPLETED = 999;
 
 //*****************************************************************
 //*****************************************************************
@@ -7632,13 +7643,23 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 			index = 0;
 		}
 
+		// Arx - Show completed quests in journal?
+		if ( !g_showCompletedQuests.GetBool() ) {
+			if ( GetQuestState( pda->GetID() ) ) {
+				continue;
+			}
+		}
+
 		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
-			// This pda has been read already, mark in gray
-			// SP - Arx EOS - Changed to black.
-			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", pda->GetPdaName()) );
+			// This pda has been read already.
+			if ( pda->GetID() == "side_quest" && !g_showCompletedQuests.GetBool() ) {
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", pda->GetPdaName()) );
+			} else {
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", pda->GetPdaName()) );
+			}
 		} else {
 			// This pda has not been read yet
-		objectiveSystem->SetStateString( va( "listPDA_item_%i", index), pda->GetPdaName() );
+			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GREEN "%s", pda->GetPdaName()) );
 		}
 
 		const char *security = pda->GetSecurity();
@@ -14402,6 +14423,44 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 			arx_timer_player_telekinesis = arx_timer_player_telekinesis - gameLocal.time;
 		}
 	}
+}
+
+/*
+=================
+idPlayer::GetQuestState
+=================
+*/
+bool idPlayer::GetQuestState( idStr questObjectQuestName )
+{
+	float returnValue = gameLocal.persistentLevelInfo.GetFloat( ARX_QUEST_STATE + ARX_REC_SEP + questObjectQuestName );
+
+	if ( returnValue == ARX_QUEST_STATE_INITIAL ) {
+		return false;
+	} else if ( returnValue == ARX_QUEST_STATE_COMPLETED ) {
+		return true;
+	} else {
+		return false;
+	}
+
+	
+
+	/*
+	choiceDef ShowCompletedQuests
+	{
+		rect	X, X, X, X
+		forecolor	1, 1, 1, 1
+		textscale	XXX
+		font	"fonts/XX"
+		choices	"#str_general_gui_00002" // No;Yes
+		cvar	"g_showCompletedQuests"
+		choiceType	0
+		visible	1
+	}
+
+	bool test = g_showCompletedQuests.GetBool();
+
+	*/
+
 }
 
 // sikk---> Depth Render
