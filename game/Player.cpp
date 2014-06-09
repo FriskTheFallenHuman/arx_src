@@ -4239,6 +4239,9 @@ int idPlayer::FindInventoryItemCount( const char *name ) {
 	// SP - 6th Sep 2013 - Make names and string conversions consistent.
 	if ( idStr::FindText( name, "#str_" ) == 0 ) {
 		name_idstr = common->GetLanguageDict()->GetString( name );
+	} else {
+		// SP - 7th June 2014 - Corrected bug where non "#str_" would not be matched.
+		name_idstr = idStr( name );
 	}
 
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
@@ -7645,19 +7648,28 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 
 		// Arx - Show completed quests in journal?
 		if ( !g_showCompletedQuests.GetBool() ) {
-			if ( GetQuestState( pda->GetID() ) ) {
+			if ( GetQuestState( pda->GetID() ) ) { // Arx quest object string id stored in "ID" field.
 				continue;
 			}
 		}
 
 		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
+
 			// This pda has been read already.
-			if ( pda->GetID() == "side_quest" && !g_showCompletedQuests.GetBool() ) {
-				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", pda->GetPdaName()) );
+
+			if ( GetQuestState( pda->GetID() ) ) { // Arx quest object string id stored in "ID" field.
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", pda->GetPdaName()) );
 			} else {
-				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", pda->GetPdaName()) );
+
+				if ( idStr::Icmp( pda->GetSecurity(), "arx_side_quest" ) == 0 ) { // Arx quest type stored in "Security" field.
+					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", pda->GetPdaName()) );
+				} else {
+					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", pda->GetPdaName()) );
+				}
 			}
+
 		} else {
+
 			// This pda has not been read yet
 			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GREEN "%s", pda->GetPdaName()) );
 		}
@@ -14432,35 +14444,19 @@ idPlayer::GetQuestState
 */
 bool idPlayer::GetQuestState( idStr questObjectQuestName )
 {
-	float returnValue = gameLocal.persistentLevelInfo.GetFloat( ARX_QUEST_STATE + ARX_REC_SEP + questObjectQuestName );
+	idStr questId = ARX_QUEST_STATE + ARX_REC_SEP + questObjectQuestName;
+
+	float returnValue = gameLocal.persistentLevelInfo.GetFloat( questId );
 
 	if ( returnValue == ARX_QUEST_STATE_INITIAL ) {
 		return false;
-	} else if ( returnValue == ARX_QUEST_STATE_COMPLETED ) {
+	}
+
+	if ( returnValue == ARX_QUEST_STATE_COMPLETED ) {
 		return true;
-	} else {
-		return false;
 	}
 
-	
-
-	/*
-	choiceDef ShowCompletedQuests
-	{
-		rect	X, X, X, X
-		forecolor	1, 1, 1, 1
-		textscale	XXX
-		font	"fonts/XX"
-		choices	"#str_general_gui_00002" // No;Yes
-		cvar	"g_showCompletedQuests"
-		choiceType	0
-		visible	1
-	}
-
-	bool test = g_showCompletedQuests.GetBool();
-
-	*/
-
+	return false;
 }
 
 // sikk---> Depth Render
