@@ -35,6 +35,11 @@ const int HEALTHPULSE_TIME = 333;
 // minimum speed to bob and play run/walk animations at
 const float MIN_BOB_SPEED = 5.0f;
 
+#ifdef _DT // levitate spell
+// push velocity when start levitating
+const int LEVITATE_PUSH_VELOCITY = 100;
+#endif
+
 const idEventDef EV_Player_GetButtons( "getButtons", NULL, 'd' );
 const idEventDef EV_Player_GetMove( "getMove", NULL, 'v' );
 const idEventDef EV_Player_GetViewAngles( "getViewAngles", NULL, 'v' );
@@ -47,6 +52,10 @@ const idEventDef EV_Player_SelectWeapon( "selectWeapon", "s" );
 const idEventDef EV_Player_GetWeaponEntity( "getWeaponEntity", NULL, 'e' );
 const idEventDef EV_Player_OpenPDA( "openPDA" );
 const idEventDef EV_Player_InPDA( "inPDA", NULL, 'd' );
+#ifdef _DT // levitate spell
+const idEventDef EV_Player_LevitateStart( "levitateStart" );
+const idEventDef EV_Player_LevitateStop( "levitateStop" );
+#endif
 const idEventDef EV_Player_ExitTeleporter( "exitTeleporter" );
 const idEventDef EV_Player_StopAudioLog( "stopAudioLog" );
 const idEventDef EV_Player_HideTip( "hideTip" );
@@ -92,6 +101,10 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_GetWeaponEntity,		idPlayer::Event_GetWeaponEntity )
 	EVENT( EV_Player_OpenPDA,				idPlayer::Event_OpenPDA )
 	EVENT( EV_Player_InPDA,					idPlayer::Event_InPDA )
+#ifdef _DT // levitate spell
+	EVENT( EV_Player_LevitateStart,			idPlayer::Event_LevitateStart )
+	EVENT( EV_Player_LevitateStop,			idPlayer::Event_LevitateStop )
+#endif
 	EVENT( EV_Player_ExitTeleporter,		idPlayer::Event_ExitTeleporter )
 	EVENT( EV_Player_StopAudioLog,			idPlayer::Event_StopAudioLog )
 	EVENT( EV_Player_HideTip,				idPlayer::Event_HideTip )
@@ -1372,6 +1385,9 @@ idPlayer::idPlayer() {
 	memset( &usercmd, 0, sizeof( usercmd ) );
 
 	noclip					= false;
+#ifdef _DT // levitate spell
+	levitate				= false;
+#endif
 	godmode					= false;
 
 	spawnAnglesSet			= false;
@@ -1665,6 +1681,9 @@ void idPlayer::Init( void ) {
 	const idKeyValue	*kv;
 
 	noclip					= false;
+#ifdef _DT // levitate spell
+	levitate				= false;
+#endif
 	godmode					= false;
 
 	oldButtons				= 0;
@@ -2159,6 +2178,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	playerView.Save( savefile );
 
 	savefile->WriteBool( noclip );
+#ifdef _DT // levitate spell
+	savefile->WriteBool( levitate );
+#endif
 	savefile->WriteBool( godmode );
 
 	// don't save spawnAnglesSet, since we'll have to reset them after loading the savegame
@@ -2438,6 +2460,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	playerView.Restore( savefile );
 
 	savefile->ReadBool( noclip );
+#ifdef _DT // levitate spell
+	savefile->ReadBool( levitate );
+#endif
 	savefile->ReadBool( godmode );
 
 	savefile->ReadAngles( spawnAngles );
@@ -10868,6 +10893,11 @@ void idPlayer::AdjustSpeed( void ) {
 	} else if ( noclip ) {
 		speed = pm_noclipspeed.GetFloat();
 		bobFrac = 0.0f;
+#ifdef _DT // levitate spell
+	} else if ( levitate ) {
+		speed = pm_levitatespeed.GetFloat();
+		bobFrac = 0.0f;
+#endif
 	} else if ( !physicsObj.OnLadder() && ( usercmd.buttons & BUTTON_RUN ) && ( usercmd.forwardmove || usercmd.rightmove ) && ( usercmd.upmove >= 0 ) ) {
 		if ( !gameLocal.isMultiplayer && !physicsObj.IsCrouching() && !PowerUpActive( ADRENALINE ) ) {
 			stamina -= MS2SEC( gameLocal.msec );
@@ -11140,6 +11170,11 @@ void idPlayer::Move( void ) {
 	if ( noclip ) {
 		physicsObj.SetContents( 0 );
 		physicsObj.SetMovementType( PM_NOCLIP );
+#ifdef _DT // levitate spell
+	} else if ( levitate ) {
+		physicsObj.SetContents( 0 );
+		physicsObj.SetMovementType( PM_LEVITATE );
+#endif
 	} else if ( spectating ) {
 		physicsObj.SetContents( 0 );
 		physicsObj.SetMovementType( PM_SPECTATOR );
@@ -11192,8 +11227,11 @@ void idPlayer::Move( void ) {
 			SetEyeHeight( EyeHeight() * pm_crouchrate.GetFloat() + newEyeOffset * ( 1.0f - pm_crouchrate.GetFloat() ) );
 		}
 	}
-
+#ifdef _DT // levitate spell
+	if ( noclip || gameLocal.inCinematic || ( influenceActive == INFLUENCE_LEVEL2 ) || levitate ) {
+#else
 	if ( noclip || gameLocal.inCinematic || ( influenceActive == INFLUENCE_LEVEL2 ) ) {
+#endif
 		AI_CROUCH	= false;
 		AI_ONGROUND	= ( influenceActive == INFLUENCE_LEVEL2 );
 		AI_ONLADDER	= false;
@@ -13136,6 +13174,36 @@ idPlayer::Event_InPDA
 void idPlayer::Event_InPDA( void ) {
 	idThread::ReturnInt( objectiveSystemOpen );
 }
+
+#ifdef _DT // levitate spell
+/*
+==================
+idPlayer::Event_LevitateStart
+==================
+*/
+void idPlayer::Event_LevitateStart( void ) {
+
+	idVec3 levitateVelocity( 0, 0, LEVITATE_PUSH_VELOCITY );
+	idVec3 curent_vel = GetPhysics()->GetLinearVelocity();
+
+	curent_vel += levitateVelocity;
+	curent_vel.ToVec2() = physicsObj.GetOrigin().ToVec2();
+	curent_vel.ToVec2().NormalizeFast();
+
+	GetPhysics()->SetLinearVelocity( curent_vel );
+
+	levitate = true;
+}
+
+/*
+==================
+idPlayer::Event_LevitateStop
+==================
+*/
+void idPlayer::Event_LevitateStop( void ) {
+	levitate = false;
+}
+#endif
 
 /*
 ==================

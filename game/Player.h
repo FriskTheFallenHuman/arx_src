@@ -261,6 +261,9 @@ public:
 	class idPlayerView		playerView;			// handles damage kicks and effects
 
 	bool					noclip;
+#ifdef _DT // levitate spell
+	bool					levitate;
+#endif
 	bool					godmode;
 
 	bool					spawnAnglesSet;		// on first usercmd, we must set deltaAngles
@@ -685,6 +688,11 @@ public:
 
 	bool					SelfSmooth( void );
 	void					SetSelfSmooth( bool b );
+
+#ifdef _DT // levitate spell
+	void					Event_LevitateStart( void );
+	void					Event_LevitateStop( void );
+#endif
 
 	int						nScreenFrostAlpha;	// sikk - Screen Frost
 

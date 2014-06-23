@@ -142,6 +142,11 @@ extern idCVar	pm_crouchspeed;
 extern idCVar	pm_walkspeed;
 extern idCVar	pm_runspeed;
 extern idCVar	pm_noclipspeed;
+
+#ifdef _DT // levitate spell
+extern idCVar	pm_levitatespeed;
+#endif
+
 extern idCVar	pm_spectatespeed;
 extern idCVar	pm_spectatebbox;
 extern idCVar	pm_usecylinder;

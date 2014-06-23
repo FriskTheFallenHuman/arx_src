@@ -444,6 +444,36 @@ void Cmd_Noclip_f( const idCmdArgs &args ) {
 	gameLocal.Printf( "%s", msg );
 }
 
+#ifdef _DT // levitate spell
+/*
+==================
+Cmd_Levitate_f
+
+argv(0) levitate
+==================
+*/
+void Cmd_Levitate_f( const idCmdArgs &args ) {
+	char		*msg;
+	idPlayer	*player;
+
+	player = gameLocal.GetLocalPlayer();
+	if ( !player || !gameLocal.CheatsOk() ) {
+		return;
+	}
+
+	if ( player->levitate ) {
+		player->Event_LevitateStop();
+		msg = "levitate OFF\n";
+	} else {
+		player->Event_LevitateStart();
+		msg = "levitate ON\n";
+	}
+	// player->levitate = !player->levitate;
+
+	gameLocal.Printf( "%s", msg );
+}
+#endif
+
 /*
 =================
 Cmd_Kill_f
@@ -2286,6 +2316,11 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand( "god",					Cmd_God_f,					CMD_FL_GAME|CMD_FL_CHEAT,	"enables god mode" );
 	cmdSystem->AddCommand( "notarget",				Cmd_Notarget_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"disables the player as a target" );
 	cmdSystem->AddCommand( "noclip",				Cmd_Noclip_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"disables collision detection for the player" );
+
+#ifdef _DT // levitate spell
+	cmdSystem->AddCommand( "levitate",				Cmd_Levitate_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"test cmd for methods levitateStart and levitateStop" );
+#endif
+
 	cmdSystem->AddCommand( "kill",					Cmd_Kill_f,					CMD_FL_GAME,				"kills the player" );
 	cmdSystem->AddCommand( "where",					Cmd_GetViewpos_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"prints the current view position" );
 	cmdSystem->AddCommand( "getviewpos",			Cmd_GetViewpos_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"prints the current view position" );

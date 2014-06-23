@@ -21,7 +21,12 @@ typedef enum {
 	PM_DEAD,				// no acceleration or turning, but free falling
 	PM_SPECTATOR,			// flying without gravity but with collision detection
 	PM_FREEZE,				// stuck in place without control
+#ifdef _DT // levitate spell
+	PM_NOCLIP,				// flying without collision detection nor gravity
+	PM_LEVITATE				// flying without gravity but with collision detection
+#else
 	PM_NOCLIP				// flying without collision detection nor gravity
+#endif
 } pmtype_t;
 
 #define	MAXTOUCH					32
@@ -142,6 +147,9 @@ private:
 	void					DeadMove( void );
 	void					NoclipMove( void );
 	void					SpectatorMove( void );
+#ifdef _DT // levitate spell
+	void					LevitateMove( void );
+#endif
 	void					LadderMove( void );
 	void					CorrectAllSolid( trace_t &trace, int contents );
 	void					CheckGround( void );
