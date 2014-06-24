@@ -23,14 +23,16 @@ class idArxShop : public idClass
 
 		idDict							*shopSlotItem_Dict;
 		int								totalUsedShopSlots;
+		idStr							currentShopName;
 
 	public:
 
 		void	LoadActiveShop			( idEntity *shopEntity );
-		void	SaveShopState			( idEntity *shopEntity );
+		void	SaveShopState			( void );									// Persist shop contents
 
 		void	RemoveShopItem			( int slotId );								// When items are bought from the shop
 		bool	AddShopItem				( const char *className );					// When items are sold to the shop
+		void	UpdateShopPersistInfo	( void );									// After buying or selling persist the new state
 
 	private:
 

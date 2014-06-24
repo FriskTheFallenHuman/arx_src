@@ -24,7 +24,9 @@ idArxShop::idArxShop() {
 
 	shopSlotItem_Dict = new idDict();
 
-	totalUsedShopSlots = 0;
+	totalUsedShopSlots = 0; // Don't think this is really used at the moment
+
+	currentShopName = "";
 }
 
 idArxShop::~idArxShop() {
@@ -66,12 +68,12 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
     idStr inv_shop_item_value;
 	const idDeclEntityDef *shopItemDef = NULL;
 
-	int inventorySlotPosition = 0;
+	int shopItemCountTotal = 0;
 
 	idStr shopItemClass;
 	
 	idStr currentMapName = gameLocal.GetMapName();
-	idStr currentShopName = shopEntity->name;
+	currentShopName = shopEntity->name;
 	idStr currentShopIDString = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName;
 	idStr currentShopSlotItem;
 
@@ -82,7 +84,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 	{
 		gameLocal.Printf( "LoadActiveShop new shop = %s\n", currentShopIDString.c_str() );
 
-		inventorySlotPosition = 0;
+		shopItemCountTotal = 0;
 
 		for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
 		{
@@ -97,12 +99,12 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 				gameLocal.persistentLevelInfo.Set( currentShopSlotItem, shopItemClass );
 
-				inventorySlotPosition ++; // 0 to ARX_MAX_SHOP_SLOTS
+				shopItemCountTotal ++; // 0 to ARX_MAX_SHOP_SLOTS
 			}
 		}
 
 		// Store the number of items in this shop - also used as a flag to see if we need to store this shop.
-		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, inventorySlotPosition );
+		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, shopItemCountTotal );
 	}
 
 	/******************************************************************************/
@@ -110,7 +112,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 	// Load the shop into the dictionaries
 	shopSlotItem_Dict->Clear();
-	inventorySlotPosition = 0;
+	shopItemCountTotal = 0;
 
 	for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++)
 	{
@@ -139,13 +141,13 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == -1 )
 			{
 				// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
-				shopSlotItem_Dict->Set( va( "shop_item_class_%i", inventorySlotPosition ), result );
-				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", inventorySlotPosition ), shop_item_icon.c_str() );
-				shopSlotItem_Dict->Set( va( "shop_item_name_%i", inventorySlotPosition ), shop_item_name.c_str() );
-				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", inventorySlotPosition ), inv_shop_item_value.c_str() );
-				shopSlotItem_Dict->Set( va( "shop_item_count_%i", inventorySlotPosition ), "1" );
+				shopSlotItem_Dict->Set( va( "shop_item_class_%i", shopItemCountTotal ), result );
+				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", shopItemCountTotal ), shop_item_icon.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_name_%i", shopItemCountTotal ), shop_item_name.c_str() );
+				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", shopItemCountTotal ), inv_shop_item_value.c_str() );
+				shopSlotItem_Dict->Set( va( "shop_item_count_%i", shopItemCountTotal ), "1" );
 
-				inventorySlotPosition ++; // 0 to ARX_MAX_SHOP_SLOTS
+				shopItemCountTotal ++; // 0 to ARX_MAX_SHOP_SLOTS
 			}
 			else
 			{
@@ -162,19 +164,50 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 	}
 
-	totalUsedShopSlots = inventorySlotPosition;
-
-	//inventorySlotPosition = gameLocal.persistentLevelInfo.GetInt( currentShopIDString );
-
+	totalUsedShopSlots = shopItemCountTotal;
 }
 
-/*
-void idArxShop::SaveShopState( idEntity *shopEntity ); {
+void idArxShop::SaveShopState( void ) {
 
-	int toDo = 0;
+	// Called when buying or selling in a shop.
+	// Persists the shop state between level changes.
 
+	//REMOVEME
+	gameLocal.Printf( "idArxShop::SaveShopState for shop '%s'.\n", currentShopName.c_str() );
+
+	int inventorySlotPosition = 0;
+	idStr currentMapName = gameLocal.GetMapName();
+	idStr currentShopIDString = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName;
+	idStr currentShopSlotItem;
+
+	// Clear out any existing persistentLevelInfo for this shop
+	gameLocal.persistentLevelInfo.SetInt( currentShopIDString, 0 );
+	for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
+		currentShopSlotItem = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP +
+			currentShopName + ARX_REC_SEP + va( ARX_PROP_SHOP_ITEM + "%i", i );
+
+		gameLocal.persistentLevelInfo.Set( currentShopSlotItem, "" );
+	}
+
+	// Now loop through the current shop dictionary and persist the current state
+	for (int i = 0; i < ARX_MAX_SHOP_SLOTS; i++) {
+
+		idStr shopItemClass = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
+
+		// Save the item in the persistent dictionary
+		shopItemClass = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName + ARX_REC_SEP + va( ARX_PROP_SHOP_ITEM + "%i", i );
+		gameLocal.persistentLevelInfo.Set( currentShopSlotItem, shopItemClass );
+
+		//REMOVEME
+		gameLocal.Printf( "Saving shop state K(%s) V(%s)'\n", currentShopSlotItem.c_str(), shopItemClass.c_str() );
+
+		inventorySlotPosition ++; // 0 to ARX_MAX_SHOP_SLOTS
+
+	}
+
+	// Store the number of items in this shop.
+	gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, inventorySlotPosition );
 }
-*/
 
 bool idArxShop::AddShopItem( const char *className )
 {
@@ -222,6 +255,8 @@ bool idArxShop::AddShopItem( const char *className )
 			int itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", existingShopItemIndex ), "0" ) + 1;
 			shopSlotItem_Dict->SetInt( va( "shop_item_count_%i", existingShopItemIndex ), itemGroupCount );
 		}
+
+		SaveShopState();
 
 		return true;
 

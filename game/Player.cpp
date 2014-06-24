@@ -5653,12 +5653,75 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	const idKeyValue *kv;
 
+	// Solarsplace 24th Jun 2014 - Shop related
+	if ( token.Icmp( "shop_sellitem" ) == 0 ) {
+
+		//REMOVEME
+		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_sellitem\n" );
+
+		if ( src->ReadToken( &token2 ) ) {
+
+			kv = invItemGroupPointer->GetKeyVal( atoi( token2 ) );
+
+			if ( kv ) {
+
+				// TODO - Check not quest item / not sellable.
+
+
+				int invItemIndex = atoi( kv->GetValue() );
+
+				// Populate dictionary with key vals of selling item
+				idDict *sellingItem = inventory.items[invItemIndex];
+
+				// Get the class name of the item we are selling
+				idStr sellingClassName = inventory.items[invItemIndex]->GetString( "inv_classname" );
+
+				// Get the base value of the item we are selling
+				float itemValue = sellingItem->GetFloat( "inv_unique_name", "404" );
+
+				// Add the item we are selling to the current open shop
+				arxShopFunctions.AddShopItem( sellingClassName.c_str() );
+
+				// Selling the weapon the player is currently using?
+				if ( strcmp( inventory.weaponUniqueName, sellingItem->GetString( "inv_unique_name" ) ) == 0 ) {
+
+						// Clear the inventory / weapon unique name
+						inventory.weaponUniqueName = "";
+
+						// Now select the fists
+						SelectWeapon( ARX_FISTS_WEAPON, true );
+				}
+
+				// Un-equip the item if equiped (if any match)
+				int i;
+				for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+					if ( inventory.arx_equiped_items[ i ] == sellingItem->GetString( "inv_unique_name" ) ) {
+						inventory.arx_equiped_items[ i ] == "";
+					}
+				}
+
+				// Now remove the item from the players inventory
+				RemoveInventoryItem( sellingItem ); 
+
+				// Now pay the player
+				inventory.money += itemValue;
+				StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
+			}
+		}
+		return true;
+
+	}
+
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+
 	// Solarsplace 17th Nov 2011 - Shop related
 	if ( token.Icmp( "shop_buyitem" ) == 0 ) {
 
 		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
-
-		//arxShopFunctions.AddShopItem( "item_arx_potion_health" );
 
 		//*** This is for inventory sell
 		//if ( arxShopFunctions.totalUsedShopSlots < MAX_INVENTORY_ITEMS )
