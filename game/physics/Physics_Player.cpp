@@ -199,7 +199,100 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 
 		stepped = pushed = false;
 
+#ifdef _DT // levitate spell
 		// if we are allowed to step up
+		if ( stepUp ) {
+
+			nearGround = groundPlane | ladder;
+			if ( current.movementType == PM_LEVITATE ) {
+				
+				// step up
+				stepEnd = current.origin - maxStepHeight * gravityNormal;
+				gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				// trace along velocity
+				stepEnd = downTrace.endpos + time_left * current.velocity;
+				gameLocal.clip.Translation( stepTrace, downTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				// step down
+				stepEnd = stepTrace.endpos + maxStepHeight * gravityNormal;
+				gameLocal.clip.Translation( downTrace, stepTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+				if ( downTrace.fraction >= 1.0f || (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL ) {
+
+					// if moved the entire distance
+					if ( stepTrace.fraction >= 1.0f ) {
+						time_left = 0;
+						current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
+						current.origin = downTrace.endpos;
+						current.movementFlags |= PMF_STEPPED_UP;
+						current.velocity *= PM_STEPSCALE;
+						break;
+					}
+
+					// if the move is further when stepping up
+					if ( stepTrace.fraction > trace.fraction ) {
+						time_left -= time_left * stepTrace.fraction;
+						current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
+						current.origin = downTrace.endpos;
+						current.movementFlags |= PMF_STEPPED_UP;
+						current.velocity *= PM_STEPSCALE;
+						trace = stepTrace;
+						stepped = true;
+					}
+				}
+			} else {
+				
+				if ( !nearGround ) {
+					// trace down to see if the player is near the ground
+					// step checking when near the ground allows the player to move up stairs smoothly while jumping
+					stepEnd = current.origin + maxStepHeight * gravityNormal;
+					gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+					nearGround = ( downTrace.fraction < 1.0f && (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL );
+				}
+
+				// may only step up if near the ground or on a ladder
+				if ( nearGround ) {
+
+					// step up
+					stepEnd = current.origin - maxStepHeight * gravityNormal;
+					gameLocal.clip.Translation( downTrace, current.origin, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+					// trace along velocity
+					stepEnd = downTrace.endpos + time_left * current.velocity;
+					gameLocal.clip.Translation( stepTrace, downTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+					// step down
+					stepEnd = stepTrace.endpos + maxStepHeight * gravityNormal;
+					gameLocal.clip.Translation( downTrace, stepTrace.endpos, stepEnd, clipModel, clipModel->GetAxis(), clipMask, self );
+
+					if ( downTrace.fraction >= 1.0f || (downTrace.c.normal * -gravityNormal) > MIN_WALK_NORMAL ) {
+
+						// if moved the entire distance
+						if ( stepTrace.fraction >= 1.0f ) {
+							time_left = 0;
+							current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
+							current.origin = downTrace.endpos;
+							current.movementFlags |= PMF_STEPPED_UP;
+							current.velocity *= PM_STEPSCALE;
+							break;
+						}
+
+						// if the move is further when stepping up
+						if ( stepTrace.fraction > trace.fraction ) {
+							time_left -= time_left * stepTrace.fraction;
+							current.stepUp -= ( downTrace.endpos - current.origin ) * gravityNormal;
+							current.origin = downTrace.endpos;
+							current.movementFlags |= PMF_STEPPED_UP;
+							current.velocity *= PM_STEPSCALE;
+							trace = stepTrace;
+							stepped = true;
+						}
+					}
+				}
+			}
+		}
+#else
 		if ( stepUp ) {
 
 			nearGround = groundPlane | ladder;
@@ -252,7 +345,7 @@ bool idPhysics_Player::SlideMove( bool gravity, bool stepUp, bool stepDown, bool
 				}
 			}
 		}
-
+#endif
 		// if we can push other entities and not blocked by the world
 		if ( push && trace.c.entityNum != ENTITYNUM_WORLD ) {
 
@@ -863,7 +956,7 @@ void idPhysics_Player::LevitateMove( void ) {
 	if ( !vel.LengthSqr() ) {
 		return;
 	}
-
+	
 	gameLocal.push.InitSavingPushedEntityPositions();
 
 	idPhysics_Player::SlideMove( false, true, true, true );

@@ -37,7 +37,10 @@ const float MIN_BOB_SPEED = 5.0f;
 
 #ifdef _DT // levitate spell
 // push velocity when start levitating
-const int LEVITATE_PUSH_VELOCITY = 100;
+const int LEVITATE_PUSH_VELOCITY = 50;
+
+// max step height while levitating
+const int LEVITATE_STEP_HEIGHT = 37;
 #endif
 
 const idEventDef EV_Player_GetButtons( "getButtons", NULL, 'd' );
@@ -11227,7 +11230,15 @@ void idPlayer::Move( void ) {
 	pushVelocity = physicsObj.GetPushedLinearVelocity();
 
 	// set physics variables
+#ifdef _DT // levitate spell
+	if ( levitate ) {
+		physicsObj.SetMaxStepHeight( LEVITATE_STEP_HEIGHT );
+	} else {
+		physicsObj.SetMaxStepHeight( pm_stepsize.GetFloat() );
+	}
+#else
 	physicsObj.SetMaxStepHeight( pm_stepsize.GetFloat() );
+#endif
 	physicsObj.SetMaxJumpHeight( pm_jumpheight.GetFloat() );
 
 	if ( noclip ) {
@@ -11235,7 +11246,7 @@ void idPlayer::Move( void ) {
 		physicsObj.SetMovementType( PM_NOCLIP );
 #ifdef _DT // levitate spell
 	} else if ( levitate ) {
-		physicsObj.SetContents( 0 );
+		physicsObj.SetContents( CONTENTS_BODY );
 		physicsObj.SetMovementType( PM_LEVITATE );
 #endif
 	} else if ( spectating ) {
@@ -13252,7 +13263,7 @@ void idPlayer::Event_LevitateStart( void ) {
 	curent_vel += levitateVelocity;
 	curent_vel.ToVec2() = physicsObj.GetOrigin().ToVec2();
 	curent_vel.ToVec2().NormalizeFast();
-
+	
 	GetPhysics()->SetLinearVelocity( curent_vel );
 
 	levitate = true;
