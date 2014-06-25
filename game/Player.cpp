@@ -13261,9 +13261,7 @@ void idPlayer::Event_LevitateStart( void ) {
 	idVec3 curent_vel = GetPhysics()->GetLinearVelocity();
 
 	curent_vel += levitateVelocity;
-	curent_vel.ToVec2() = physicsObj.GetOrigin().ToVec2();
-	curent_vel.ToVec2().NormalizeFast();
-	
+		
 	GetPhysics()->SetLinearVelocity( curent_vel );
 
 	levitate = true;

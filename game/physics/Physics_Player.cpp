@@ -534,11 +534,11 @@ void idPhysics_Player::Friction( void ) {
 	if ( current.movementType == PM_SPECTATOR ) {
 		drop += speed * PM_FLYFRICTION * frametime;
 	}
-#ifdef _DT // levitate spell
-	if ( current.movementType == PM_LEVITATE ) {
-		drop += speed * PM_FLYFRICTION * frametime;
-	}
-#endif
+// #ifdef _DT // levitate spell
+//	if ( current.movementType == PM_LEVITATE ) {
+//		drop += speed * PM_FLYFRICTION * frametime;
+//	}
+// #endif
 	// apply ground friction
 	else if ( walking && waterLevel <= WATERLEVEL_FEET ) {
 		// no friction on slick surfaces
@@ -926,14 +926,35 @@ idPhysics_Player::LevitateMove
 ===============
 */
 void idPhysics_Player::LevitateMove( void ) {
-
+	float		speed, drop, friction, newspeed, stopspeed;
 	idVec3		wishvel;
 	idVec3		wishdir;
 	float		wishspeed;
 	float		scale;
 	idVec3		vel;
 	
-	idPhysics_Player::Friction();
+	// idPhysics_Player::Friction();
+	// friction
+	speed = current.velocity.Length();
+	if ( speed < 1.0f ) {
+		current.velocity = vec3_origin;
+	}
+	else {
+		stopspeed = playerSpeed * 0.1f;
+		if ( speed < stopspeed ) {
+			speed = stopspeed;
+		}
+		friction = PM_FLYFRICTION;
+		drop = speed * friction * frametime;
+
+		// scale the velocity
+		newspeed = speed - drop;
+		if (newspeed < 0) {
+			newspeed = 0;
+		}
+
+		current.velocity *= newspeed / speed;
+	}
 
 	scale = idPhysics_Player::CmdScale( command );
 
@@ -951,12 +972,6 @@ void idPhysics_Player::LevitateMove( void ) {
 
 	idPhysics_Player::Accelerate( wishdir, wishspeed, PM_ACCELERATE );
 
-	// don't do anything if standing still
-	vel = current.velocity - (current.velocity * gravityNormal) * gravityNormal;
-	if ( !vel.LengthSqr() ) {
-		return;
-	}
-	
 	gameLocal.push.InitSavingPushedEntityPositions();
 
 	idPhysics_Player::SlideMove( false, true, true, true );
