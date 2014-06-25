@@ -35,13 +35,13 @@ const int HEALTHPULSE_TIME = 333;
 // minimum speed to bob and play run/walk animations at
 const float MIN_BOB_SPEED = 5.0f;
 
-#ifdef _DT // levitate spell
+// #ifdef _DT // levitate spell // set through cvar
 // push velocity when start levitating
-const int LEVITATE_PUSH_VELOCITY = 50;
+// const int LEVITATE_PUSH_VELOCITY = 50;
 
 // max step height while levitating
-const int LEVITATE_STEP_HEIGHT = 37;
-#endif
+// const int LEVITATE_STEP_HEIGHT = 37;
+// #endif
 
 const idEventDef EV_Player_GetButtons( "getButtons", NULL, 'd' );
 const idEventDef EV_Player_GetMove( "getMove", NULL, 'v' );
@@ -11232,7 +11232,7 @@ void idPlayer::Move( void ) {
 	// set physics variables
 #ifdef _DT // levitate spell
 	if ( levitate ) {
-		physicsObj.SetMaxStepHeight( LEVITATE_STEP_HEIGHT );
+		physicsObj.SetMaxStepHeight( pm_levitateStepSize.GetFloat() );
 	} else {
 		physicsObj.SetMaxStepHeight( pm_stepsize.GetFloat() );
 	}
@@ -13257,7 +13257,7 @@ idPlayer::Event_LevitateStart
 */
 void idPlayer::Event_LevitateStart( void ) {
 
-	idVec3 levitateVelocity( 0, 0, LEVITATE_PUSH_VELOCITY );
+	idVec3 levitateVelocity( 0, 0, pm_levitatePushVelocity.GetFloat() );
 	idVec3 curent_vel = GetPhysics()->GetLinearVelocity();
 
 	curent_vel += levitateVelocity;

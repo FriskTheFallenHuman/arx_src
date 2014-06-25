@@ -214,6 +214,8 @@ idCVar pm_noclipspeed(				"pm_noclipspeed",			"200",			CVAR_GAME | CVAR_NETWORKS
 
 #ifdef _DT // levitate spell
 idCVar pm_levitatespeed(			"pm_levitatespeed",			"140",			CVAR_GAME | CVAR_NETWORKSYNC | CVAR_FLOAT, "speed the player can move while levitating" );
+idCVar pm_levitateStepSize(			"pm_levitateStepSize",		"40",			CVAR_GAME | CVAR_NETWORKSYNC | CVAR_FLOAT, "max step height while levitating" );
+idCVar pm_levitatePushVelocity(		"pm_levitatePushVelocity",	"50",			CVAR_GAME | CVAR_NETWORKSYNC | CVAR_FLOAT, "push velocity when start levitating" );
 #endif
 
 idCVar pm_spectatespeed(			"pm_spectatespeed",			"450",			CVAR_GAME | CVAR_NETWORKSYNC | CVAR_FLOAT, "speed the player can move while spectating" );

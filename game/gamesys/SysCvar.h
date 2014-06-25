@@ -145,6 +145,8 @@ extern idCVar	pm_noclipspeed;
 
 #ifdef _DT // levitate spell
 extern idCVar	pm_levitatespeed;
+extern idCVar	pm_levitateStepSize;
+extern idCVar	pm_levitatePushVelocity;
 #endif
 
 extern idCVar	pm_spectatespeed;
