@@ -375,14 +375,41 @@ int idArxShop::FindShopItem( const char *name, bool useMaxGroup ) {
 int idArxShop::CountUsedShopSlots( void ) {
 
 	int totalSlotsUsed = 0;
+	int	itemGroupCount = 0;
 	const char *shop_item;
+	idStrList tempshopSlotItem_List;
 
 	for ( int i = 0; i < ARX_MAX_SHOP_SLOTS; i++ ) {
+
 		shop_item = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
+		itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", i ), "0" );
+
 		if ( shop_item && *shop_item ) {
-			totalSlotsUsed ++;
+
+			if ( !tempshopSlotItem_List.Find( shop_item ) ) {
+
+				// We have not found this item in the shop yet
+				// so add it to our list
+				tempshopSlotItem_List.AddUnique( shop_item );
+
+				// Increment number of items in the shop count
+				totalSlotsUsed ++;
+
+			} else {
+
+				// We have found this item in the shop already
+				if ( itemGroupCount > 1 ) {
+					// Count stackable items only once
+					continue;
+				} else {
+					totalSlotsUsed ++;
+				}
+			}
 		}
 	}
+
+	//REMOVEME
+	gameLocal.Printf( "idArxShop::CountUsedShopSlots returns: %d\n", totalSlotsUsed );
 
 	return totalSlotsUsed;
 }
