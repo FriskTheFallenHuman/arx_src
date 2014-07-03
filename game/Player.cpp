@@ -7022,65 +7022,67 @@ void idPlayer::ProcessMagic()
 					// Clear the buffer, so we can do another spell this magic session.
 					magicRuneSequence = "";
 
-				} // if ( projectileName != "" )
+				} else {
 
-				/****************************************************************************************
-				*****************************************************************************************
-				Solarsplace - 1st Aug 2010 - Now perform any custom spell actions. */
-	
-				customMagicSpell = magicSpellCombo->dict.GetString( "magic_spell" );
-				customMagicFX = magicSpellCombo->dict.GetString( "fx_magic_cast" );
-				customMagicSound = magicSpellCombo->dict.GetString( "snd_magic_cast" );
-				customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
+					/****************************************************************************************
+					*****************************************************************************************
+					Solarsplace - 1st Aug 2010 - Now perform any custom spell actions. */
 
-				// Display visual spell effects around player etc.
-				if ( !strcmp( customMagicFX, "" ) == 0 )
-				{
-					idEntityFx::StartFx( customMagicFX, NULL, NULL, this, true );
-				}
+					// Use appropriate mana
+					int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+					inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] - spellManaCost;
 
-				// Play sound spell effects around player etc.
-				if ( !strcmp( customMagicSound, "" ) == 0 )
-				{
-					StartSoundShader( declManager->FindSound( customMagicSound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
-				}
+					// Get custom spell effects and actions
+					customMagicSpell = magicSpellCombo->dict.GetString( "magic_spell" );
+					customMagicFX = magicSpellCombo->dict.GetString( "fx_magic_cast" );
+					customMagicSound = magicSpellCombo->dict.GetString( "snd_magic_cast" );
+					customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
 
-				// Cure Poison
-				if ( strcmp( customMagicSpell, "remove_poison" ) == 0 )
-				{
-					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-					inventory.arx_timer_player_poison = gameLocal.time;
-				}
+					// Display visual spell effects around player etc.
+					if ( !strcmp( customMagicFX, "" ) == 0 ) {
+						idEntityFx::StartFx( customMagicFX, NULL, NULL, this, true );
+					}
 
-				// Telekinesis
-				if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 )
-				{
-					inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
-				}
+					// Play sound spell effects around player etc.
+					if ( !strcmp( customMagicSound, "" ) == 0 ) {
+						StartSoundShader( declManager->FindSound( customMagicSound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
+					}
 
-				// Levitate
-				if ( strcmp( customMagicSpell, "add_levitate" ) == 0 )
-				{
-					inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
-					Event_LevitateStart();
-				}
+					// Cure Poison
+					if ( strcmp( customMagicSpell, "remove_poison" ) == 0 ) {
+						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+						inventory.arx_timer_player_poison = gameLocal.time;
+					}
 
-				// Levitate
-				if ( strcmp( customMagicSpell, "add_harm" ) == 0 )
-				{
-					idVec3 org;
-					org = physicsObj.GetOrigin();
-					gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_50" );
-				}
+					// Telekinesis
+					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
+						inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
+					}
 
-				// Script calls
-				if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 )
-				{
-					magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
-					inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-					RadiusSpell( customMagicScriptActionWorld, alertRadius );
+					// Levitate
+					if ( strcmp( customMagicSpell, "add_levitate" ) == 0 ) {
+						inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+						Event_LevitateStart();
+					}
 
-				}
+					// Levitate
+					if ( strcmp( customMagicSpell, "add_harm" ) == 0 ) {
+						idVec3 org;
+						org = physicsObj.GetOrigin();
+
+						// Do damage of 50 with a 128 unit radius - TODO - Increase with skills
+						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_50_128" );
+					}
+
+					// Script calls
+					if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 ) {
+						magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
+						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+						RadiusSpell( customMagicScriptActionWorld, alertRadius );
+
+					}
+
+				} // projectileName != ""
 
 			} // if ( magicSpellCombo )
 
