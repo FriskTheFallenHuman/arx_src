@@ -152,7 +152,8 @@ const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - 
 const int ARX_MANA_TYPE = 1;						// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "1"
 const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
 const int ARX_INVIS_TIME = 60 * 1000;				// Solarsplace - 6th June 2010 - Time invis magic lasts 
-const int ARX_TELEKENESIS_TIME = 60 * 1000;			// Solarsplace - 15th June 2012 - Time telekenesis magic lasts 
+const int ARX_TELEKENESIS_TIME = 30 * 1000;			// Solarsplace - 15th June 2012 - Time telekenesis magic lasts 
+const int ARX_LEVITATE_TIME = 30 * 1000;			// Solarsplace - 3rd July 2014 - Time levitate magic lasts 
 
 const int ARX_MAX_PLAYER_LEVELS = 14;
 
@@ -286,6 +287,7 @@ void idInventory::Clear( void ) {
 	arx_timer_player_invisible		= -1;
 	arx_timer_player_onfire			= -1;
 	arx_timer_player_telekinesis	= -1;
+	arx_timer_player_levitate		= -1;
 
 	// ****************************************************
 	// ****************************************************
@@ -437,6 +439,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
 	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
 	dict.SetInt( "arx_timer_player_telekinesis", arx_timer_player_telekinesis );
+	dict.SetInt( "arx_timer_player_levitate", arx_timer_player_levitate );
 
 	// ****************************************************
 	// ****************************************************
@@ -611,6 +614,8 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_timer_player_invisible		= dict.GetInt( "arx_timer_player_invisible", "-1" );
 	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "-1" );
 	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "-1" );
+	arx_timer_player_levitate		= dict.GetInt( "arx_timer_player_levitate", "-1" );
+
 
 	// ****************************************************
 	// ****************************************************
@@ -773,6 +778,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_timer_player_invisible );
 	savefile->WriteInt( arx_timer_player_onfire );
 	savefile->WriteInt( arx_timer_player_telekinesis );
+	savefile->WriteInt( arx_timer_player_levitate );
 
 	// ****************************************************
 	// ****************************************************
@@ -926,6 +932,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_timer_player_invisible );
 	savefile->ReadInt( arx_timer_player_onfire );
 	savefile->ReadInt( arx_timer_player_telekinesis );
+	savefile->ReadInt( arx_timer_player_levitate );
 
 	// ****************************************************
 	// ****************************************************
@@ -7051,6 +7058,21 @@ void idPlayer::ProcessMagic()
 					inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
 				}
 
+				// Levitate
+				if ( strcmp( customMagicSpell, "add_levitate" ) == 0 )
+				{
+					inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+					Event_LevitateStart();
+				}
+
+				// Levitate
+				if ( strcmp( customMagicSpell, "add_harm" ) == 0 )
+				{
+					idVec3 org;
+					org = physicsObj.GetOrigin();
+					gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_50" );
+				}
+
 				// Script calls
 				if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 )
 				{
@@ -10117,6 +10139,14 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					gave = true;
 				}
 
+				// Levitate
+				if ( strcmp( itemAttribute, "add_levitate" ) == 0 )
+				{
+					Event_LevitateStart();
+					inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+					gave = true;
+				}
+
 				// Cure poison
 				if ( strcmp( itemAttribute, "remove_poison" ) == 0 )
 				{
@@ -10297,7 +10327,7 @@ void idPlayer::GetEntityByViewRay( void )
 	idStr entityClassName;
 	idStr requiredItemInvName;
 
-	if ( inventory.arx_timer_player_telekinesis > gameLocal.GetTime() ) {
+	if ( inventory.arx_timer_player_telekinesis >= gameLocal.GetTime() ) {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
@@ -13257,14 +13287,17 @@ idPlayer::Event_LevitateStart
 */
 void idPlayer::Event_LevitateStart( void ) {
 
-	idVec3 levitateVelocity( 0, 0, pm_levitatePushVelocity.GetFloat() );
-	idVec3 curent_vel = GetPhysics()->GetLinearVelocity();
+	if ( !levitate ) {
 
-	curent_vel += levitateVelocity;
+		idVec3 levitateVelocity( 0, 0, pm_levitatePushVelocity.GetFloat() );
+		idVec3 curent_vel = GetPhysics()->GetLinearVelocity();
+
+		curent_vel += levitateVelocity;
 		
-	GetPhysics()->SetLinearVelocity( curent_vel );
+		GetPhysics()->SetLinearVelocity( curent_vel );
 
-	levitate = true;
+		levitate = true;
+	}
 }
 
 /*
@@ -13273,6 +13306,7 @@ idPlayer::Event_LevitateStop
 ==================
 */
 void idPlayer::Event_LevitateStop( void ) {
+	gameLocal.GetLocalPlayer()->inventory.arx_timer_player_levitate = gameLocal.time;
 	levitate = false;
 }
 #endif
@@ -14309,14 +14343,37 @@ idPlayer::UpdateHeroStats
 */
 void idPlayer::UpdateHeroStats( void ) {
 
+	//TODO
+	const int MANA_LEVITATE_RATE = 2;
+
 	const int poisonDamageAmount = 5;
 	const int heroUpdateRate = 2000;
 	int now = gameLocal.time;
+	int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+	int currentManaLevel = inventory.ammo[ ammo_mana ];
 
 	if ( now >= inventory.arx_timer_player_stats_update ) {
 
 		inventory.arx_timer_player_stats_update = now + heroUpdateRate;
 
+		// *****************************
+		// *****************************
+		// Spells
+		
+		// Levitate
+		if ( levitate ) {
+			// Stop levitate if time or mana has run out
+			if ( inventory.arx_timer_player_levitate <= now || currentManaLevel <= 0 ) {
+				Event_LevitateStop();
+			} else {
+				// Use mana to maintain levitate
+				inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] - MANA_LEVITATE_RATE; // TODO - Add skill factor
+			}
+		}
+
+		// *****************************
+		// *****************************
 		// Damages
 		if ( health > 0 ) {
 
@@ -14328,7 +14385,6 @@ void idPlayer::UpdateHeroStats( void ) {
 			}
 
 			// Fire damage
-			
 			if ( inventory.arx_timer_player_onfire >= gameLocal.time ) {
 				if ( CalculateHeroChance( "add_fire" ) ) {
 					Damage( NULL, NULL, vec3_origin, "damage_arx_fire_interval", 1.0f, INVALID_JOINT );
@@ -14543,6 +14599,7 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		arx_timer_player_invisible			= -1;
 		arx_timer_player_onfire				= -1;
 		arx_timer_player_telekinesis		= -1;
+		arx_timer_player_levitate			= -1;
 
 	} else {
 
@@ -14573,6 +14630,11 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// Telekinesis
 		if ( arx_timer_player_telekinesis > gameLocal.time ) {
 			arx_timer_player_telekinesis = arx_timer_player_telekinesis - gameLocal.time;
+		}
+
+		// Levitate
+		if ( arx_timer_player_levitate > gameLocal.time ) {
+			arx_timer_player_levitate = arx_timer_player_levitate - gameLocal.time;
 		}
 	}
 }

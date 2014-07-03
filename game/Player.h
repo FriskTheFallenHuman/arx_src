@@ -169,6 +169,7 @@ public:
 	int						arx_timer_player_invisible;
 	int						arx_timer_player_onfire;
 	int						arx_timer_player_telekinesis;
+	int						arx_timer_player_levitate;
 
 	void					ClearDownTimedAttributes( bool clearDown );		// solarsplace 24th Nov 2013
 
