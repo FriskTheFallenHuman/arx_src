@@ -6936,6 +6936,8 @@ void idPlayer::ProcessMagic()
 	if (magicCompassSequence == "")
 	{ return; }
 
+	idVec3 forward, up, playerOrigin;
+
 	const idDeclEntityDef *def = NULL;
 	const idDeclEntityDef *runeDef = NULL;
 	const idDeclEntityDef *magicSpellCombo = NULL;
@@ -6992,7 +6994,10 @@ void idPlayer::ProcessMagic()
 			magicSpellCombo = gameLocal.FindEntityDef( "magic" + magicRuneSequence, false );
 			if ( magicSpellCombo )
 			{
-	
+				// Some spells spawn things. Get the players position etc.
+				playerOrigin = GetPhysics()->GetOrigin();
+				viewAngles.ToVectors( &forward, NULL, &up );
+
 				// ****************************************************************************************
 				// Do we have enough mana to cast the spell? if not then leave
 
@@ -7040,7 +7045,7 @@ void idPlayer::ProcessMagic()
 
 					// Display visual spell effects around player etc.
 					if ( !strcmp( customMagicFX, "" ) == 0 ) {
-						idEntityFx::StartFx( customMagicFX, NULL, NULL, this, true );
+						idEntityFx::StartFx( customMagicFX, &playerOrigin, NULL, this, true );
 					}
 
 					// Play sound spell effects around player etc.
@@ -7065,14 +7070,41 @@ void idPlayer::ProcessMagic()
 						Event_LevitateStart();
 					}
 
-					// Levitate
+					// Harm
 					if ( strcmp( customMagicSpell, "add_harm" ) == 0 ) {
 						idVec3 org;
 						org = physicsObj.GetOrigin();
 
 						// Do damage of 50 with a 128 unit radius - TODO - Increase with skills
-						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_50_128" );
+						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_base" );
 					}
+
+					// Mass Incinerate
+					if ( strcmp( customMagicSpell, "add_mass_incinerate" ) == 0 ) {
+						idVec3 org;
+						org = physicsObj.GetOrigin();
+
+						// Do damage of 60 with a 256 unit radius - TODO - Increase with skills
+						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_mass_incinerate_base" );
+					}
+
+					// Create Field
+					if ( strcmp( customMagicSpell, "add_field" ) == 0 ) {
+
+						// Spawn the timed field entity
+						idDict argsField;
+						idEntity *spawnedField;
+						argsField.Set( "classname", "func_arx_forcefield_animated_spawned" );
+						gameLocal.SpawnEntityDef( argsField, &spawnedField );
+
+						// Move the field entity origin
+						idVec3 fieldOrigin = playerOrigin;
+						fieldOrigin.z += 64.0f; // Forcefield origin is in the middle of the model
+						spawnedField->GetPhysics()->SetOrigin( fieldOrigin + ( forward * 128.0f ) );
+
+					}
+
+					// Dispel field - Handled below in script calls
 
 					// Script calls
 					if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 ) {
