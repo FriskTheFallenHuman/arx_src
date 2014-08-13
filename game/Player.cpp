@@ -7043,34 +7043,45 @@ void idPlayer::ProcessMagic()
 					customMagicSound = magicSpellCombo->dict.GetString( "snd_magic_cast" );
 					customMagicScriptActionWorld = magicSpellCombo->dict.GetString( "magic_world_script_action" );
 
+					// ***********************************************************
+					// ***********************************************************
 					// Display visual spell effects around player etc.
 					if ( !strcmp( customMagicFX, "" ) == 0 ) {
 						idEntityFx::StartFx( customMagicFX, &playerOrigin, NULL, this, true );
 					}
 
+					// ***********************************************************
+					// ***********************************************************
 					// Play sound spell effects around player etc.
 					if ( !strcmp( customMagicSound, "" ) == 0 ) {
 						StartSoundShader( declManager->FindSound( customMagicSound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
 					}
 
-					// Cure Poison
-					if ( strcmp( customMagicSpell, "remove_poison" ) == 0 ) {
-						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
-						inventory.arx_timer_player_poison = gameLocal.time;
-					}
+					// *************************
+					// *************************
+					// *** level 1
 
-					// Telekinesis
-					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
-						inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
-					}
+					//Activate portal
 
-					// Levitate
-					if ( strcmp( customMagicSpell, "add_levitate" ) == 0 ) {
-						inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
-						Event_LevitateStart();
-					}
+					//Douse
+						// === Handled below in "Script calls"
 
-					// Harm
+					//Ignite
+						// === Handled below in "Script calls"
+
+					//Magic missile
+
+					//Night vision
+
+					// *************************
+					// *************************
+					// *** level 2
+
+					//Armor
+
+					//Detect trap
+
+					//Harm
 					if ( strcmp( customMagicSpell, "add_harm" ) == 0 ) {
 						idVec3 org;
 						org = physicsObj.GetOrigin();
@@ -7079,16 +7090,72 @@ void idPlayer::ProcessMagic()
 						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_base" );
 					}
 
-					// Mass Incinerate
-					if ( strcmp( customMagicSpell, "add_mass_incinerate" ) == 0 ) {
-						idVec3 org;
-						org = physicsObj.GetOrigin();
+					//Heal
 
-						// Do damage of 60 with a 256 unit radius - TODO - Increase with skills
-						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_mass_incinerate_base" );
+					//Lower armor
+
+					// *************************
+					// *************************
+					// *** level 3
+
+					//Feed
+
+					//Fireball
+						// === Handled above in projectiles
+
+					//Ice projection
+
+					//Reveal
+
+					//Speed
+
+					// *************************
+					// *************************
+					// *** level 4
+
+					//Bless
+
+					//Curse
+
+					//Dispel field
+						// === Handled below in "Script calls"
+
+					//Protection from cold
+
+					//Protection from fire
+
+					//Telekinesis
+					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
+						inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
 					}
 
-					// Create Field
+					// *************************
+					// *************************
+					// *** level 5
+
+					//Cure effects of poison
+					if ( strcmp( customMagicSpell, "remove_poison" ) == 0 ) {
+						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
+						inventory.arx_timer_player_poison = gameLocal.time;
+					}
+
+					//Levitate
+					if ( strcmp( customMagicSpell, "add_levitate" ) == 0 ) {
+						inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+						Event_LevitateStart();
+					}
+
+					//Poison projection
+
+					//Repel undead
+
+					//Trap
+
+					// *************************
+					// *************************
+					// *** level 6
+
+					//Create field
 					if ( strcmp( customMagicSpell, "add_field" ) == 0 ) {
 
 						// Spawn the timed field entity
@@ -7101,18 +7168,91 @@ void idPlayer::ProcessMagic()
 						idVec3 fieldOrigin = playerOrigin;
 						fieldOrigin.z += 64.0f; // Forcefield origin is in the middle of the model
 						spawnedField->GetPhysics()->SetOrigin( fieldOrigin + ( forward * 128.0f ) );
-
 					}
 
-					// Dispel field - Handled below in script calls
+					//Disable trap
 
+					//Paralyze
+
+					//Raise dead
+
+					//Slow down
+
+					// *************************
+					// *************************
+					// *** level 7
+
+					//Confuse
+
+					//Fire field
+
+					//Flying eye
+
+					//Ice field
+
+					//Lightning projection
+						// === Handled above in projectiles
+
+					// *************************
+					// *************************
+					// *** level 8
+
+					//Chaos
+
+					//Enchant object
+
+					//Invisibility
+					if ( strcmp( customMagicSpell, "add_invisibility" ) == 0 )
+					{
+						inventory.arx_timer_player_invisible = gameLocal.time + ARX_INVIS_TIME;
+						GivePowerUp( 1, ARX_INVIS_TIME );
+					}
+
+					//Life drain
+
+					//Mana drain
+
+					// *************************
+					// *************************
+					// *** level 9
+
+					//Incinerate
+
+					//Mass paralyze
+
+					//Negate magic
+
+					//Summon
+
+					// *************************
+					// *************************
+					// *** level 10
+
+					//Control demon
+
+					//Mass incinerate
+					if ( strcmp( customMagicSpell, "add_mass_incinerate" ) == 0 ) {
+						idVec3 org;
+						org = physicsObj.GetOrigin();
+
+						// Do damage of 60 with a 256 unit radius - TODO - Increase with skills
+						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_mass_incinerate_base" );
+					}
+
+					//Mass lightning projection
+
+					//Slow time
+
+					// ***********************************************************
+					// ***********************************************************
 					// Script calls
 					if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 ) {
 						magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
 						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 						RadiusSpell( customMagicScriptActionWorld, alertRadius );
-
 					}
+					// ***********************************************************
+					// ***********************************************************
 
 				} // projectileName != ""
 
