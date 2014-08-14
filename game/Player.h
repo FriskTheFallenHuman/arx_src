@@ -1024,6 +1024,8 @@ private:
 
 	// Shop related
 	idArxShop				arxShopFunctions;
+	int						ShopGetSellToPlayerPrice( float baseValue, float durabilityRatio, float shopRatio );	// solarsplace 14nd Jun 2014
+	int						ShopGetBuyFromPlayerPrice( float baseValue, float durabilityRatio, float shopRatio );	// solarsplace 14nd Jun 2014
 
 	// Spell casting related
 	idEntity				*magicWand;

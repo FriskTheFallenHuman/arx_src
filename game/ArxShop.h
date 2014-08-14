@@ -25,6 +25,9 @@ class idArxShop : public idClass
 		int								totalUsedShopSlots;
 		idStr							currentShopName;
 
+		float							ratioSellToPlayer;
+		float							ratioBuyFromPlayer;
+
 	public:
 
 		void	LoadActiveShop			( idEntity *shopEntity );

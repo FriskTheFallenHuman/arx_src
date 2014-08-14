@@ -5675,10 +5675,15 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 			if ( kv ) {
 
-				// TODO - Check not quest item / not sellable.
-
-
 				int invItemIndex = atoi( kv->GetValue() );
+
+				// Items which the player cannot sell from their inventory
+				bool noSell = inventory.items[invItemIndex]->GetBool( "inv_arx_noinvdrop", "0" );
+				if ( noSell ) {
+					ShowHudMessage( "#str_general_00012" ); // "This inventory item can not be sold"
+					StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+					return true;
+				}
 
 				// Populate dictionary with key vals of selling item
 				idDict *sellingItem = inventory.items[invItemIndex];
@@ -5687,35 +5692,47 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 				idStr sellingClassName = inventory.items[invItemIndex]->GetString( "inv_classname" );
 
 				// Get the base value of the item we are selling
-				float itemValue = sellingItem->GetFloat( "inv_unique_name", "404" );
+				float itemValue = sellingItem->GetFloat( "inv_shop_item_value", "0" );
+
+				// Get the health of the item we are selling	
+				int tempHealth = inventory.items[invItemIndex]->GetInt( "inv_health", "100" );
+				int tempHealthMax = inventory.items[invItemIndex]->GetInt( "inv_health_max", "100" );
+				if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
+
+				float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax ) * 100;
+
+				//TODO - Abort sale if item too broken?
+
+				int buyFromPlayerPrice = ShopGetBuyFromPlayerPrice( itemValue, durabilityRatio, arxShopFunctions.ratioBuyFromPlayer );
 
 				// Add the item we are selling to the current open shop
-				arxShopFunctions.AddShopItem( sellingClassName.c_str() );
+				if (arxShopFunctions.AddShopItem( sellingClassName.c_str() ) ) {
 
-				// Selling the weapon the player is currently using?
-				if ( strcmp( inventory.weaponUniqueName, sellingItem->GetString( "inv_unique_name" ) ) == 0 ) {
+					// Selling the weapon the player is currently using?
+					if ( strcmp( inventory.weaponUniqueName, sellingItem->GetString( "inv_unique_name" ) ) == 0 ) {
 
-						// Clear the inventory / weapon unique name
-						inventory.weaponUniqueName = "";
+							// Clear the inventory / weapon unique name
+							inventory.weaponUniqueName = "";
 
-						// Now select the fists
-						SelectWeapon( ARX_FISTS_WEAPON, true );
-				}
-
-				// Un-equip the item if equiped (if any match)
-				int i;
-				for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
-					if ( inventory.arx_equiped_items[ i ] == sellingItem->GetString( "inv_unique_name" ) ) {
-						inventory.arx_equiped_items[ i ] == "";
+							// Now select the fists
+							SelectWeapon( ARX_FISTS_WEAPON, true );
 					}
+
+					// Un-equip the item if equiped (if any match)
+					int i;
+					for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+						if ( inventory.arx_equiped_items[ i ] == sellingItem->GetString( "inv_unique_name" ) ) {
+							inventory.arx_equiped_items[ i ] == "";
+						}
+					}
+
+					// Now remove the item from the players inventory
+					RemoveInventoryItem( sellingItem ); 
+
+					// Now pay the player
+					inventory.money += buyFromPlayerPrice; //itemValue;
+					StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 				}
-
-				// Now remove the item from the players inventory
-				RemoveInventoryItem( sellingItem ); 
-
-				// Now pay the player
-				inventory.money += itemValue;
-				StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 			}
 		}
 		return true;
@@ -5762,7 +5779,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					GiveInventoryItem( &args );
 
 					// Spend money and remove the item from the shop
-					inventory.money -= itemPrice;
+					int sellToPlayerPrice = ShopGetSellToPlayerPrice( itemPrice, 100.0f, arxShopFunctions.ratioSellToPlayer );
+
+					inventory.money -= sellToPlayerPrice; //itemPrice;
 					arxShopFunctions.RemoveShopItem( atoi( token2 )  );
 					StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 				}
@@ -10183,7 +10202,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	idDict *item = FindInventoryItem( iname );
 
 	// Gather common information
-	inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
+	inventory.items[invItemIndex]->GetInt( "inv_health", "100", itemHealth ); // 14th Aug 2014 - Default all items to full health unless otherwise stated.
 	inventory.items[invItemIndex]->GetInt( "inv_health_max", "100", itemHealthMax );
 	inventory.items[invItemIndex]->GetString( "inv_arx_equipable_type", "", equipType );
 	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
@@ -14833,6 +14852,25 @@ bool idPlayer::GetQuestState( idStr questObjectQuestName )
 	}
 
 	return false;
+}
+
+/*
+=================
+idPlayer::ShopGetBuyFromPlayerPrice
+=================
+*/
+int idPlayer::ShopGetBuyFromPlayerPrice( float baseValue, float durabilityRatio, float shopRatio ) {
+	return (int)baseValue * shopRatio * durabilityRatio; //TODO add skill bonus
+}
+
+/*
+=================
+idPlayer::ShopGetSellToPlayerPrice
+=================
+*/
+int idPlayer::ShopGetSellToPlayerPrice( float baseValue, float durabilityRatio, float shopRatio ) {
+	// Assumes all things shop sells are 100% durability
+	return (int)baseValue * shopRatio; //TODO add skill bonus
 }
 
 // sikk---> Depth Render
