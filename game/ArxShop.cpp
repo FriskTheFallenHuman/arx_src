@@ -72,10 +72,11 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 		{
 			shopItemClass = shopEntity->spawnArgs.GetString( va( "shopItem_%i", i ), "" ); // Get the class name for this shop item
 
-			gameLocal.Printf( "shopItem_%i = shopItemClass %s\n", i, shopItemClass.c_str() );
-
 			if ( idStr::Icmp( "", shopItemClass ) ) // Returns 0 if the text is equal
 			{ 
+				//REMOVEME
+				gameLocal.Printf( "shopItem_%i = shopItemClass %s\n", i, shopItemClass.c_str() );
+
 				// Save the item in the persistent dictionary
 				currentShopSlotItem = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName + ARX_REC_SEP + va( ARX_PROP_SHOP_ITEM + "%i", i );
 
@@ -87,7 +88,6 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 		// Store the number of items in this shop - also used as a flag to see if we need to store this shop.
 		gameLocal.persistentLevelInfo.SetInt ( currentShopIDString, shopItemCountTotal );
-		totalUsedShopSlots = shopItemCountTotal;
 	}
 
 	/******************************************************************************/
@@ -145,6 +145,8 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			gameLocal.Printf( "ERROR in shop '%s'. The entity def for '%s' could not be found.\n", currentShopName.c_str(), result );
 		}
 	}
+
+	totalUsedShopSlots = shopItemDictionaryIndex;
 }
 
 void idArxShop::SaveShopState( void ) {
@@ -176,8 +178,8 @@ void idArxShop::SaveShopState( void ) {
 	// Now loop through the current shop dictionary and persist the current state
 	for (int i = 0; i < ARX_MAX_SHOP_SQUARES; i++) {
 
-		idStr shopItemClass = shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) );
-		int itemCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", i ) );
+		idStr shopItemClass =	shopSlotItem_Dict->GetString(	va( "shop_item_class_%i", i ) );
+		int itemCount =			shopSlotItem_Dict->GetInt(		va( "shop_item_count_%i", i ) );
 
 		if ( idStr::Icmp( "", shopItemClass ) == 0 ) // Returns 0 if the text is equal
 		{ continue; }
@@ -270,10 +272,10 @@ void idArxShop::RemoveShopItem( int slotId )
 	idDict tempshopSlotItem_Dict;
 	int itemGroupCount;
 
-	// Remove a shop item from the items count.
+	// Get the group count for this shop square
 	itemGroupCount = shopSlotItem_Dict->GetInt( va( "shop_item_count_%i", slotId ), "0" );
 
-	if ( itemGroupCount > 1 ) { // It is a stacked / grouped item
+	if ( itemGroupCount > 1 ) { // *** In its current state / quantity, it is a stacked item ***
 
 		itemGroupCount --; // Reduce slot count, grouped or not.
 
@@ -281,10 +283,12 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		totalUsedShopSlots = totalUsedShopSlots; // Serves no purpose - but shows the theory.
 
+		SaveShopState();
+
 		return;
 	}
 
-	if ( itemGroupCount <= 1 ) {
+	if ( itemGroupCount <= 1 ) { // *** In its current state / quantity, it is NOT a stacked item ***
 
 		itemGroupCount --; // Reduce slot count, grouped or not.
 
@@ -295,11 +299,11 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		// Copy the shop into a temp dictionary.
 		for (int i = 0; i < ARX_MAX_SHOP_SQUARES; i++) {
-			tempshopSlotItem_Dict.Set( va( "shop_item_class_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_class_%i", i ) ) );
-			tempshopSlotItem_Dict.Set( va( "shop_item_icon_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", i ) ) );
-			tempshopSlotItem_Dict.Set( va( "shop_item_name_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_name_%i", i ) ) );
-			tempshopSlotItem_Dict.Set( va( "inv_shop_item_value_%i", i ), shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", i ) ) );
-			tempshopSlotItem_Dict.Set( va( "shop_item_count_%i", i ), shopSlotItem_Dict->GetString( va( "shop_item_count_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_class_%i",		i ),		shopSlotItem_Dict->GetString( va( "shop_item_class_%i",		i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_icon_%i",			i ),		shopSlotItem_Dict->GetString( va( "shop_item_icon_%i",		i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_name_%i",			i ),		shopSlotItem_Dict->GetString( va( "shop_item_name_%i",		i ) ) );
+			tempshopSlotItem_Dict.Set( va( "inv_shop_item_value_%i",	i ),		shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", i ) ) );
+			tempshopSlotItem_Dict.Set( va( "shop_item_count_%i",		i ),		shopSlotItem_Dict->GetString( va( "shop_item_count_%i",		i ) ) );
 		}
 
 		// Clear the shop dictionary.
@@ -309,22 +313,25 @@ void idArxShop::RemoveShopItem( int slotId )
 		int slotIndex = 0;
 		for (int i = 0; i < ARX_MAX_SHOP_SQUARES; i++) {
 
-			//REMOVEME
-			gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
-			gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
-
 			if ( tempshopSlotItem_Dict.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
 
-				shopSlotItem_Dict->Set( va( "shop_item_class_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
-				shopSlotItem_Dict->Set( va( "shop_item_icon_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_icon_%i", i ) ) );
-				shopSlotItem_Dict->Set( va( "shop_item_name_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_name_%i", i ) ) );
-				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "inv_shop_item_value_%i", i ) ) );
-				shopSlotItem_Dict->Set( va( "shop_item_count_%i", slotIndex ), tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
+				//REMOVEME
+				gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
+				gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
+
+				shopSlotItem_Dict->Set( va( "shop_item_class_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i",		i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_icon_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_icon_%i",		i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_name_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_name_%i",		i ) ) );
+				shopSlotItem_Dict->Set( va( "inv_shop_item_value_%i",	slotIndex ),		tempshopSlotItem_Dict.GetString( va( "inv_shop_item_value_%i",	i ) ) );
+				shopSlotItem_Dict->Set( va( "shop_item_count_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i",		i ) ) );
 
 				slotIndex ++;
 			}
 		}
+
 		totalUsedShopSlots = slotIndex; // Update the new amount of slot spaces taken up in the shop.
+
+		SaveShopState();
 	}
 }
 
@@ -341,19 +348,26 @@ int idArxShop::FindShopItem( const char *name, bool useMaxGroup ) {
 
 		if ( shop_item && *shop_item ) {
 
+			//REMOVED
 			//gameLocal.Printf( "(%i): name = %s and shop_item = %s\n", i, name, shop_item );
 
 			if ( idStr::Icmp( name, shop_item ) == 0 ) {
 
 				if ( useMaxGroup ) {
 					if ( itemGroupCount < ARX_MAX_SHOP_ITEMS_GROUP ) {
+
+						//REMOVED
 						//gameLocal.Printf( "FindShopItem returns: %i\n", i );
+
 						return i;
 					} else {
 						continue;
 					}
 				} else {
+
+					//REMOVED
 					//gameLocal.Printf( "FindShopItem returns: %i\n", i );
+
 					return i;
 				}
 

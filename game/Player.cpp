@@ -3657,6 +3657,8 @@ bool idPlayer::Give( const char *statname, const char *value ) {
 
 	if ( !idStr::Icmp( statname, "health" ) ) {
 		if ( health >= inventory.maxHealth ) {
+			// Arx EOS
+			ShowHudMessage( "#str_general_00017" ); // "Your health is already at maximum"
 			return false;
 		}
 		amount = atoi( value );
@@ -5767,6 +5769,13 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					// Add the item to the players inventory
 					const idDeclEntityDef *shopItemDef = NULL;
 					shopItemDef = gameLocal.FindEntityDef( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_class_%i", atoi( token2 ) ), ""), false );
+
+					if ( !shopItemDef  ) {
+						// Nothing to buy / sell
+						StartSound( "snd_shop_fail", SND_CHANNEL_ANY, 0, false, NULL );
+						return true;
+					}
+
 					idDict args = shopItemDef->dict;
 
 					// Solarsplace 9th Oct 2011 - If we specify a drop item use that.
@@ -10202,7 +10211,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	idDict *item = FindInventoryItem( iname );
 
 	// Gather common information
-	inventory.items[invItemIndex]->GetInt( "inv_health", "100", itemHealth ); // 14th Aug 2014 - Default all items to full health unless otherwise stated.
+	inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
 	inventory.items[invItemIndex]->GetInt( "inv_health_max", "100", itemHealthMax );
 	inventory.items[invItemIndex]->GetString( "inv_arx_equipable_type", "", equipType );
 	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
