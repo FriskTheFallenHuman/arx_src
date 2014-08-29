@@ -9506,7 +9506,7 @@ void idPlayer::UpdateShoppingSystem( void )
 			shoppingSystem->SetStateString( va( "shop_inv_icon_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "shop_inv_name_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), "" );
-			shoppingSystem->SetStateString( va( "shop_item_count_%i", j ), "0" );
+			shoppingSystem->SetStateString( va( "shop_inv_group_count_%i", j ), "0" ); // Note: Named different from dictionary shop_item_count_
 		}
 
 		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
@@ -9524,6 +9524,9 @@ void idPlayer::UpdateShoppingSystem( void )
 				shoppingSystem->SetStateString( va( "shop_inv_group_count_%i", j ), scount );
 			}
 		}
+
+		// !!! Critical - MUST DO THIS !!!
+		shoppingSystem->StateChanged( gameLocal.time );
 	}
 }
 

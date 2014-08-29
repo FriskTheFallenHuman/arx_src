@@ -285,6 +285,9 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		SaveShopState();
 
+		//REMOVEME
+		shopSlotItem_Dict->Print();
+
 		return;
 	}
 
@@ -316,8 +319,8 @@ void idArxShop::RemoveShopItem( int slotId )
 			if ( tempshopSlotItem_Dict.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
 
 				//REMOVEME
-				gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
-				gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
+				//gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
+				//gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
 
 				shopSlotItem_Dict->Set( va( "shop_item_class_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i",		i ) ) );
 				shopSlotItem_Dict->Set( va( "shop_item_icon_%i",		slotIndex ),		tempshopSlotItem_Dict.GetString( va( "shop_item_icon_%i",		i ) ) );
@@ -332,6 +335,9 @@ void idArxShop::RemoveShopItem( int slotId )
 		totalUsedShopSlots = slotIndex; // Update the new amount of slot spaces taken up in the shop.
 
 		SaveShopState();
+
+		//REMOVEME
+		shopSlotItem_Dict->Print();
 	}
 }
 
