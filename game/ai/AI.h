@@ -301,6 +301,9 @@ protected:
 	float					fly_pitch_max;
 	float					fly_pitch;
 
+	bool					fly_HeightLimited;			// Solarsplace - Arx End Of Sun
+	int						fly_MaxHeight;				// Solarsplace - Arx End Of Sun
+
 	bool					allowMove;					// disables any animation movement
 	bool					allowHiddenMovement;		// allows character to still move around while hidden
 	bool					disableGravity;				// disables gravity and allows vertical movement by the animation

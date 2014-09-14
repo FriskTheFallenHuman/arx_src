@@ -357,9 +357,11 @@ idAI::idAI() {
 	focusAlignTime		= 0;
 
 	// Solarsplace - Arx End Of Sun
-	sendAlertSignals = false;
-	lastAlertSignal = 0;
-	painTriggerDone = false;
+	sendAlertSignals	= false;
+	lastAlertSignal		= 0;
+	painTriggerDone		= false;
+	fly_MaxHeight		= 0;
+	fly_HeightLimited	= false;
 }
 
 /*
@@ -512,6 +514,8 @@ void idAI::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( sendAlertSignals);
 	savefile->WriteInt( lastAlertSignal );
 	savefile->WriteBool( painTriggerDone );
+	savefile->WriteBool( fly_HeightLimited );
+	savefile->WriteInt( fly_MaxHeight );
 }
 
 /*
@@ -665,6 +669,8 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( sendAlertSignals);
 	savefile->ReadInt( lastAlertSignal );
 	savefile->ReadBool( painTriggerDone );
+	savefile->ReadBool( fly_HeightLimited );
+	savefile->ReadInt( fly_MaxHeight );
 
 	// Set the AAS if the character has the correct gravity vector
 	idVec3 gravity = spawnArgs.GetVector( "gravityDir", "0 0 -1" );
@@ -908,6 +914,12 @@ void idAI::Spawn( void ) {
 
 	// set up monster chatter
 	SetChatSound();
+
+	// Solarsplace - Arx End Of Sun - Limit height fish can fly / swim up
+	if ( spawnArgs.GetBool( "arx_fish" ) ) {
+		fly_MaxHeight = physicsObj.GetOrigin().z;
+		fly_HeightLimited = true;
+	}
 
 	BecomeActive( TH_THINK );
 
@@ -2989,6 +3001,17 @@ void idAI::AdjustFlyHeight( idVec3 &vel, const idVec3 &goalPos ) {
 			end.z = goalPos.z + DEFAULT_FLY_OFFSET + fly_offset;
 		}
 
+		// Solarsplace - Arx End Of Sun
+		if ( fly_HeightLimited )
+		{
+			if ( origin.z >= fly_MaxHeight ) {
+				idVec3 newOrigin;
+				newOrigin = physicsObj.GetOrigin();
+				newOrigin.z = fly_MaxHeight;
+				physicsObj.SetOrigin( newOrigin );
+			}
+		}
+
 		gameLocal.clip.Translation( trace, origin, end, physicsObj.GetClipModel(), mat3_identity, MASK_MONSTERSOLID, this );
 		vel += Seek( vel, origin, trace.endpos, AI_SEEK_PREDICTION );
 	}
@@ -3436,6 +3459,10 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 
 	if ( StartRagdoll() ) {
 		StartSound( "snd_death", SND_CHANNEL_VOICE, 0, false, NULL );
+	} else {
+		// Solarsplace - Arx End Of Sun - Allow drop items if no ragdoll.
+		// Drop any items the actor is holding
+		idMoveableItem::DropItems( this, "death", NULL );
 	}
 
 	if ( spawnArgs.GetString( "model_death", "", &modelDeath ) ) {

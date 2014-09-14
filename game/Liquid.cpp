@@ -209,8 +209,13 @@ bool idLiquid::Collide( const trace_t &collision, const idVec3 &velocity ) {
 				splash = this->splash[2];
 		}
 	
-		// only play the sound for a splash
-		e->StartSound( this->soundName.c_str(), SND_CHANNEL_ANY, 0, false, NULL);
+		// Solarsplace - Don't play this for the player. It sounds terrable when running and the player has its own spash sounds.
+		const idActor *actor = static_cast<const idActor *>( e );
+		if ( !actor->IsType( idPlayer::Type ) ) {
+			// Only play the sound for a splash
+			e->StartSound( this->soundName.c_str(), SND_CHANNEL_ANY, 0, false, NULL);
+		}
+		
 	}
 	else if( velSquare > phys->GetMinWaveVelocity().LengthSqr() ) {
 		splash = this->waves;

@@ -3381,12 +3381,16 @@ void idActor::Event_SpawnItem( void ) {
 	
 	// SP - Arx
 
-	gameLocal.Printf( "idActor::Event_SpawnItem\n");
+	//REMOVED
+	//gameLocal.Printf( "idActor::Event_SpawnItem\n");
 
 	const idKeyValue *kv = spawnArgs.MatchPrefix( "def_delayed_drops", NULL );
 	while( kv ) {
 
 		idDict args;
+
+		if ( idStr::Icmp( "", kv->GetValue() ) ) // Returns 0 if the text is equal
+		{ continue; }
 
 		args.Set( "classname", kv->GetValue() );
 		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
@@ -3397,7 +3401,6 @@ void idActor::Event_SpawnItem( void ) {
 		gameLocal.SpawnEntityDef( args );
 		kv = spawnArgs.MatchPrefix( "def_delayed_drops", kv );
 	}
-
 }
 
 /*
@@ -3411,28 +3414,27 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 
 	gameLocal.Printf( "idActor::Event_SpawnItemCooked\n");
 
-	if ( !*name == '\0' ) {
+	if ( idStr::Icmp( "", idStr( name ) ) ) // Returns 0 if the text is equal
+	{ return; }
 
-		idDict args;
-		idEntity *item;
-		idVec3 forward, up, throwVector;
+	idDict args;
+	idEntity *item;
+	idVec3 forward, up, throwVector;
 
-		args.Set( "classname", spawnArgs.GetString( name ) );
-		args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
+	args.Set( "classname", spawnArgs.GetString( name ) );
+	args.Set( "origin", GetPhysics()->GetOrigin().ToString() );
 
-		args.Set( "dropped", "1" );
-		args.Set( "nodrop", "1" );
+	args.Set( "dropped", "1" );
+	args.Set( "nodrop", "1" );
 
-		gameLocal.SpawnEntityDef( args, &item );
+	gameLocal.SpawnEntityDef( args, &item );
 
-		if ( item )
-		{
-			item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
-			item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
-			item->GetPhysics()->SetLinearVelocity( vec3_origin );
-			item->UpdateVisuals();
-		}
-		
+	if ( item )
+	{
+		item->GetPhysics()->SetOrigin( GetPhysics()->GetOrigin() );
+		item->GetPhysics()->SetAxis( GetPhysics()->GetAxis() );
+		item->GetPhysics()->SetLinearVelocity( vec3_origin );
+		item->UpdateVisuals();
 	}
 }
 

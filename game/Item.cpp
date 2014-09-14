@@ -1053,6 +1053,7 @@ idMoveableItem::DropItem
 ================
 */
 idEntity *idMoveableItem::DropItem( const char *classname, const idVec3 &origin, const idMat3 &axis, const idVec3 &velocity, int activateDelay, int removeDelay ) {
+
 	idDict args;
 	idEntity *item;
 
