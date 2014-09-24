@@ -14918,6 +14918,13 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 	idVec3 start;
 	idVec3 end;
 
+	bool noDamage = false;
+	int healthCurrent = 0;
+	int healthMax = 0;
+	float healthUnit = 0.0f;
+	int team = 0;
+	idStr strHealth;
+
 	// Start the traceline at our eyes
 	start = GetEyePosition( );
 
@@ -14934,13 +14941,25 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 
 		if ( ent->IsType( idActor::Type ) ) {
 
-			idStr strHealth;
-			sprintf( strHealth, "%d / %d", ent->health, ent->health_max );
+			noDamage = ent->spawnArgs.GetBool( "noDamage", "0" );
+			team = ent->spawnArgs.GetInt( "team", "-1" );
+
+			if ( noDamage ) {
+				healthCurrent = 100;
+				healthMax = 100;
+				healthUnit = 1.0f;
+			} else {
+				healthCurrent = ent->health;
+				healthMax = ent->health_max;
+				healthUnit = (float)healthCurrent / (float)healthMax ;
+			}
+
+			sprintf( strHealth, "%d / %d", healthCurrent, healthMax );
 
 			hud->HandleNamedEvent( "AIHealth" );
 			hud->SetStateString( "arx_ai_health_string", strHealth.c_str() );
-			hud->SetStateFloat( "arx_ai_health_unit", ent->health / ent->health_max );
-			hud->SetStateInt( "arx_ai_health_team", ent->spawnArgs.GetInt( "team", "-1" ) );
+			hud->SetStateFloat( "arx_ai_health_unit", healthUnit );
+			hud->SetStateInt( "arx_ai_health_team", team );
 
 		} else {
 			hud->HandleNamedEvent( "noAIHealth" );

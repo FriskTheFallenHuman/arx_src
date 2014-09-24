@@ -99,7 +99,6 @@ idPlayerView::idPlayerView() {
 	poisonMaterial = declManager->FindMaterial( "textures/arx/decals/poisoned" );
 	justLeftWaterMaterial = declManager->FindMaterial( "textures/arx/water/screen" );
 	blurMaterial = declManager->FindMaterial( "textures/arx/sfx/blur" );
-	filmgrainMaterial = declManager->FindMaterial( "textures/arx/postProcess/filmgrain" );
 	fireScreenMaterial = declManager->FindMaterial( "textures/arx/sfx/fire_damage" );
 	// <--- Arx
 
@@ -145,7 +144,6 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteMaterial( poisonMaterial );
 	savefile->WriteMaterial( justLeftWaterMaterial );
 	savefile->WriteMaterial( blurMaterial );
-	savefile->WriteMaterial( filmgrainMaterial );
 	savefile->WriteMaterial( fireScreenMaterial );
 	// <--- Arx
 
@@ -205,7 +203,6 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadMaterial( poisonMaterial );
 	savefile->ReadMaterial( justLeftWaterMaterial );
 	savefile->ReadMaterial( blurMaterial );
-	savefile->ReadMaterial( filmgrainMaterial );
 	savefile->ReadMaterial( fireScreenMaterial );
 	// <--- Arx
 
