@@ -3794,7 +3794,32 @@ void idAI::SetEnemyPosition( void ) {
 
 	lastVisibleReachableEnemyPos = lastReachableEnemyPos;
 	lastVisibleEnemyEyeOffset = enemyEnt->EyeOffset();
-	lastVisibleEnemyPos = enemyEnt->GetPhysics()->GetOrigin();
+
+	// SP - Arx End Of Sun
+	// If enemyEnt is local player, test for invisibility and if invisible
+	// update lastVisibleEnemyPos to the origin point when idGameLocal::AlertAI was called
+	// this means out of area monsters will come to the right area to investigate but
+	// wont find the player if he has moved.
+	if ( enemyEnt == gameLocal.GetLocalPlayer() )
+	{
+		idPlayer *player = static_cast<idPlayer *>(enemyEnt);
+		int invisEndTime = player->inventory.arx_timer_player_invisible;
+
+		// Still invisible ?
+		if ( invisEndTime > gameLocal.time )
+		{
+			// Invisible, set to point when alert triggerd.
+			lastVisibleEnemyPos = (player->lastPlayerAlertOrigin == vec3_zero) ?
+				player->GetPhysics()->GetOrigin() : player->lastPlayerAlertOrigin;
+		} else {
+			// Not invisible set to current position
+			lastVisibleEnemyPos = enemyEnt->GetPhysics()->GetOrigin();
+		}
+	} else {
+		// Default code
+		lastVisibleEnemyPos = enemyEnt->GetPhysics()->GetOrigin();
+	}
+
 	if ( move.moveType == MOVETYPE_FLY ) {
 		pos = lastVisibleEnemyPos;
 		onGround = true;
@@ -3929,7 +3954,9 @@ void idAI::UpdateEnemyPosition( void ) {
 		// check if we heard any sounds in the last frame
 		if ( enemyEnt == gameLocal.GetAlertEntity() ) {
 			float dist = ( enemyEnt->GetPhysics()->GetOrigin() - org ).LengthSqr();
-			if ( dist < Square( AI_HEARING_RANGE ) ) {
+
+			// SP - Arx EOS - Alert distance is modified by player skills
+			if ( dist < Square( gameLocal.GetLocalPlayer()->ArxSkillGetAlertDistance( AI_HEARING_RANGE ) ) ) {
 				SetEnemyPosition();
 			}
 		}

@@ -470,7 +470,9 @@ void idAI::Event_HeardSound( int ignore_team ) {
 		idVec3 pos = actor->GetPhysics()->GetOrigin();
 		idVec3 org = physicsObj.GetOrigin();
 		float dist = ( pos - org ).LengthSqr();
-		if ( dist < Square( AI_HEARING_RANGE ) ) {
+
+		// SP - Arx EOS - Alert distance is modified by player skills
+		if ( dist < Square( gameLocal.GetLocalPlayer()->ArxSkillGetAlertDistance( AI_HEARING_RANGE ) ) ) {
 			idThread::ReturnEntity( actor );
 			return;
 		}
