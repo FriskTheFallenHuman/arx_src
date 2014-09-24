@@ -357,9 +357,12 @@ public:
 
 	// AI related
 	void					AlertAI( bool playerVisible, float alertRadius, int aiTeam, int teamAlertOptions );
+	idVec3					lastPlayerAlertOrigin;					
 
 	// Skills & stats related
 	void					ModifyPlayerXPs( int XPs, bool showMessage );
+
+	float					ArxSkillGetAlertDistance( float defaultDistance );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
@@ -1021,6 +1024,7 @@ private:
 	bool					magicAttackInProgress;											// solarsplace 15th May 2010
 	void					ProcessMagic();													// solarsplace 22nd May 2010 
 	void					MagicUpdateJournalSpells( void );								// solarsplace 22nd Jul 2010
+	void					ArxTraceAIHealthHUD( void );										// solarsplace 24th Sep 2014
 
 	// Shop related
 	idArxShop				arxShopFunctions;

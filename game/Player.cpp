@@ -159,6 +159,8 @@ const int ARX_MAX_PLAYER_LEVELS = 14;
 
 const int ARX_DEFAULT_BLACKSMITH_SKILL = 94;
 
+const int ARX_SKILL_BASE_VALUE = 10;
+
 //*****************************************************************
 //*****************************************************************
 // Solarsplace 2nd Sep 2010 - Arx - Level transition related
@@ -1386,6 +1388,8 @@ idPlayer::idPlayer() {
 
 	waterScreenFinishTime		= 0;
 	playerUnderWater			= false;
+
+	lastPlayerAlertOrigin		= vec3_zero;
 
 	// *********************************************************************************
 	// *********************************************************************************
@@ -3230,6 +3234,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	// Solarsplace - Arx End Of Sun
 	int totalMana;
 	bool hasChargeAttack;
+	ArxTraceAIHealthHUD();
 
 	assert( weapon.GetEntity() );
 	assert( _hud );
@@ -14639,6 +14644,19 @@ void idPlayer::UpdateHeroStats( void ) {
 
 }
 
+float idPlayer::ArxSkillGetAlertDistance( float defaultDistance ) {
+
+	float returnValue = 0.0f;
+	int skillValue = ( ARX_SKILL_BASE_VALUE - inventory.arx_skill_stealth ) * 128;
+	returnValue = defaultDistance - (float)skillValue;
+
+	//REMOVEME
+	gameLocal.Printf( "ArxSkillGetAlertDistance = %f\n", returnValue );
+
+	return returnValue;
+}
+
+
 /*
 =================
 idPlayer::GetRequiredXPForLevel
@@ -14883,6 +14901,50 @@ idPlayer::ShopGetSellToPlayerPrice
 int idPlayer::ShopGetSellToPlayerPrice( float baseValue, float durabilityRatio, float shopRatio ) {
 	// Assumes all things shop sells are 100% durability
 	return (int)baseValue * shopRatio; //TODO add skill bonus
+}
+
+
+void idPlayer::ArxTraceAIHealthHUD( void ) {
+
+	// SP - Arx End Of Sun
+
+	// Update the hud with AI health information. Distance dependent on player skill
+
+	if ( !hud ) {
+		return;
+	}
+
+	trace_t trace;
+	idVec3 start;
+	idVec3 end;
+
+	// Start the traceline at our eyes
+	start = GetEyePosition( );
+
+	// End the traceline 768 units ahead in the direction we're viewing
+	end = start + viewAngles.ToForward( ) * 768.0f;
+
+	gameLocal.clip.TracePoint( trace, start, end, MASK_MONSTERSOLID, this );
+
+	// trace.fraction is the fraction of the traceline that was travelled
+	// if trace.fraction is less than one then we hit something
+	if( ( trace.fraction < 1.0f ) && ( trace.c.entityNum != ENTITYNUM_NONE ) )
+	{
+		idEntity *ent = gameLocal.GetTraceEntity( trace );
+
+		if ( ent->IsType( idActor::Type ) ) {
+
+			idStr strHealth;
+			sprintf( strHealth, "%d / %d", ent->health, ent->health_max );
+
+			hud->HandleNamedEvent( "AIHealth" );
+			hud->SetStateString( "arx_ai_health_string", strHealth.c_str() );
+			hud->SetStateInt( "arx_ai_health_team", ent->spawnArgs.GetInt( "team", "-1" ) );
+
+		} else {
+			hud->HandleNamedEvent( "noAIHealth" );
+		}
+	}
 }
 
 // sikk---> Depth Render

@@ -3569,6 +3569,12 @@ void idGameLocal::AlertAI( idEntity *ent ) {
 		// alert them for the next frame
 		lastAIAlertTime = time + msec;
 		lastAIAlertEntity = static_cast<idActor *>( ent );
+
+		// SP - Arx End Of Sun
+		// Used when the player is invisible. Directs AI toward the point where the player triggered the AI.
+		if ( ent == GetLocalPlayer() ) {
+			GetLocalPlayer()->lastPlayerAlertOrigin = GetLocalPlayer()->GetPhysics()->GetOrigin();
+		}
 	}
 }
 
