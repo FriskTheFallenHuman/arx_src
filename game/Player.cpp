@@ -14939,11 +14939,14 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 
 			hud->HandleNamedEvent( "AIHealth" );
 			hud->SetStateString( "arx_ai_health_string", strHealth.c_str() );
+			hud->SetStateFloat( "arx_ai_health_unit", ent->health / ent->health_max );
 			hud->SetStateInt( "arx_ai_health_team", ent->spawnArgs.GetInt( "team", "-1" ) );
 
 		} else {
 			hud->HandleNamedEvent( "noAIHealth" );
 		}
+	} else {
+		hud->HandleNamedEvent( "noAIHealth" );
 	}
 }
 
