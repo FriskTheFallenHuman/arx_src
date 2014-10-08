@@ -207,11 +207,6 @@ const int ARX_QUEST_STATE_COMPLETED = 999;
 const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;		// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
 const float ARX_MAX_ITEM_PICKUP_DISTANCE_TELE = 364;	// Solarsplace 15th June 2012  - The max trace distance for a pickup item with telekinesis 
 
-const int ARX_EQUIPMENT_LEFT_RING = 1;
-const int ARX_EQUIPMENT_RIGHT_RING = 2;
-const int ARX_EQUIPMENT_SUIT = 3;
-const int ARX_EQUIPMENT_WEAPON = 4;
-
 //*****************************************************************
 //*****************************************************************
 
@@ -14548,10 +14543,105 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 /*
 =================
+idPlayer::UpdateEquipedItems
+=================
+*/
+void idPlayer::UpdateEquipedItems( void ) {
+
+	int i = 0;
+	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+
+		// Variables reset each time
+		idStr invUniqueName = "";
+		int invItemIndex = 0;
+		int itemHealth = 0;
+
+		int local_arx_power_health = 0;
+		int local_arx_power_mana = 0;
+		int local_arx_power_armour = 0;
+
+		int local_arx_attr_strength = 0;
+		int local_arx_attr_mental = 0;
+		int local_arx_attr_dexterity = 0;
+		int local_arx_attr_constitution = 0;
+
+		int local_arx_skill_casting = 0;
+		int local_arx_skill_close_combat = 0;
+		int local_arx_skill_defense = 0;
+		int local_arx_skill_ethereal_link = 0;
+		int local_arx_skill_intuition = 0;
+		int local_arx_skill_intelligence = 0;
+		int local_arx_skill_projectile = 0;
+		int local_arx_skill_stealth = 0;
+		int local_arx_skill_technical = 0;
+
+		invUniqueName = inventory.arx_equiped_items[ i ];
+
+		if ( idStr::Icmp( "", invUniqueName ) ) // Returns 0 if the text is equal
+		{
+			invItemIndex = FindInventoryItemIndexUniqueName( invUniqueName.c_str() );
+
+			if ( invItemIndex >= 0 ) {
+
+				inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
+
+				if ( itemHealth > 0 )
+				{
+					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0",			local_arx_power_health );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0",			local_arx_power_mana );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0",			local_arx_power_armour );
+
+					inventory.items[invItemIndex]->GetInt( "arx_attr_strength", "0",		local_arx_attr_strength );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_mental", "0",			local_arx_attr_mental );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_dexterity", "0",		local_arx_attr_dexterity );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_constitution", "0",	local_arx_attr_constitution );
+
+					inventory.items[invItemIndex]->GetInt( "arx_skill_casting", "0",		local_arx_skill_casting );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_close_combat", "0",	local_arx_skill_close_combat );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_defense", "0",		local_arx_skill_defense );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_ethereal_link", "0",	local_arx_skill_ethereal_link );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_intuition", "0",		local_arx_skill_intuition );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_intelligence", "0",	local_arx_skill_intelligence );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_projectile", "0",		local_arx_skill_projectile );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_stealth", "0",		local_arx_skill_stealth );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_technical", "0",		local_arx_skill_technical );
+
+					// Does player need health?
+					int healthNeeded = health_max - health;
+
+					// If health needed and item gives health
+					if ( healthNeeded > 0 && local_arx_power_health > 0 ) {
+
+						// Item can give more than needed
+						if ( healthNeeded < local_arx_power_health ) {
+							health += healthNeeded;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - healthNeeded );
+						} else {
+							health += local_arx_power_health;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - local_arx_power_health );
+						}
+					}
+
+
+				}
+
+			}
+		}
+	}
+
+	if ( health <= 0 ) {
+		kill();
+	}
+}
+
+/*
+=================
 idPlayer::UpdateHeroStats
 =================
 */
 void idPlayer::UpdateHeroStats( void ) {
+
+	UpdateEquipedItems();
 
 	//TODO
 	const int MANA_LEVITATE_RATE = 2;
@@ -14833,31 +14923,43 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// Update time
 		if ( arx_timer_player_stats_update > gameLocal.time ) {
 			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
+		} else {
+			arx_timer_player_stats_update = -1;
 		}
 
 		// Poisoned
 		if ( arx_timer_player_poison > gameLocal.time ) {
 			arx_timer_player_poison = arx_timer_player_poison - gameLocal.time;
+		} else {
+			arx_timer_player_poison = -1;
 		}
 
 		// Invisible
 		if ( arx_timer_player_invisible > gameLocal.time ) {
 			arx_timer_player_invisible = arx_timer_player_invisible - gameLocal.time;
+		} else {
+			arx_timer_player_invisible = -1;
 		}
 
 		// Fire damage
 		if ( arx_timer_player_onfire > gameLocal.time ) {
 			arx_timer_player_onfire = arx_timer_player_onfire - gameLocal.time;
+		} else {
+			arx_timer_player_onfire = -1;
 		}
 
 		// Telekinesis
 		if ( arx_timer_player_telekinesis > gameLocal.time ) {
 			arx_timer_player_telekinesis = arx_timer_player_telekinesis - gameLocal.time;
+		} else {
+			arx_timer_player_telekinesis = -1;
 		}
 
 		// Levitate
 		if ( arx_timer_player_levitate > gameLocal.time ) {
 			arx_timer_player_levitate = arx_timer_player_levitate - gameLocal.time;
+		} else {
+			arx_timer_player_levitate = -1;
 		}
 	}
 }

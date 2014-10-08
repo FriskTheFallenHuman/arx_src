@@ -1012,6 +1012,7 @@ private:
 
 	// Skills related
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
+	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
 	int						GetRequiredXPForLevel( int level );
 	void					ArxPlayerLevelUp( void );
