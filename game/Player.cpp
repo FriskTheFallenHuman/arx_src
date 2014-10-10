@@ -14629,9 +14629,11 @@ void idPlayer::UpdateEquipedItems( void ) {
 		}
 	}
 
+	/*
 	if ( health <= 0 ) {
-		kill();
+		
 	}
+	*/
 }
 
 /*
@@ -14640,8 +14642,6 @@ idPlayer::UpdateHeroStats
 =================
 */
 void idPlayer::UpdateHeroStats( void ) {
-
-	UpdateEquipedItems();
 
 	//TODO
 	const int MANA_LEVITATE_RATE = 2;
@@ -14656,6 +14656,8 @@ void idPlayer::UpdateHeroStats( void ) {
 	if ( now >= inventory.arx_timer_player_stats_update ) {
 
 		inventory.arx_timer_player_stats_update = now + heroUpdateRate;
+
+		//UpdateEquipedItems();
 
 		// *****************************
 		// *****************************
@@ -14680,7 +14682,7 @@ void idPlayer::UpdateHeroStats( void ) {
 			// Poison damage
 			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
 				if ( CalculateHeroChance( "add_poison" ) ) {
-					health -= poisonDamageAmount;
+                    Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", poisonDamageAmount ), 1.0f, INVALID_JOINT );
 				}
 			}
 
