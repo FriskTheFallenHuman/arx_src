@@ -3442,6 +3442,19 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 			player->ModifyPlayerXPs( xps, true );
 		}
 	}
+
+	// Arx End Of Sun - Solarsplace - 28th Oct 2014 - Drop blood decal
+	idStr bloodDecalFX;
+	if ( spawnArgs.GetString( "blood_pool_fx", "", bloodDecalFX ) ) {
+		idDict fxArgs;
+		fxArgs.Set( "classname", "func_fx" );
+        fxArgs.Set( "fx", bloodDecalFX );
+		fxArgs.Set( "triggered", "0" );
+		fxArgs.Set( "start", "1" );
+		fxArgs.Set( "origin", physicsObj.GetOrigin().ToString() );
+		gameLocal.SpawnEntityDef( fxArgs );
+	}
+
 	// ======================================================
 	// ======================================================
 
