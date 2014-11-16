@@ -432,6 +432,10 @@ idActor::idActor( void ) {
 
 	enemyNode.SetOwner( this );
 	enemyList.SetOwner( this );
+
+	// Solarsplace
+	spashSoundChannel	= false;
+	spashSoundTime		= 0;
 }
 
 /*
@@ -865,6 +869,9 @@ void idActor::Save( idSaveGame *savefile ) const {
 		savefile->WriteString( "" );
 	}
 
+	// Solarsplace
+	savefile->WriteBool( spashSoundChannel );
+	savefile->WriteInt( spashSoundTime );
 }
 
 /*
@@ -974,6 +981,10 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	if ( statename.Length() > 0 ) {
 		idealState = GetScriptFunction( statename );
 	}
+
+	// Solarsplace
+	savefile->ReadBool( spashSoundChannel );
+	savefile->ReadInt( spashSoundTime );
 }
 
 /*
@@ -2511,9 +2522,32 @@ void idActor::PlayFootStepSound( void ) {
 	}
 
 	if ( *sound != '\0' ) {
-		StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
-	}
 
+		// Solarsplace - Prevent (or try to) sounds getting cut off when playing fast splash / footstep sounds
+		// The idea being that the longest spash sound is about 1.2 seconds, so we have a delay of something like half
+		// of that very approx. then flip sound channels to prevent the previous sound being cut off
+		if ( waterModLevel > WATERLEVEL_NONE ) {
+
+			const int spashSoundGap = SEC2MS(0.4);
+			int nowTime = gameLocal.time;
+
+			if ( spashSoundTime <= nowTime ) {
+
+				spashSoundTime = nowTime + spashSoundGap;
+
+				if ( spashSoundChannel ) {
+					StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
+				} else {
+					StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY2, 0, false, NULL );
+				}
+
+				spashSoundChannel = !spashSoundChannel; // Invert
+			}
+
+		} else {
+			StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
+		}
+	}
 }
 
 /*

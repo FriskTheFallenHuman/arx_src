@@ -250,6 +250,11 @@ protected:
 	idDict					allSounds;					
 
 private:
+
+	// Solarslace
+	bool					spashSoundChannel;
+	int						spashSoundTime;
+
 	void					SyncAnimChannels( int channel, int syncToChannel, int blendFrames );
 	void					FinishSetup( void );
 	void					SetupHead( void );

@@ -5205,7 +5205,8 @@ void idPlayer::Weapon_NPC( void ) {
 		}
 
 		// SP - Arx EOS - NPC GUI
-		if ( focusCharacter->spawnArgs.GetString( "characters_gui" ) != "" )
+		idStr charactersGui = focusCharacter->spawnArgs.GetString( "characters_gui", "" );
+		if ( charactersGui != "" )
 		{
 			conversationSystem = uiManager->FindGui( focusCharacter->spawnArgs.GetString( "characters_gui" ), true, false, true );
 
@@ -6467,7 +6468,9 @@ void idPlayer::UpdateFocus( void ) {
 				// Solarsplace - Arx End Of Sun
 				// Don't show option to talk to AI that has an enemy or has no talk GUI.
 				if ( !focusCharacter->GetEnemy() ) {
-					if ( focusCharacter->spawnArgs.GetString( "characters_gui", "" ) != "" ) {
+
+					idStr charactersGui = focusCharacter->spawnArgs.GetString( "characters_gui", "" );
+					if ( charactersGui != "" ) {
 						hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ) ); // Talk
 					}
 				}
