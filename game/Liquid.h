@@ -38,6 +38,9 @@ private:
 
 	idStr				smokeName;
 	idStr				soundName;
+
+	// Arx EOS
+	int				lastSplashTime;
 };
 
 #endif // __LIQUID_H__

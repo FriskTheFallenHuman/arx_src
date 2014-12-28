@@ -37,6 +37,8 @@ void idLiquid::Save( idSaveGame *savefile ) const {
 	for( i = 0; i < 3; i++ )
 		savefile->WriteParticle(this->splash[i]);
 	savefile->WriteParticle(this->waves);
+
+	savefile->WriteInt(lastSplashTime);
 }
 
 /*
@@ -57,6 +59,8 @@ void idLiquid::Restore( idRestoreGame *savefile ) {
 	for( i = 0; i < 3; i++ )
 		savefile->ReadParticle(this->splash[i]);
 	savefile->ReadParticle(this->waves);
+
+	savefile->ReadInt(this->lastSplashTime);
 }
 
 /*
@@ -89,6 +93,8 @@ void idLiquid::Spawn() {
 	spawnArgs.GetVector("minWaveVelocity","60 60 60",minWave);
 
 	// setters
+	lastSplashTime = 0;
+
 	this->smokeName = "smoke_";
 	this->smokeName.Append(temp);
 
@@ -166,10 +172,15 @@ void idLiquid::Event_Touch( idEntity *other, trace_t *trace ) {
 	//		function set/reset that timer for when the actor should spawn particles at it's feet.
 	//		2) Actors don't spawn particles at their feet, it's usually at the origin, for some
 	//		reason info.position is (null), needs a fix so that splash position is correct
-	if(	gameLocal.random.RandomFloat() > 0.5f )
-		return;
 
-	this->Collide(*trace,info.velocity);
+	// Arx EOS - SP - Crude time based method to avoid too many splashes.
+	if ( gameLocal.time > lastSplashTime ) {
+
+		int splashRandom = gameLocal.random.RandomInt( 100 );
+		lastSplashTime = gameLocal.time + 120 + splashRandom; // Random delay between splashes 120ms to 220ms
+
+		this->Collide(*trace,info.velocity);
+	}	
 }
 
 /*
