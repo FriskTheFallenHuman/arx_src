@@ -3174,7 +3174,8 @@ void idBotNode::Event_EvaluateConditions( void ) { //true if one of them is veri
 		idThread::ReturnInt( true ); return;
 	}
 
-	assert( ownerBot );
+	//assert( ownerBot ); // Error	28	error C2451: conditional expression of type 'idEntityPtr<type>' is illegal	c:\doom3_sdk\src\game\ai\ai_bot.cpp	3177	1	Game
+
 	currentOwner = ownerBot.GetEntity();
 
 

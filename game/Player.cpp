@@ -1875,19 +1875,22 @@ void idPlayer::Init( void ) {
 	value = spawnArgs.GetString( "bone_hips", "" );
 	hipJoint = animator.GetJointHandle( value );
 	if ( hipJoint == INVALID_JOINT ) {
-		gameLocal.Error( "Joint '%s' not found for 'bone_hips' on '%s'", value, name.c_str() );
+		//gameLocal.Error( "Joint '%s' not found for 'bone_hips' on '%s'", value, name.c_str() ); // Arx EOS - Minimal Assets Mod
+		gameLocal.Warning( "Joint '%s' not found for 'bone_hips' on '%s'", value, name.c_str() );
 	}
 
 	value = spawnArgs.GetString( "bone_chest", "" );
 	chestJoint = animator.GetJointHandle( value );
 	if ( chestJoint == INVALID_JOINT ) {
-		gameLocal.Error( "Joint '%s' not found for 'bone_chest' on '%s'", value, name.c_str() );
+		//gameLocal.Error( "Joint '%s' not found for 'bone_chest' on '%s'", value, name.c_str() ); // Arx EOS - Minimal Assets Mod
+		gameLocal.Warning( "Joint '%s' not found for 'bone_chest' on '%s'", value, name.c_str() );
 	}
 
 	value = spawnArgs.GetString( "bone_head", "" );
 	headJoint = animator.GetJointHandle( value );
 	if ( headJoint == INVALID_JOINT ) {
-		gameLocal.Error( "Joint '%s' not found for 'bone_head' on '%s'", value, name.c_str() );
+		//gameLocal.Error( "Joint '%s' not found for 'bone_head' on '%s'", value, name.c_str() ); // Arx EOS - Minimal Assets Mod
+		gameLocal.Warning( "Joint '%s' not found for 'bone_head' on '%s'", value, name.c_str() );
 	}
 
 	// initialize the script variables
@@ -15174,12 +15177,29 @@ idPlayer::ToggleSuppression
 ==================
 */
 void idPlayer::ToggleSuppression( bool bSuppress ) {
-	int headHandle							= head.GetEntity()->GetModelDefHandle();
-	int weaponHandle						= weapon.GetEntity()->GetModelDefHandle();
-	int weaponWorldHandle					= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetModelDefHandle();
-	renderEntity_t *headRenderEntity		= head.GetEntity()->GetRenderEntity();
-	renderEntity_t *weaponRenderEntity		= weapon.GetEntity()->GetRenderEntity();
-	renderEntity_t *weaponWorldRenderEntity	= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetRenderEntity();
+
+	// Solarsplace - Added entity checks. This crashes if there is no player model when testing to go stand alone.
+	return;
+
+	int headHandle = 0;
+	int weaponHandle = 0;
+	int weaponWorldHandle = 0;
+	renderEntity_t *headRenderEntity;
+	renderEntity_t *weaponRenderEntity;
+	renderEntity_t *weaponWorldRenderEntity;
+
+	if ( head.GetEntity() ) {
+		headHandle = head.GetEntity()->GetModelDefHandle();
+		headRenderEntity = head.GetEntity()->GetRenderEntity();
+	}
+
+	if ( weapon.GetEntity() )
+	{
+		weaponHandle = weapon.GetEntity()->GetModelDefHandle();
+		weaponWorldHandle = weapon.GetEntity()->GetWorldModel()->GetEntity()->GetModelDefHandle();
+		weaponRenderEntity = weapon.GetEntity()->GetRenderEntity();
+		weaponWorldRenderEntity	= weapon.GetEntity()->GetWorldModel()->GetEntity()->GetRenderEntity();
+	}
 
 	if ( bSuppress ) {
 		if ( modelDefHandle != -1 ) {

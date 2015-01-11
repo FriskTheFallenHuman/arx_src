@@ -524,41 +524,44 @@ idCVar r_softShadowsBlurFilter(		"r_softShadowsBlurFilter",		"1",		CVAR_GAME | C
 idCVar r_softShadowsBlurScale(		"r_softShadowsBlurScale",		"8.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Sample offset scale for the blur filter" );
 idCVar r_softShadowsBlurEpsilon(	"r_softShadowsBlurEpsilon",		"4.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the blur depth difference factor for the blur filter" );
 
-idCVar r_useEdgeAA(					"r_useEdgeAA",					"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable edge anti-aliasing: 0 = RGB edge AA; 1 = FXAA" );
+// 20150111 - Arx defaults
+idCVar r_useEdgeAA(					"r_useEdgeAA",					"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable edge anti-aliasing: 0 = RGB edge AA; 1 = FXAA" );
 idCVar r_edgeAASampleScale(			"r_edgeAASampleScale",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the sample offset scale for edge detection" );
 idCVar r_edgeAAFilterScale(			"r_edgeAAFilterScale",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the filter offset scale for blurring" );
 
-idCVar r_useHDR(					"r_useHDR",						"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable High Dynamic Range lighting" );
-idCVar r_hdrToneMapper(				"r_hdrToneMapper",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Tone mapping method:\n0 = Reinhard (RGB)\n1 = Reinhard (Yxy)\n2 = Exponential\n3 = Filmic (simple)\n4 = Filmic (complex)" );
+// 20150111 - Arx defaults
+idCVar r_useHDR(					"r_useHDR",						"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable High Dynamic Range lighting" );
+idCVar r_hdrToneMapper(				"r_hdrToneMapper",				"2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Tone mapping method:\n0 = Reinhard (RGB)\n1 = Reinhard (Yxy)\n2 = Exponential\n3 = Filmic (simple)\n4 = Filmic (complex)" );
 idCVar r_hdrAdaptationRate(			"r_hdrAdaptationRate",			"60.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Eye adaptation rate" );
 idCVar r_hdrMiddleGray(				"r_hdrMiddleGray",				"0.18",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Middle gray value used in HDR tone mapping" );
-idCVar r_hdrWhitePoint(				"r_hdrWhitePoint",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Smallest luminance value that will be mapped to white" );
+idCVar r_hdrWhitePoint(				"r_hdrWhitePoint",				"0.75",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Smallest luminance value that will be mapped to white" );
 idCVar r_hdrBlueShiftFactor(		"r_hdrBlueShiftFactor",			"0.25",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Blue shift blend factor" );
-idCVar r_hdrDither(					"r_hdrDither",					"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable dithering" );
+idCVar r_hdrDither(					"r_hdrDither",					"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable dithering" );
 idCVar r_hdrDitherSize(				"r_hdrDitherSize",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Sets the size of the dither threshold map" );
 idCVar r_hdrLumThresholdMax(		"r_hdrLumThresholdMax",			"0.3",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Minimum luminance value threshold" );
-idCVar r_hdrLumThresholdMin(		"r_hdrLumThresholdMin",			"0.1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Maximum luminance value threshold" );
-idCVar r_hdrBloomToneMapper(		"r_hdrBloomToneMapper",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Tone mapping method, specific to bloom:\n0 = Reinhard (RGB)\n1 = Reinhard (Yxy)\n2 = Exponential\n3 = Filmic (simple)\n4 = Filmic (complex)" );
+idCVar r_hdrLumThresholdMin(		"r_hdrLumThresholdMin",			"0.13",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Maximum luminance value threshold" );
+idCVar r_hdrBloomToneMapper(		"r_hdrBloomToneMapper",			"2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Tone mapping method, specific to bloom:\n0 = Reinhard (RGB)\n1 = Reinhard (Yxy)\n2 = Exponential\n3 = Filmic (simple)\n4 = Filmic (complex)" );
 idCVar r_hdrBloomMiddleGray(		"r_hdrBloomMiddleGray",			"0.18",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Middle gray value used in HDR tone mapping, specific to bloom" );
 idCVar r_hdrBloomWhitePoint(		"r_hdrBloomWhitePoint",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Smallest luminance value that will be mapped to white, specific to bloom" );
 idCVar r_hdrBloomThreshold(			"r_hdrBloomThreshold",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Bloom luminance threshold" );
 idCVar r_hdrBloomOffset(			"r_hdrBloomOffset",				"3.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Bloom luminance offset" );
 idCVar r_hdrBloomScale(				"r_hdrBloomScale",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Intensity scale amount for bloom effect" );
 idCVar r_hdrBloomSize(				"r_hdrBloomSize",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Size of the bloom effect" );
-idCVar r_hdrFlareGamma(				"r_hdrFlareGamma",				"2.2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Gamma curve for the flare texture" );
+idCVar r_hdrFlareGamma(				"r_hdrFlareGamma",				"2.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Gamma curve for the flare texture" );
 idCVar r_hdrFlareScale(				"r_hdrFlareScale",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Intensity scale amount for lens flare effect. 0 = Off" );
-idCVar r_hdrFlareSize(				"r_hdrFlareSize",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Size of the lens flare effect" );
-idCVar r_hdrGlareStyle(				"r_hdrGlareStyle",				"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Glare style to use with HDR lighting. Value range: 0 - 11\n0 = Off\n1 = Natural\n2 = Star\n3 = Cross\n4 = Snow Cross\n5 = Horizontal\n6 = Vertical\n7 = Star (Spectral)\n8 = Cross (Spectral)\n9 = Snow Cross (Spectral)\n10 = Horizontal (Spectral)\n11 = Vertical (Spectral)" );
-idCVar r_hdrGlareScale(				"r_hdrGlareScale",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Intensity scale amount for glare effect" );
-idCVar r_hdrGlareSize(				"r_hdrGlareSize",				"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Size of the glare effect" );
+idCVar r_hdrFlareSize(				"r_hdrFlareSize",				"3.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Size of the lens flare effect" );
+idCVar r_hdrGlareStyle(				"r_hdrGlareStyle",				"10",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Glare style to use with HDR lighting. Value range: 0 - 11\n0 = Off\n1 = Natural\n2 = Star\n3 = Cross\n4 = Snow Cross\n5 = Horizontal\n6 = Vertical\n7 = Star (Spectral)\n8 = Cross (Spectral)\n9 = Snow Cross (Spectral)\n10 = Horizontal (Spectral)\n11 = Vertical (Spectral)" );
+idCVar r_hdrGlareScale(				"r_hdrGlareScale",				"0.5",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Intensity scale amount for glare effect" );
+idCVar r_hdrGlareSize(				"r_hdrGlareSize",				"2.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Size of the glare effect" );
 
-idCVar r_useBloom(					"r_useBloom",					"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable bloom postprocessing effect" );
+// 20150111 - Arx defaults
+idCVar r_useBloom(					"r_useBloom",					"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable bloom postprocessing effect" );
 idCVar r_bloomBufferSize(			"r_bloomBufferSize",			"3",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Bloom render target size:\n0 = 32x32\n1 = 64x64\n2 = 128x128\n3 = 256x256\n4 = 512x512\n5 = 1024x1024" );
 idCVar r_bloomBlurIterations(		"r_bloomBlurIterations",		"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Number of times the blur filter is applied" );
 idCVar r_bloomBlurScaleX(			"r_bloomBlurScaleX",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Amount to scale the X axis sample offsets" );
 idCVar r_bloomBlurScaleY(			"r_bloomBlurScaleY",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Amount to scale the Y axis sample offsets" );
 idCVar r_bloomScale(				"r_bloomScale",					"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Amount to scale the intensity of the bloom effect" );
-idCVar r_bloomGamma(				"r_bloomGamma",					"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Gamma curve for the bloom texture" );
+idCVar r_bloomGamma(				"r_bloomGamma",					"2.2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Gamma curve for the bloom texture" );
 
 idCVar r_useSSIL(					"r_useSSIL",					"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable Screen-Space Indirect Lighting postprocessing effect" );
 idCVar r_ssilRadius(				"r_ssilRadius",					"128",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the sample radius for ssil" );
@@ -591,20 +594,22 @@ idCVar r_sunOriginZ(				"r_sunOriginZ",					"0.0",		CVAR_GAME | CVAR_NOCHEAT | C
 idCVar r_useLensFlare(				"r_useLensFlare",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable lens flare postprocessing effect" );
 idCVar r_lensFlareStrength(			"r_lensFlareStrength",			"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the lens flare strength" );
 
-idCVar r_useDepthOfField(			"r_useDepthOfField",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable depth of field postprocessing effect. Value range: 0 - 2 \n0 = Off\n1 = Automatic Focus\n2 = Manual Focus" );
-idCVar r_dofBlurScale(				"r_dofBlurScale",				"4.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the blur scale for depth of field postprocessing effect" );
-idCVar r_dofBlurQuality(			"r_dofBlurQuality",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the blur quality for depth of field postprocessing effect:\n0 = Box Filter\n1 = Poisson Filter\n2 = Gaussian Filter\n3 = Bokeh!" );
+// 20150111 - Arx defaults
+idCVar r_useDepthOfField(			"r_useDepthOfField",			"2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable depth of field postprocessing effect. Value range: 0 - 2 \n0 = Off\n1 = Automatic Focus\n2 = Manual Focus" );
+idCVar r_dofBlurScale(				"r_dofBlurScale",				"2.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the blur scale for depth of field postprocessing effect" );
+idCVar r_dofBlurQuality(			"r_dofBlurQuality",				"2",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the blur quality for depth of field postprocessing effect:\n0 = Box Filter\n1 = Poisson Filter\n2 = Gaussian Filter\n3 = Bokeh!" );
 idCVar r_dofNear(					"r_dofNear",					"-128",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the near distance for depth of field postprocessing effect (r_useDepthOfField = 2 only)" );
 idCVar r_dofFar(					"r_dofFar",						"1024",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the far distance for depth of field postprocessing effect (r_useDepthOfField = 2 only)" );
-idCVar r_dofFocus(					"r_dofFocus",					"128",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the focus distance for depth of field postprocessing effect (r_useDepthOfField = 2 only)" );
-idCVar r_dofConditionAlways(		"r_dofConditionAlways",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Always on" );
-idCVar r_dofConditionCinematic(		"r_dofConditionCinematic",		"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Cinematics" );
-idCVar r_dofConditionGUI(			"r_dofConditionGUI",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: GUI Active" );
-idCVar r_dofConditionReload(		"r_dofConditionReload",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Reloading" );
-idCVar r_dofConditionTalk(			"r_dofConditionTalk",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Talking" );
-idCVar r_dofConditionZoom(			"r_dofConditionZoom",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Weapon Zoom" );
+idCVar r_dofFocus(					"r_dofFocus",					"44",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the focus distance for depth of field postprocessing effect (r_useDepthOfField = 2 only)" );
+idCVar r_dofConditionAlways(		"r_dofConditionAlways",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Always on" );
+idCVar r_dofConditionCinematic(		"r_dofConditionCinematic",		"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Cinematics" );
+idCVar r_dofConditionGUI(			"r_dofConditionGUI",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: GUI Active" );
+idCVar r_dofConditionReload(		"r_dofConditionReload",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Reloading" );
+idCVar r_dofConditionTalk(			"r_dofConditionTalk",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Talking" );
+idCVar r_dofConditionZoom(			"r_dofConditionZoom",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Depth of field condition: Weapon Zoom" );
 
-idCVar r_useMotionBlur(				"r_useMotionBlur",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable motion blur postprocessing effect.\n0 = off\n1 = Camera\n2 = Accumulation\n3 = Camera + Accumulation" );
+// 20150111 - Arx defaults
+idCVar r_useMotionBlur(				"r_useMotionBlur",				"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Enable motion blur postprocessing effect.\n0 = off\n1 = Camera\n2 = Accumulation\n3 = Camera + Accumulation" );
 idCVar r_motionBlurScale(			"r_motionBlurScale",			"0.1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the motion blur scale. Works similar to shutter speed. Higher values == stronger blurring" );
 idCVar r_motionBlurMaskDistance(	"r_motionBlurMaskDistance",		"32",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Don't do motion blur if framerate is below this value" );
 idCVar r_motionBlurFPSThreshold(	"r_motionBlurFPSThreshold",		"20",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the motion blur mask distance. Used to mask the view weapon." );
@@ -614,9 +619,10 @@ idCVar r_motionBlurFactor(			"r_motionBlurFactor",			"1.0",		CVAR_GAME | CVAR_NO
 idCVar r_motionBlurLerp(			"r_motionBlurLerp",				"0.5",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Set the motion blur blend lerp factor" );
 idCVar r_motionBlurQuality(			"r_motionBlurQuality",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Set the motion blur quality. Value range: 1 - 4\n1 = 8 samples\n2 = 64 samples (virtual)\n3 = 512 samples (virtual)\n4 = 4096 samples (virtual)" );
 
-idCVar r_useColorGrading(			"r_useColorGrading",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable color grading postprocessing effect. Parameters need to be set manually in the material." );
-idCVar r_colorGradingParm(			"r_colorGradingParm",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Parameter to allow specific color grading stage to be used in the material" );
-idCVar r_colorGradingType(			"r_colorGradingType",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Color grading type:\n0 = math\n1 = lut" );
+// 20150111 - Arx defaults
+idCVar r_useColorGrading(			"r_useColorGrading",			"1",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable color grading postprocessing effect. Parameters need to be set manually in the material." );
+idCVar r_colorGradingParm(			"r_colorGradingParm",			"49",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"Parameter to allow specific color grading stage to be used in the material" );
+idCVar r_colorGradingType(			"r_colorGradingType",			"3",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Color grading type:\n0 = math\n1 = lut" );
 idCVar r_colorGradingSharpness(		"r_colorGradingSharpness",		"1.0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_FLOAT,	"Sharpness level when color grading is enabled" );
 
 idCVar r_useCelShading(				"r_useCelShading",				"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_BOOL,	"Enable cel shading postprocessing effect" );
