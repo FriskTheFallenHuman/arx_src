@@ -26,14 +26,14 @@ idPlayerView::idPlayerView() {
 	memset( &view, 0, sizeof( view ) );
 	player					= NULL;
 
-	armorMaterial			= declManager->FindMaterial( "armorViewEffect" );
-	tunnelMaterial			= declManager->FindMaterial( "textures/decals/tunnel" );
-	berserkMaterial			= declManager->FindMaterial( "textures/decals/berserk" );
-//	irGogglesMaterial		= declManager->FindMaterial( "textures/decals/irblend" );
-	irGogglesMaterial		= declManager->FindMaterial( "postProcess/irGoggles" );	// sikk - Infrared Goggles PostProcess Effect
-	bloodSprayMaterial		= declManager->FindMaterial( "textures/decals/bloodspray" );
-	bfgMaterial				= declManager->FindMaterial( "textures/decals/bfgvision" );
-	lagoMaterial			= declManager->FindMaterial( LAGO_MATERIAL, false );
+	// armorMaterial			= declManager->FindMaterial( "armorViewEffect" );
+	tunnelMaterial			= declManager->FindMaterial( "textures/decals/tunnel" ); // Used for player damage effects
+	// berserkMaterial			= declManager->FindMaterial( "textures/decals/berserk" );
+	// irGogglesMaterial		= declManager->FindMaterial( "textures/decals/irblend" );
+	// irGogglesMaterial		= declManager->FindMaterial( "postProcess/irGoggles" );	// sikk - Infrared Goggles PostProcess Effect
+	// bloodSprayMaterial		= declManager->FindMaterial( "textures/decals/bloodspray" );
+	// bfgMaterial				= declManager->FindMaterial( "textures/decals/bfgvision" );
+	// lagoMaterial			= declManager->FindMaterial( LAGO_MATERIAL, false );
 
 // sikk---> PostProcess Effects
 	blackMaterial			= declManager->FindMaterial( "_black" );
@@ -137,8 +137,8 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( bfgVision );
 
 	savefile->WriteMaterial( tunnelMaterial );
-	savefile->WriteMaterial( armorMaterial );
-	savefile->WriteMaterial( berserkMaterial );
+	// savefile->WriteMaterial( armorMaterial );
+	// savefile->WriteMaterial( berserkMaterial );
 
 	// ---> Arx - Solarsplace
 	savefile->WriteMaterial( poisonMaterial );
@@ -147,9 +147,9 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteMaterial( fireScreenMaterial );
 	// <--- Arx
 
-	savefile->WriteMaterial( irGogglesMaterial );
-	savefile->WriteMaterial( bloodSprayMaterial );
-	savefile->WriteMaterial( bfgMaterial );
+	// savefile->WriteMaterial( irGogglesMaterial );
+	// savefile->WriteMaterial( bloodSprayMaterial );
+	// savefile->WriteMaterial( bfgMaterial );
 	savefile->WriteFloat( lastDamageTime );
 
 	savefile->WriteVec4( fadeColor );
@@ -196,8 +196,8 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( bfgVision );
 
 	savefile->ReadMaterial( tunnelMaterial );
-	savefile->ReadMaterial( armorMaterial );
-	savefile->ReadMaterial( berserkMaterial );
+	// savefile->ReadMaterial( armorMaterial );
+	// savefile->ReadMaterial( berserkMaterial );
 
 	// ---> Arx - Solarsplace
 	savefile->ReadMaterial( poisonMaterial );
@@ -206,9 +206,9 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadMaterial( fireScreenMaterial );
 	// <--- Arx
 
-	savefile->ReadMaterial( irGogglesMaterial );
-	savefile->ReadMaterial( bloodSprayMaterial );
-	savefile->ReadMaterial( bfgMaterial );
+	// savefile->ReadMaterial( irGogglesMaterial );
+	// savefile->ReadMaterial( bloodSprayMaterial );
+	// savefile->ReadMaterial( bfgMaterial );
 	savefile->ReadFloat( lastDamageTime );
 
 	savefile->ReadVec4( fadeColor );
@@ -350,6 +350,9 @@ If we need a more generic way to add blobs then we can do that
 but having it localized here lets the material be pre-looked up etc.
 ==================
 */
+
+// Arx - EOS - Removed
+/*
 void idPlayerView::AddBloodSpray( float duration ) {
 	if ( duration <= 0 || bloodSprayMaterial == NULL || g_skipViewEffects.GetBool() ) {
 		return;
@@ -370,27 +373,15 @@ void idPlayerView::AddBloodSpray( float duration ) {
 	blob->material = bloodSprayMaterial;
 	blob->x = ( gameLocal.random.RandomInt() & 63 ) - 32;
 	blob->y = ( gameLocal.random.RandomInt() & 63 ) - 32;
-	blob->driftAmount = 0.0f;// 0.5f + gameLocal.random.CRandomFloat() * 0.5f;	// sikk - No more drifting
+	blob->driftAmount = 0.0f;
 	float scale = ( 256 + ( ( gameLocal.random.RandomInt() & 63 ) - 32 ) ) / 256.0f;
-	blob->w = 640 * g_blobSize.GetFloat() * scale;	// sikk - This was "600". Typo?
+	blob->w = 640 * g_blobSize.GetFloat() * scale;
 	blob->h = 480 * g_blobSize.GetFloat() * scale;
 	float s1 = 0.0f;
 	float t1 = 0.0f;
 	float s2 = 1.0f;
 	float t2 = 1.0f;
-// sikk---> No more drifting
-/*	if ( blob->driftAmount < 0.6 ) {
-		s1 = 1.0f;
-		s2 = 0.0f;
-	} else if ( blob->driftAmount < 0.75 ) {
-		t1 = 1.0f;
-		t2 = 0.0f;
-	} else if ( blob->driftAmount < 0.85 ) {
-		s1 = 1.0f;
-		s2 = 0.0f;
-		t1 = 1.0f;
-		t2 = 0.0f;
-	}*/
+
 	float f = gameLocal.random.CRandomFloat();
 	if ( f < 0.25 ) {
 		s1 = 1.0f;
@@ -404,12 +395,14 @@ void idPlayerView::AddBloodSpray( float duration ) {
 		t1 = 1.0f;
 		t2 = 0.0f;
 	}
+
 // <---sikk
 	blob->s1 = s1;
 	blob->t1 = t1;
 	blob->s2 = s2;
 	blob->t2 = t2;
 }
+*/
 
 /*
 ==================
@@ -670,10 +663,12 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	if ( fadeTime )
 		ScreenFade();
 
+	/*
 	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 		renderSystem->DrawStretchPic( 10.0f, 380.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f, lagoMaterial );
 	}
+	*/
 
 	prevTime = gameLocal.time;	// sikk - update prevTime
 }
@@ -751,10 +746,12 @@ void idPlayerView::DoPostFX() {
 
 	//PostFX_IRGoggles();
 
-	PostFX_ArmorPulse();
+	//PostFX_ArmorPulse();
 
+	/*
 	if ( bfgVision )
 		PostFX_BFGVision();
+	*/
 
 	if ( !gameLocal.inCinematic )
 		PostFX_TunnelVision();
@@ -771,8 +768,10 @@ void idPlayerView::DoPostFX() {
 	if ( g_doubleVision.GetBool() && gameLocal.time < dvFinishTime )
 		PostFX_DoubleVision();
 
+	/*
 	if ( player->PowerUpActive( BERSERK ) )
 		PostFX_BerserkVision();
+	*/
 
 	//******************************************************************************************************
 	//******************************************************************************************************
@@ -1743,6 +1742,8 @@ void idPlayerView::PostFX_ExplosionFX() {
 idPlayerView::PostFX_IRGoggles
 ===================
 */
+
+// Arx EOS - Removed
 /*
 void idPlayerView::PostFX_IRGoggles() {
 	if ( player->bIRGogglesOn && !player->PowerUpActive( BERSERK ) ) {
@@ -1855,6 +1856,9 @@ void idPlayerView::PostFX_DoubleVision() {
 idPlayerView::PostFX_BerserkVision
 ===================
 */
+
+// Arx - EOS - Removed
+/*
 void idPlayerView::PostFX_BerserkVision() {
 	int berserkTime = player->inventory.powerupEndTime[ BERSERK ] - gameLocal.time;
 	if ( berserkTime > 0 ) {
@@ -1878,6 +1882,7 @@ void idPlayerView::PostFX_BerserkVision() {
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 1.0f, 1.0f, 0.0f, scratchMaterial );
 }
+*/
 
 /*
 ===================
@@ -1910,10 +1915,14 @@ void idPlayerView::PostFX_InfluenceVision() {
 idPlayerView::PostFX_BFGVision
 ===================
 */
+
+// Arx - EOS - Removed
+/*
 void idPlayerView::PostFX_BFGVision() {
 	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 	renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
 }
+*/
 
 /*
 ===================
@@ -1987,7 +1996,11 @@ void idPlayerView::PostFX_ScreenBlobs() {
 idPlayerView::PostFX_ArmorPulse
 ===================
 */
+
+// Arx EOS - Removed
+/*
 void idPlayerView::PostFX_ArmorPulse() {
+
 	float armorPulse = ( gameLocal.time - player->lastArmorPulse ) / 250.0f;
 
 	if ( armorPulse > 0.0f && armorPulse < 1.0f ) {
@@ -1995,4 +2008,5 @@ void idPlayerView::PostFX_ArmorPulse() {
 		renderSystem->DrawStretchPic( 0.0f, 0.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f, armorMaterial );
 	}
 }
+*/
 // <---sikk

@@ -53,7 +53,7 @@ public:
 
 	void				Flash( idVec4 color, int time );
 
-	void				AddBloodSpray( float duration );
+	// void				AddBloodSpray( float duration );
 
 	// temp for view testing
 	void				EnableBFGVision( bool b ) { bfgVision = b; };
@@ -99,12 +99,12 @@ private:
 	// <--- Arx
 
 	const idMaterial *	tunnelMaterial;			// health tunnel vision
-	const idMaterial *	armorMaterial;			// armor damage view effect
-	const idMaterial *	berserkMaterial;		// berserk effect
-	const idMaterial *	irGogglesMaterial;		// ir effect
-	const idMaterial *	bloodSprayMaterial;		// blood spray
-	const idMaterial *	bfgMaterial;			// when targeted with BFG
-	const idMaterial *	lagoMaterial;			// lagometer drawing
+	//const idMaterial *	armorMaterial;			// armor damage view effect
+	//const idMaterial *	berserkMaterial;		// berserk effect
+	//const idMaterial *	irGogglesMaterial;		// ir effect
+	//const idMaterial *	bloodSprayMaterial;		// blood spray
+	//const idMaterial *	bfgMaterial;			// when targeted with BFG
+	//const idMaterial *	lagoMaterial;			// lagometer drawing
 
 	int					dvFinishTime;			// double vision will be stopped at this time
 	int					kickFinishTime;			// view kick will be stopped at this time
@@ -146,12 +146,12 @@ private:
 
 	void				PostFX_AdrenalineVision( void );
 	void				PostFX_DoubleVision( void );
-	void				PostFX_BerserkVision( void );
+	//void				PostFX_BerserkVision( void );
 	void				PostFX_InfluenceVision( void );
-	void				PostFX_BFGVision( void );
+	//void				PostFX_BFGVision( void );
 	void				PostFX_TunnelVision( void );
 	void				PostFX_ScreenBlobs( void );
-	void				PostFX_ArmorPulse( void );
+	//void				PostFX_ArmorPulse( void );
 
 	void				RenderDepth( bool bCrop );
 	void				RenderNormals( bool bFace );

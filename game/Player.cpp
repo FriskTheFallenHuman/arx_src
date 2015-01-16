@@ -4291,6 +4291,9 @@ int idPlayer::FindInventoryItemCount( const char *name ) {
 			// SP - 6th Sep 2013 - Make names and string conversions consistent.
 			if ( idStr::FindText( iname, "#str_" ) == 0 ) {
 				iname_idstr = common->GetLanguageDict()->GetString( iname );
+			} else {
+				// SP - 31st Oct 2014 - Corrected bug where non "#str_" would not be matched.
+				iname_idstr = idStr( iname );
 			}
 
 			if ( idStr::Icmp( name_idstr, iname_idstr ) == 0 ) {
@@ -4644,17 +4647,18 @@ void idPlayer::Event_GiveInventoryItem( const char *name ) {
 	else
 	{ args.Set( "inv_classname", args.GetString( "classname" ) ); }
 
+	// To be consistent with the GetEntityByViewRay we need to decode the inv_name
+	// when an item is picked up from the world inv_name is no longer #str_XXXX
+	args.GetString( "inv_name", "", invName );
+	if ( idStr::FindText( invName, "#str_" ) == 0 ) {
+		invName = common->GetLanguageDict()->GetString( invName );
+		args.Set( "inv_name", invName );
+	}
+
 	GiveInventoryItem( &args );
 
 	if ( hud ) {
 		hud->HandleNamedEvent( "invPickup" );
-
-		args.GetString( "inv_name", "", invName );
-
-		if ( idStr::FindText( invName, "#str_" ) == 0 ) {
-			invName = common->GetLanguageDict()->GetString( invName );
-		}
-		
 		ShowHudMessage( "Item " + invName + " received" );	
 	}
 }

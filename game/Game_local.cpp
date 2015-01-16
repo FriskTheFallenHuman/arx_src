@@ -302,6 +302,67 @@ void idGameLocal::Init( void ) {
 
 	gamestate = GAMESTATE_NOMAP;
 
+	// Solarsplace Arx End Of Sun - Thanks HEXEN EOC
+	r_vmodes[0].ratio=0;
+	r_vmodes[0].width=800;
+	r_vmodes[0].height=600;
+
+	r_vmodes[1].ratio=0;
+	r_vmodes[1].width=1024;
+	r_vmodes[1].height=768;
+
+	r_vmodes[2].ratio=0;
+	r_vmodes[2].width=1280;
+	r_vmodes[2].height=960;
+
+	r_vmodes[3].ratio=0;
+	r_vmodes[3].width=1400;
+	r_vmodes[3].height=1050;
+
+	r_vmodes[4].ratio=1;
+	r_vmodes[4].width=856;
+	r_vmodes[4].height=480;
+
+	r_vmodes[5].ratio=1;
+	r_vmodes[5].width=1024;
+	r_vmodes[5].height=576;
+
+	r_vmodes[6].ratio=1;
+	r_vmodes[6].width=1280;
+	r_vmodes[6].height=720;
+
+	r_vmodes[7].ratio=1;
+	r_vmodes[7].width=1366;
+	r_vmodes[7].height=768;
+
+	r_vmodes[8].ratio=1;
+	r_vmodes[8].width=1600;
+	r_vmodes[8].height=900;
+
+	r_vmodes[9].ratio=1;
+	r_vmodes[9].width=1920;
+	r_vmodes[9].height=1080;
+
+	r_vmodes[10].ratio=2;
+	r_vmodes[10].width=1280;
+	r_vmodes[10].height=800;
+
+	r_vmodes[11].ratio=2;
+	r_vmodes[11].width=1440;
+	r_vmodes[11].height=900;
+
+	r_vmodes[12].ratio=2;
+	r_vmodes[12].width=1680;
+	r_vmodes[12].height=1050;
+
+	r_vmodes[13].ratio=2;
+	r_vmodes[13].width=1920;
+	r_vmodes[13].height=1200;
+
+	r_vmodes[14].ratio=2;
+	r_vmodes[14].width=2560;
+	r_vmodes[14].height=1600;
+
 	Printf( "...%d aas types\n", aasList.Num() );
 	Printf( "game initialized.\n" );
 	Printf( "--------------------------------------\n" );
@@ -879,7 +940,9 @@ void idGameLocal::LoadMap( const char *mapName, int randseed ) {
 	firstFreeIndex	= MAX_CLIENTS;
 
 	// reset the random number generator.
-	random.SetSeed( isMultiplayer ? randseed : 0 );
+	// random.SetSeed( isMultiplayer ? randseed : 0 );
+	// Solarsplace - 6th Nov 2014 - Always reset the random number generator. Not just for multiplayer.
+	random.SetSeed( randseed );
 
 	camera			= NULL;
 	world			= NULL;

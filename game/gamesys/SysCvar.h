@@ -244,6 +244,7 @@ extern idCVar	g_enablePortalSky;
 // ---> Arx
 extern idCVar	g_levelFog;
 extern idCVar	g_showCompletedQuests;
+extern idCVar	r_vmode;
 // <--- Arx
 
 // sikk - New Cvars -

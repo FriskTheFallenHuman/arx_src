@@ -8,6 +8,7 @@
 // ---> ARX - End Of Sun
 //-----------------------------------------------------------------------------
 
+#define ARX_NUM_VMODES	(15)
 #define ARX_D3_UNITS_TO_METERS = 0.028125f
 
 //-----------------------------------------------------------------------------
@@ -185,6 +186,13 @@ const int MAX_GAME_MESSAGE_SIZE		= 8192;
 const int MAX_ENTITY_STATE_SIZE		= 512;
 const int ENTITY_PVS_SIZE			= ((MAX_GENTITIES+31)>>5);
 const int NUM_RENDER_PORTAL_BITS	= idMath::BitsForInteger( PS_BLOCK_ALL );
+
+// Solarsplace Arx End Of Sun - Thanks HEXEN EOC
+struct r_vmodes_type {
+	int width;
+	int height;
+	int ratio;
+};
 
 typedef struct entityState_s {
 	int						entityNumber;
@@ -386,12 +394,12 @@ public:
 
 	idList<int>				currentLights;			// sikk - Soft Shadows PostProcess
 
-// sikk---> Explosion FX PostProcess
+	// sikk---> Explosion FX PostProcess
 	idVec3					explosionOrigin;
 	int						explosionRadius;
 	int						explosionDamage;
 	int						explosionTime;
-// <---sikk
+	// <---sikk
 
     //neuro start
     idEntityPtr<idEntity>	portalSkyEnt;
@@ -400,6 +408,11 @@ public:
 	void					SetPortalSkyEnt( idEntity *ent );
 	bool					IsPortalSkyAcive();
 	//neuro end
+
+public:
+	// Solarsplace - Arx End Of Sun
+	r_vmodes_type			r_vmodes[ARX_NUM_VMODES];
+	int						r_vmode;
 
 	// ---------------------- Public idGame Interface -------------------
 
