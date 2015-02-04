@@ -6889,7 +6889,7 @@ void idPlayer::TraceUsables()
 				}
 			}
 
-			if ( hud )
+			if ( hud && searchOk )
 			{
 				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
@@ -10911,6 +10911,29 @@ void idPlayer::GetEntityByViewRay( void )
 			idDict &journalArgs = target->spawnArgs;
 			player->GivePDA( str, &journalArgs );
 
+		}
+		else if ( target->spawnArgs.GetBool( "arx_searchable" ) )
+		{
+			bool searchOk = false;
+			if ( target && target->IsType( idAFEntity_Gibbable::Type ) ) {
+				if ( static_cast<idAFEntity_Gibbable *>( target )->searchable && !static_cast<idAFEntity_Gibbable *>( target )->IsGibbed() ) {
+					if ( target->IsType( idAI::Type ) ) {
+						if ( static_cast<idAI *>( target )->IsDead() ) {
+							searchOk = true;
+						}
+					} else if ( static_cast<idAFEntity_Gibbable *>( target )->IsAtRest() ) {
+						searchOk = true;
+					}
+				}
+			}
+
+			if ( searchOk ) {
+				target->spawnArgs.SetBool( "arx_searchable", false );
+
+				// Need to tell the HUD we got a weapon
+				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+				Event_GiveInventoryItem( "moveable_item_arx_food_ribs_raw" );
+			}
 		}
 		else
 		{

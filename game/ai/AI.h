@@ -254,6 +254,10 @@ public:
 	// Solarsplace 13th Oct 2011 - Arx EOS - Moved to public
 	void					SetEnemy( idActor *newEnemy );
 
+// sikk---> Random Encounters System
+	int						IsDead( void ) { return AI_DEAD; };
+// <---sikk
+
 protected:
 
 	// Solarsplace - Arx End Of Sun
