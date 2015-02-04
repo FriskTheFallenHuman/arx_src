@@ -6871,6 +6871,32 @@ void idPlayer::TraceUsables()
 
 		/******************************************************************************************
 		*******************************************************************************************/
+		if ( target->spawnArgs.GetBool( "arx_searchable" ) && !target->IsHidden() )
+		{
+			//NOWREMOVED
+			//gameLocal.Printf( "Looking at inv_arx_inventory_item - %s\n", target->spawnArgs.GetString( "inv_name" ) );
+
+			bool searchOk = false;
+			if ( target && target->IsType( idAFEntity_Gibbable::Type ) ) {
+				if ( static_cast<idAFEntity_Gibbable *>( target )->searchable && !static_cast<idAFEntity_Gibbable *>( target )->IsGibbed() ) {
+					if ( target->IsType( idAI::Type ) ) {
+						if ( static_cast<idAI *>( target )->IsDead() ) {
+							searchOk = true;
+						}
+					} else if ( static_cast<idAFEntity_Gibbable *>( target )->IsAtRest() ) {
+						searchOk = true;
+					}
+				}
+			}
+
+			if ( hud )
+			{
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
+				hud->HandleNamedEvent( "playerLookingAt_invItem" );
+			}	
+		}
+		/******************************************************************************************
+		*******************************************************************************************/
 		if ( target->spawnArgs.GetBool( "inv_arx_inventory_item" ) && !target->IsHidden() )
 		{
 			//NOWREMOVED

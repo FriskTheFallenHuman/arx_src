@@ -935,6 +935,7 @@ idAFEntity_Gibbable::idAFEntity_Gibbable( void ) {
 	skeletonModel = NULL;
 	skeletonModelDefHandle = -1;
 	gibbed = false;
+	searchable = false;	// sikk - Searchable Corpses
 }
 
 /*
@@ -957,6 +958,8 @@ idAFEntity_Gibbable::Save
 void idAFEntity_Gibbable::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( gibbed );
 	savefile->WriteBool( combatModel != NULL );
+
+	savefile->WriteBool( searchable );	// sikk - Searchable Corpses
 }
 
 /*
@@ -969,6 +972,8 @@ void idAFEntity_Gibbable::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadBool( gibbed );
 	savefile->ReadBool( hasCombatModel );
+
+	savefile->ReadBool( searchable );	// sikk - Searchable Corpses
 
 	InitSkeletonModel();
 
@@ -987,6 +992,8 @@ void idAFEntity_Gibbable::Spawn( void ) {
 	InitSkeletonModel();
 
 	gibbed = false;
+
+	spawnArgs.GetBool( "arx_searchable", "0", searchable );	// sikk - Searchable Corpses
 }
 
 /*
