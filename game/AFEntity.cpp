@@ -993,7 +993,7 @@ void idAFEntity_Gibbable::Spawn( void ) {
 
 	gibbed = false;
 
-	spawnArgs.GetBool( "arx_searchable", "0", searchable );	// sikk - Searchable Corpses
+	spawnArgs.GetBool( "arx_searchable_corpse", "0", searchable );	// sikk - Searchable Corpses
 }
 
 /*

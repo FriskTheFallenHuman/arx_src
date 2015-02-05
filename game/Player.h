@@ -1071,6 +1071,9 @@ private:
 	// Quest related
 	bool					GetQuestState( idStr questObjectQuestName );
 
+	// Searchable
+	bool					GiveSearchItem( idEntity *searchTarget );
+
 	/*
 	*** END - Solarsplace - Arx EOS - Private
 	*****************************************************************************************************

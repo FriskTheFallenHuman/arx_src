@@ -6871,7 +6871,7 @@ void idPlayer::TraceUsables()
 
 		/******************************************************************************************
 		*******************************************************************************************/
-		if ( target->spawnArgs.GetBool( "arx_searchable" ) && !target->IsHidden() )
+		if ( target->spawnArgs.GetBool( "arx_searchable_corpse" ) && !target->IsHidden() )
 		{
 			//NOWREMOVED
 			//gameLocal.Printf( "Looking at inv_arx_inventory_item - %s\n", target->spawnArgs.GetString( "inv_name" ) );
@@ -6890,6 +6890,19 @@ void idPlayer::TraceUsables()
 			}
 
 			if ( hud && searchOk )
+			{
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
+				hud->HandleNamedEvent( "playerLookingAt_invItem" );
+			}	
+		}
+		/******************************************************************************************
+		*******************************************************************************************/
+		if ( target->spawnArgs.GetBool( "arx_searchable_container" ) && !target->IsHidden() )
+		{
+			//NOWREMOVED
+			//gameLocal.Printf( "Looking at inv_arx_inventory_item - %s\n", target->spawnArgs.GetString( "inv_name" ) );
+
+			if ( hud )
 			{
 				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
@@ -10888,6 +10901,9 @@ void idPlayer::GetEntityByViewRay( void )
 			target->Signal( SIG_TRIGGER );
 			return;
 		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
 		else if ( target->spawnArgs.GetBool( "arx_use_script" ) && !target->IsHidden() )
 		{
 			const function_t *func;
@@ -10903,6 +10919,9 @@ void idPlayer::GetEntityByViewRay( void )
 				thread->Start();
 			}
 		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
 		else if ( target->spawnArgs.GetBool( "inv_pda" ) && !target->IsHidden() ) 
 		{
 			// Solarsplace 13th June 2012 - Pickup journal PDA's
@@ -10912,7 +10931,10 @@ void idPlayer::GetEntityByViewRay( void )
 			player->GivePDA( str, &journalArgs );
 
 		}
-		else if ( target->spawnArgs.GetBool( "arx_searchable" ) )
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
+		else if ( target->spawnArgs.GetBool( "arx_searchable_corpse" ) )
 		{
 			bool searchOk = false;
 			if ( target && target->IsType( idAFEntity_Gibbable::Type ) ) {
@@ -10928,13 +10950,30 @@ void idPlayer::GetEntityByViewRay( void )
 			}
 
 			if ( searchOk ) {
-				target->spawnArgs.SetBool( "arx_searchable", false );
 
-				// Need to tell the HUD we got a weapon
-				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
-				Event_GiveInventoryItem( "moveable_item_arx_food_ribs_raw" );
+				if ( GiveSearchItem( target ) )
+				{
+					target->spawnArgs.SetBool( "arx_searchable_corpse", false );
+
+					if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+				}
 			}
 		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
+		else if ( target->spawnArgs.GetBool( "arx_searchable_container" ) )
+		{
+			if ( GiveSearchItem( target ) )
+			{
+				target->spawnArgs.SetBool( "arx_searchable_container", false );
+
+				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+			}
+		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
 		else
 		{
 			// Play a sound to indicate nothing to pickup.
@@ -10948,6 +10987,61 @@ void idPlayer::GetEntityByViewRay( void )
 	{
 		// Play a sound to indicate nothing to pickup.
 		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+	}
+}
+
+bool idPlayer::GiveSearchItem( idEntity *target )
+{
+	// SP - Arx EOS
+
+	bool gave = false;
+	idStr defaultItem = "item_arx_goldcoins_stack"; // 10 gold default find item
+
+	idStr fixedGiveItem = target->spawnArgs.GetString( "arx_searchable_find_fixed", "" ); // Get a specified single find item
+
+	if ( fixedGiveItem.Length() ) {
+		// Give the player a specified single item
+		Event_GiveInventoryItem( fixedGiveItem );
+		gave = true;
+	} else if ( target->spawnArgs.GetBool( "player_money_gold", "0" ) ) {
+
+		int fixedGold = target->spawnArgs.GetInt( "player_money_gold_amount", "0" );
+		if ( fixedGold > 0 )
+		{
+			// Give the player a specified amount of gold
+			inventory.money += fixedGold;
+			gave = true;
+		} else {
+			// Give the player a random amount of gold
+			bool randomGold = target->spawnArgs.GetInt( "player_money_gold_amount_random", "0" );
+			if ( randomGold ) {
+
+				int randomGoldMin = target->spawnArgs.GetInt( "player_money_gold_amount_min", "1" );
+				int randomGoldMax = target->spawnArgs.GetInt( "player_money_gold_amount_max", "20" );
+				int randomGoldAmount = randomGoldMin + gameLocal.random.RandomInt( randomGoldMax - randomGoldMin );
+
+				inventory.money += randomGoldAmount;
+				gave = true;
+			}
+		}
+	} else {
+		// Give the player a random item from the list
+		const int MAX_CHOICE = 10;
+		int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
+
+		idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
+		if ( randomGiveItem.Length() ) {
+			// Give the player the specified single item
+			Event_GiveInventoryItem( randomGiveItem );
+			gave = true;
+		}
+	}
+
+	if ( gave ) {
+		if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+		return true;
+	} else {
+		return false;
 	}
 }
 

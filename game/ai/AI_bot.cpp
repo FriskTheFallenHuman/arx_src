@@ -93,6 +93,10 @@ int idAI_Bot::say_times[ AI_BOT_SAY_MAXVALUE ] = { 0 } ; //will not be saved/res
 const int idAI_Bot::say_delays[ AI_BOT_SAY_MAXVALUE ] = { 8 * 1000, //generic min time
 							20 * 1000,	//WATCHOUT
 							20 * 1000,	//SIGHT
+							20 * 1000,	//SIGHT - goblin - Arx EOS
+							20 * 1000,	//SIGHT - rat - Arx EOS
+							20 * 1000,	//SIGHT - spider - Arx EOS
+							20 * 1000,	//SIGHT - undead - Arx EOS
 							20 * 1000,	//BACKTOIDLE
 							20 * 1000,	//SUSPICIOUS
 							20 * 1000,	//STARTMOVE
@@ -106,6 +110,10 @@ const int idAI_Bot::say_delays[ AI_BOT_SAY_MAXVALUE ] = { 8 * 1000, //generic mi
 const char* idAI_Bot::say_names_default[ AI_BOT_SAY_MAXVALUE ] = {"", 
 							"snd_watchout",		//WATCHOUT
 							"snd_sight",		//SIGHT
+							"snd_sight_goblin",	//SIGHT - Arx EOS
+							"snd_sight_rat",	//SIGHT - Arx EOS
+							"snd_sight_spider",	//SIGHT - Arx EOS
+							"snd_sight_undead",	//SIGHT - Arx EOS
 							"snd_backtoidle",	//BACKTOIDLE
 							"snd_suspicious",	//SUSPICIOUS
 							"snd_startmove",	//STARTMOVE
@@ -119,6 +127,10 @@ const char* idAI_Bot::say_names_default[ AI_BOT_SAY_MAXVALUE ] = {"",
 const char* idAI_Bot::say_names_squad[ AI_BOT_SAY_MAXVALUE ] = {"", 
 							"snd_watchout_squad",	//WATCHOUT
 							"snd_sight_squad",		//SIGHT
+							"snd_sight_goblin",		//SIGHT - Arx EOS
+							"snd_sight_rat",		//SIGHT - Arx EOS
+							"snd_sight_spider",		//SIGHT - Arx EOS
+							"snd_sight_undead",		//SIGHT - Arx EOS
 							"snd_backtoidle_squad",	//BACKTOIDLE
 							"snd_suspicious_squad",	//SUSPICIOUS
 							"snd_startmove_squad",	//STARTMOVE
@@ -869,34 +881,41 @@ void idAI_Bot::PlayChatter( void ) {
 
 	if( AI_DEAD || !canSpeak || (say_times[AI_BOT_SAY_GENERIC] > gameLocal.time ) ) return;
 
-	int lenght = 0;
+	int length = 0;
 
 	//check flags
-	if( AI_SAY_HINT != AI_BOT_SAY_GENERIC ){
-		int type = (int) AI_SAY_HINT; 
+	if( AI_SAY_HINT != AI_BOT_SAY_GENERIC ) {
+
+		int type = (int) AI_SAY_HINT;
+
 		AI_SAY_HINT = AI_BOT_SAY_GENERIC; //reset it every time!
 
-		if( type < 0 || type >= AI_BOT_SAY_MAXVALUE ){ //invalid values are used to upd chat snd
+		if( type < 0 || type >= AI_BOT_SAY_MAXVALUE ) { //invalid values are used to upd chat snd
+
 			SetChatSound();
 			return;
 		}
 
 		if( say_times[type] < gameLocal.time ){
 
-			if( squad.GetEntity() && (squad.GetEntity()->GetNumMembers() > 1)){
-				if( StartSound( say_names_squad[type], SND_CHANNEL_VOICE, 0, false, &lenght ) ){
-					//gameLocal.Printf("Say %s , flag %d, lenght %d \n", say_names_squad[type], type, lenght );
+			if( squad.GetEntity() && ( squad.GetEntity()->GetNumMembers() > 1 ) ) {
+
+				if( StartSound( say_names_squad[type], SND_CHANNEL_VOICE, 0, false, &length ) ){
+
+					//gameLocal.Printf("Say squad %s , flag %d, length %d \n", say_names_squad[type], type, length );
 				}
 			}
 			
-			if(lenght == 0){ //(alone) OR (no shader for squad defined) 
-				if( StartSound( say_names_default[type], SND_CHANNEL_VOICE, 0, false, &lenght ) ){
-					//gameLocal.Printf("Say %s , flag %d, lenght %d \n", say_names_default[type], type, lenght );
+			if( length == 0 ) { // (alone) OR (no shader for squad defined)
+
+				if ( StartSound( say_names_default[type], SND_CHANNEL_VOICE, 0, false, &length ) ) {
+
+					//gameLocal.Printf("Say default %s , flag %d, length %d \n", say_names_default[type], type, length );
 				}
 			}
 			
-			say_times[type] = gameLocal.time + lenght + say_delays[type];
-			say_times[AI_BOT_SAY_GENERIC] = gameLocal.time + lenght + say_delays[AI_BOT_SAY_GENERIC];
+			say_times[type] = gameLocal.time + length + say_delays[type];
+			say_times[AI_BOT_SAY_GENERIC] = gameLocal.time + length + say_delays[AI_BOT_SAY_GENERIC];
 		}
 		return; //don't check chatter after this
 	}
@@ -909,12 +928,12 @@ void idAI_Bot::PlayChatter( void ) {
 		return;
 	}
 
-	StartSoundShader( chat_snd, SND_CHANNEL_VOICE, 0, false, &lenght );
+	StartSoundShader( chat_snd, SND_CHANNEL_VOICE, 0, false, &length );
 	//gameLocal.Printf("Say %s \n", chat_snd->GetName() );
 
 	// set the next chat time
 	chat_time = gameLocal.time + chat_min + gameLocal.random.RandomFloat() * ( chat_max - chat_min );
-	say_times[AI_BOT_SAY_CHATTER] = gameLocal.time + lenght + say_delays[AI_BOT_SAY_CHATTER]; //shared
+	say_times[AI_BOT_SAY_CHATTER] = gameLocal.time + length + say_delays[AI_BOT_SAY_CHATTER]; //shared
 }
 
 /*

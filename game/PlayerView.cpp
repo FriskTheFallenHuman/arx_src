@@ -27,7 +27,7 @@ idPlayerView::idPlayerView() {
 	player					= NULL;
 
 	// armorMaterial			= declManager->FindMaterial( "armorViewEffect" );
-	tunnelMaterial			= declManager->FindMaterial( "textures/decals/tunnel" ); // Used for player damage effects
+	tunnelMaterial			= declManager->FindMaterial( "textures/decals/damage_tunnel" ); // Used for player damage effects
 	// berserkMaterial			= declManager->FindMaterial( "textures/decals/berserk" );
 	// irGogglesMaterial		= declManager->FindMaterial( "textures/decals/irblend" );
 	// irGogglesMaterial		= declManager->FindMaterial( "postProcess/irGoggles" );	// sikk - Infrared Goggles PostProcess Effect
