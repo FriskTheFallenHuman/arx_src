@@ -1449,7 +1449,10 @@ idPlayer::idPlayer() {
 
 	firstPersonViewOrigin	= vec3_zero;
 	firstPersonViewAxis		= mat3_identity;
-	firstPersonViewWeaponAxis		= mat3_identity;		// doomtrinity
+
+#ifdef _DT	// head anim
+	firstPersonViewWeaponAxis		= mat3_identity;
+#endif
 
 	hipJoint				= INVALID_JOINT;
 	chestJoint				= INVALID_JOINT;
@@ -2287,7 +2290,10 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteVec3( firstPersonViewOrigin );
 	savefile->WriteMat3( firstPersonViewAxis );
-	savefile->WriteMat3( firstPersonViewWeaponAxis );			// doomtrinity
+
+#ifdef _DT	// head anim
+	savefile->WriteMat3( firstPersonViewWeaponAxis );
+#endif
 
 	// don't bother saving dragEntity since it's a dev tool
 
@@ -2584,7 +2590,10 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadVec3( firstPersonViewOrigin );
 	savefile->ReadMat3( firstPersonViewAxis );
-	savefile->ReadMat3( firstPersonViewWeaponAxis );			// doomtrinity
+
+#ifdef _DT	// head anim
+	savefile->ReadMat3( firstPersonViewWeaponAxis );
+#endif
 
 	// don't bother saving dragEntity since it's a dev tool
 	dragEntity.Clear();
@@ -12961,10 +12970,14 @@ void idPlayer::CalculateViewWeaponPos( idVec3 &origin, idMat3 &axis ) {
 
 	// CalculateRenderView must have been called first
 	const idVec3 &viewOrigin = firstPersonViewOrigin;
-	//const idMat3 &viewAxis = firstPersonViewAxis;		// doomtrinity - commented out.
-														// Actually, if we use "firstPersonViewAxis", the weapon will follow the player view pos while animating the bone "head".
-														// Since this is not the way meant to be, we use "firstPersonViewWeaponAxis", which doesn't take care of the head orientation.
-	const idMat3 &viewAxis = firstPersonViewWeaponAxis;			// doomtrinity
+
+#ifdef _DT	// head anim
+	// Actually, if we use "firstPersonViewAxis", the weapon will follow the player view pos while animating the bone "head".
+	// Since this is not good, we use "firstPersonViewWeaponAxis", which doesn't take care of the head orientation.
+	const idMat3 &viewAxis = firstPersonViewWeaponAxis;
+#else
+	const idMat3 &viewAxis = firstPersonViewAxis;	
+#endif
 
 	// these cvars are just for hand tweaking before moving a value to the weapon def
 	idVec3	gunpos( g_gun_x.GetFloat(), g_gun_y.GetFloat(), g_gun_z.GetFloat() );
@@ -13109,7 +13122,10 @@ idPlayer::GetViewPos
 */
 void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 	idAngles angles;
-	idAngles headAnimAngle;		// doomtrinity
+
+#ifdef _DT	// head anim
+	idAngles headAnimAngle;
+#endif
 
 	// if dead, fix the angle and don't add any kick
 	if ( health <= 0 ) {
@@ -13120,17 +13136,19 @@ void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 		origin = GetEyePosition();
 	} else {
 		origin = GetEyePosition() + viewBob;
-		//angles = viewAngles + viewBobAngles + playerView.AngleOffset();	// doomtrinity - commented out
-// doomtrinity -->			// Check in the viewmodel if the bone "head" is present, if true take care of its orientation.
-		if ( weapon.GetEntity()->HasHeadJoint() ) {
+
+#ifdef _DT	// head anim
+		if ( weapon.GetEntity()->HasHeadJoint() ) {	// Check in the viewmodel if the bone "head" is present, if true take care of its orientation.
 			headAnimAngle = weapon.GetEntity()->GetHeadAngle();
 			angles = viewAngles + viewBobAngles + headAnimAngle + playerView.AngleOffset();
-			//gameLocal.Printf( "calculate head anim\n" );
+			//gameLocal.Printf( "calculate head anim \n" ); // debug
 		} else {
 			angles = viewAngles + viewBobAngles + playerView.AngleOffset();
-			//gameLocal.Printf( "DO NOT calculate head anim\n" );
+			//gameLocal.Printf( "do not calculate head anim \n" ); // debug
 		}		
-// <-- doomtrinity
+#else
+		angles = viewAngles + viewBobAngles + playerView.AngleOffset();
+#endif
 
 		axis = angles.ToMat3() * physicsObj.GetGravityAxis();
 
@@ -13140,9 +13158,10 @@ void idPlayer::GetViewPos( idVec3 &origin, idMat3 &axis ) const {
 	}
 }
 
+#ifdef _DT	// head anim
 /*
 ===============
-idPlayer::GetViewWeaponAxis			// doomtrinity
+idPlayer::GetViewWeaponAxis
 ===============
 */
 void idPlayer::GetViewWeaponAxis( idMat3 &axis ) const {
@@ -13164,6 +13183,7 @@ void idPlayer::GetViewWeaponAxis( idMat3 &axis ) const {
 		
 	}
 }
+#endif
 
 /*
 ===============
@@ -13193,7 +13213,10 @@ void idPlayer::CalculateFirstPersonView( void ) {
 		firstPersonViewAxis = firstPersonViewAxis * playerView.ShakeAxis();
 #endif
 	}
-	GetViewWeaponAxis( firstPersonViewWeaponAxis );			// doomtrinity
+
+#ifdef _DT	// head anim
+	GetViewWeaponAxis( firstPersonViewWeaponAxis );
+#endif
 }
 
 /*

@@ -19,10 +19,21 @@ static const int BFG_DAMAGE_FREQUENCY			= 333;
 static const float BOUNCE_SOUND_MIN_VELOCITY	= 200.0f;
 static const float BOUNCE_SOUND_MAX_VELOCITY	= 400.0f;
 
+#ifdef _DT	// arrow behaviour
+const idEventDef EV_Explode( "explode", NULL ); // actually unused...just unlocked
+#else
 const idEventDef EV_Explode( "<explode>", NULL );
+#endif
+
 const idEventDef EV_Fizzle( "<fizzle>", NULL );
 const idEventDef EV_RadiusDamage( "<radiusdmg>", "e" );
 const idEventDef EV_GetProjectileState( "getProjectileState", NULL, 'd' );
+
+#ifdef _DT	// arrow behaviour
+const idEventDef EV_GetCollisionSurfType( "getCollisionSurfType", NULL, 'd' );
+const idEventDef EV_GetCollisionEntity( "getCollisionEntity", NULL, 'e' );
+const idEventDef EV_GetCollisionJoint( "getCollisionJoint", NULL, 's' );
+#endif
 
 CLASS_DECLARATION( idEntity, idProjectile )
 	EVENT( EV_Explode,				idProjectile::Event_Explode )
@@ -30,6 +41,13 @@ CLASS_DECLARATION( idEntity, idProjectile )
 	EVENT( EV_Touch,				idProjectile::Event_Touch )
 	EVENT( EV_RadiusDamage,			idProjectile::Event_RadiusDamage )
 	EVENT( EV_GetProjectileState,	idProjectile::Event_GetProjectileState )
+
+#ifdef _DT	// arrow behaviour
+	EVENT( EV_GetCollisionSurfType,	idProjectile::Event_GetCollisionSurfType )
+	EVENT( EV_GetCollisionEntity,	idProjectile::Event_GetCollisionEntity )
+	EVENT( EV_GetCollisionJoint,	idProjectile::Event_GetCollisionJoint )
+#endif
+
 END_CLASS
 
 /*
@@ -42,9 +60,18 @@ idProjectile::idProjectile( void ) {
 	lightDefHandle		= -1;
 	thrust				= 0.0f;
 	thrust_end			= 0;
+
 	smokeFly			= NULL;
 	smokeFlyTime		= 0;
 	state				= SPAWNED;
+
+#ifdef _DT	// arrow behaviour
+	collision_start_time = 0;
+	surfType			= 0;
+	collisionEntity		= NULL;
+	collisionJointNum	= "";
+#endif
+	
 	lightOffset			= vec3_zero;
 	lightStartTime		= 0;
 	lightEndTime		= 0;
@@ -102,6 +129,13 @@ void idProjectile::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( (int)state );
 
+#ifdef _DT	// arrow behaviour
+	savefile->WriteFloat( collision_start_time );
+	savefile->WriteInt( surfType );
+	savefile->WriteObject( collisionEntity );
+	savefile->WriteString( collisionJointNum );
+#endif
+
 	savefile->WriteFloat( damagePower );
 
 	savefile->WriteStaticObject( physicsObj );
@@ -134,6 +168,13 @@ void idProjectile::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( smokeFlyTime );
 
 	savefile->ReadInt( (int &)state );
+
+#ifdef _DT	// arrow behaviour
+	savefile->ReadFloat( collision_start_time );
+	savefile->ReadInt( surfType );
+	savefile->ReadObject( reinterpret_cast<idClass *&>( collisionEntity ) );
+	savefile->ReadString( collisionJointNum );
+#endif
 
 	savefile->ReadFloat( damagePower );
 
@@ -408,6 +449,12 @@ idProjectile::Think
 */
 void idProjectile::Think( void ) {
 
+#ifdef _DT	// arrow behaviour
+	if( (state==COLLIDED) &&( gameLocal.time > (collision_start_time + 1000.0f) ) ){ // doomtrinity - wait some time to let script check if there is a collision
+		state=LAUNCHED;
+	}
+#endif	
+
 	if ( thinkFlags & TH_THINK ) {
 		if ( thrust && ( gameLocal.time < thrust_end ) ) {
 			// evaluate force
@@ -450,6 +497,7 @@ void idProjectile::Think( void ) {
 			lightDefHandle = gameRenderWorld->AddLightDef( &renderLight );
 		}
 	}
+	
 }
 
 /*
@@ -497,11 +545,15 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 		PostEventMS( &EV_Remove, 0 );
 		return true;
 	}
+#ifdef _DT	// arrow behaviour
+	surfType = collision.c.material != NULL ? collision.c.material->GetSurfaceType() : SURFTYPE_METAL;
+	collisionEntity = ent;
+#endif	
 
 	// direction of projectile
 	dir = velocity;
 	dir.Normalize();
-
+	
 	// projectiles can apply an additional impulse next to the rigid body physics impulse
 	if ( spawnArgs.GetFloat( "push", "0", push ) && push > 0.0f ) {
 		ent->ApplyImpulse( this, collision.c.id, collision.c.point, push * dir );
@@ -513,7 +565,27 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	}
 
 	if ( ent->IsType( idActor::Type ) || ( ent->IsType( idAFAttachment::Type ) && static_cast<const idAFAttachment*>(ent)->GetBody()->IsType( idActor::Type ) ) ) {
+
+#ifdef _DT	// arrow behaviour
+		// gameLocal.Printf( "entering in collision joint code... \n" ); // debug
+		idAFEntity_Base *af = static_cast<idAFEntity_Base *>( ent );
+		// if ( af && af->IsType( idAFEntity_Base::Type ) && af->IsActiveAF() ) {
+
+			collisionJointNum = af->GetAnimator()->GetJointName( CLIPMODEL_ID_TO_JOINT_HANDLE( collision.c.id ) );
+
+		//	gameLocal.Printf( "collision joint detected! \n" ); // debug
+		// }
+#endif
+
 		if ( !projectileFlags.detonate_on_actor ) {
+
+#ifdef _DT	// arrow behaviour
+			if( state!=COLLIDED ){
+				collision_start_time = gameLocal.time;
+				state = COLLIDED;
+			}
+#endif
+
 			return false;
 		}
 	} else {
@@ -525,6 +597,14 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 					StartSound( "snd_bounce", SND_CHANNEL_ANY, 0, true, NULL );
 				}
 			}
+
+#ifdef _DT	// arrow behaviour
+			if( state!=COLLIDED ){
+				collision_start_time = gameLocal.time;
+				state = COLLIDED;
+			}
+#endif
+
 			return false;
 		}
 	}
@@ -738,6 +818,36 @@ idProjectile::Event_RadiusDamage
 void idProjectile::Event_GetProjectileState( void ) {
 	idThread::ReturnInt( state );
 }
+
+#ifdef _DT	// arrow behaviour
+/*
+================
+idProjectile::Event_GetCollisionSurfType
+================
+*/
+void idProjectile::Event_GetCollisionSurfType( void ) {
+	idThread::ReturnInt( surfType );
+}
+
+/*
+================
+idProjectile::Event_GetCollisionEntity
+================
+*/
+void idProjectile::Event_GetCollisionEntity( void ) {
+	idThread::ReturnEntity( collisionEntity );
+}
+
+/*
+================
+idProjectile::Event_GetCollisionJoint
+================
+*/
+void idProjectile::Event_GetCollisionJoint( void ) {
+	idThread::ReturnString( collisionJointNum );
+}
+
+#endif
 
 /*
 ================

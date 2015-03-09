@@ -318,7 +318,10 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteJoint( ejectJointView );
 	savefile->WriteJoint( guiLightJointView );
 	savefile->WriteJoint( ventLightJointView );
-	savefile->WriteJoint( headJointView );		// doomtrinity
+
+#ifdef _DT	// head anim
+	savefile->WriteJoint( headJointView );
+#endif
 
 	savefile->WriteJoint( flashJointWorld );
 	savefile->WriteJoint( barrelJointWorld );
@@ -478,7 +481,10 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 	savefile->ReadJoint( ejectJointView );
 	savefile->ReadJoint( guiLightJointView );
 	savefile->ReadJoint( ventLightJointView );
-	savefile->ReadJoint( headJointView );		// doomtrinity
+
+#ifdef _DT	// head anim
+	savefile->ReadJoint( headJointView );
+#endif
 
 	savefile->ReadJoint( flashJointWorld );
 	savefile->ReadJoint( barrelJointWorld );
@@ -672,7 +678,10 @@ void idWeapon::Clear( void ) {
 	ejectJointView		= INVALID_JOINT;
 	guiLightJointView	= INVALID_JOINT;
 	ventLightJointView	= INVALID_JOINT;
-	headJointView		= INVALID_JOINT;		// doomtrinity
+
+#ifdef _DT	// head anim
+	headJointView		= INVALID_JOINT;
+#endif
 
 	barrelJointWorld	= INVALID_JOINT;
 	flashJointWorld		= INVALID_JOINT;
@@ -856,7 +865,10 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	ejectJointView = animator.GetJointHandle( "eject" );
 	guiLightJointView = animator.GetJointHandle( "guiLight" );
 	ventLightJointView = animator.GetJointHandle( "ventLight" );
-	headJointView = animator.GetJointHandle( "head" );		// doomtrinity
+
+#ifdef _DT	// head anim
+	headJointView = animator.GetJointHandle( "head" );
+#endif
 
 	// get the projectile
 	projectileDict.Clear();
@@ -1238,14 +1250,15 @@ bool idWeapon::GetGlobalJointTransform( bool viewModel, const jointHandle_t join
 	return false;
 }
 
+#ifdef _DT	// head anim
 /*
 ================
-idWeapon::GetHeadAngle		// doomtrinity
+idWeapon::GetHeadAngle
 
 returns the orientation of the joint in local space
 ================
 */
-idAngles idWeapon::GetHeadAngle( void ) {// was idVec3
+idAngles idWeapon::GetHeadAngle( void ) {
 	idVec3 offset;
 	idMat3 axis;
 
@@ -1255,9 +1268,8 @@ idAngles idWeapon::GetHeadAngle( void ) {// was idVec3
 
 	idAngles ang = axis.ToAngles();
 	return ang;
-	//idVec3 vec( ang[ 0 ], ang[ 1 ], ang[ 2 ] );
-	//return vec;
 }
+#endif
 
 /*
 ================
@@ -1793,9 +1805,10 @@ bool idWeapon::BloodSplat( float size ) {
 	return true;
 }
 
+#ifdef _DT	// head anim
 /*
 ================
-idWeapon::HasHeadJoint		// doomtrinity
+idWeapon::HasHeadJoint
 ================
 */
 bool idWeapon::HasHeadJoint( void ) {
@@ -1806,7 +1819,7 @@ bool idWeapon::HasHeadJoint( void ) {
 
 	return false;
 }
-
+#endif
 
 /***********************************************************************
 

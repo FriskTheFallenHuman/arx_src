@@ -69,6 +69,9 @@ protected:
 	float					thrust;
 	int						thrust_end;
 	float					damagePower;
+#ifdef _DT	// arrow behaviour
+	float					collision_start_time;
+#endif
 
 	renderLight_t			renderLight;
 	qhandle_t				lightDefHandle;				// handle to renderer light def
@@ -89,10 +92,22 @@ protected:
 		CREATED = 1,
 		LAUNCHED = 2,
 		FIZZLED = 3,
+#ifdef _DT	// arrow behaviour
+
+		EXPLODED = 4,
+		COLLIDED = 5
+#else
 		EXPLODED = 4
+#endif		
 	} projectileState_t;
 	
 	projectileState_t		state;
+
+#ifdef _DT	// arrow behaviour
+	int						surfType;
+	idEntity				*collisionEntity;
+	idStr					collisionJointNum;
+#endif
 
 private:
 	bool					netSyncPhysics;
@@ -104,6 +119,13 @@ private:
 	void					Event_RadiusDamage( idEntity *ignore );
 	void					Event_Touch( idEntity *other, trace_t *trace );
 	void					Event_GetProjectileState( void );
+
+#ifdef _DT	// arrow behaviour
+	void					Event_GetCollisionSurfType( void );
+	void					Event_GetCollisionEntity( void );
+	void					Event_GetCollisionJoint( void );
+#endif
+
 };
 
 class idGuidedProjectile : public idProjectile {
