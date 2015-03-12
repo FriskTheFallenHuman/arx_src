@@ -48,6 +48,9 @@ public :
 		EVENT_MAXEVENTS
 	};
 
+	// Solarsplace - Arx EOS
+	void					DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
+
 	static void				DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity );
 	static bool				ClientPredictionCollide( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity, bool addDamageEffect );
 	virtual void			ClientPredictionThink( void );

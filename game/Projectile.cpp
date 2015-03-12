@@ -545,6 +545,10 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 		PostEventMS( &EV_Remove, 0 );
 		return true;
 	}
+
+	// Solarsplace - Arx EOS - Move here
+	damageDefName = spawnArgs.GetString( "def_damage" );
+
 #ifdef _DT	// arrow behaviour
 	surfType = collision.c.material != NULL ? collision.c.material->GetSurfaceType() : SURFTYPE_METAL;
 	collisionEntity = ent;
@@ -582,6 +586,10 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 #ifdef _DT	// arrow behaviour
 			if( state!=COLLIDED ){
 				collision_start_time = gameLocal.time;
+
+				// Solarsplace - Arx EOS - Remove code duplication
+				DamageEffectsWrapper( ent, collision, velocity, damageDefName );
+
 				state = COLLIDED;
 			}
 #endif
@@ -601,6 +609,10 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 #ifdef _DT	// arrow behaviour
 			if( state!=COLLIDED ){
 				collision_start_time = gameLocal.time;
+
+				// Solarsplace - Arx EOS - Remove code duplication
+				DamageEffectsWrapper( ent, collision, velocity, damageDefName );
+
 				state = COLLIDED;
 			}
 #endif
@@ -615,7 +627,8 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	// unlink the clip model because we no longer need it
 	GetPhysics()->UnlinkClip();
 
-	damageDefName = spawnArgs.GetString( "def_damage" );
+	// Solarsplace - Arx EOS - Moved up
+	// damageDefName = spawnArgs.GetString( "def_damage" );
 
 	ignore = NULL;
 
@@ -643,19 +656,30 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 		}
 	}
 
-	// if the projectile causes a damage effect
-	if ( spawnArgs.GetBool( "impact_damage_effect" ) ) {
-		// if the hit entity has a special damage effect
-		if ( ent->spawnArgs.GetBool( "bleed" ) ) {
-			ent->AddDamageEffect( collision, velocity, damageDefName );
-		} else {
-			AddDefaultDamageEffect( collision, velocity );
-		}
-	}
+	// Solarsplace - Arx EOS - Remove code duplication
+	DamageEffectsWrapper( ent, collision, velocity, damageDefName );
 
 	Explode( collision, ignore );
 
 	return true;
+}
+
+/*
+=================
+idProjectile::DamageEffectsWrapper
+=================
+*/
+void idProjectile::DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &collision, const idVec3 &velocity, const char *damageDefName ) {
+
+	// if the projectile causes a damage effect
+	if ( spawnArgs.GetBool( "impact_damage_effect" ) ) {
+		// if the hit entity has a special damage effect
+		if ( collisionEnt->spawnArgs.GetBool( "bleed" ) ) {
+			collisionEnt->AddDamageEffect( collision, velocity, damageDefName );
+		} else {
+			AddDefaultDamageEffect( collision, velocity );
+		}
+	}
 }
 
 /*
@@ -685,6 +709,7 @@ void idProjectile::DefaultDamageEffect( idEntity *soundEnt, const idDict &projec
 		sound = projectileDef.GetString( "snd_impact" );
 	}
 	if ( *sound != '\0' ) {
+
 		soundEnt->StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
 	}
 

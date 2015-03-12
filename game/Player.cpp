@@ -4666,6 +4666,19 @@ void idPlayer::Event_GiveInventoryItem( const char *name ) {
 
 	GiveInventoryItem( &args );
 
+	if ( !gameLocal.isNewFrame )
+	{ return; } // don't play the sound, but don't report an error
+
+	// Play pickup sound effect
+	const idSoundShader *shader;
+	const char *sound;
+	if ( args.GetString( "snd_acquire", "", &sound ) ) {
+		if ( !sound[0] == '\0' ) {
+			shader = declManager->FindSound( sound );
+			StartSoundShader( shader, SND_CHANNEL_ITEM, 0, false, NULL );
+		}
+	}
+
 	if ( hud ) {
 		hud->HandleNamedEvent( "invPickup" );
 		ShowHudMessage( "Item " + invName + " received" );	
@@ -10962,9 +10975,19 @@ void idPlayer::GetEntityByViewRay( void )
 
 				if ( GiveSearchItem( target ) )
 				{
-					target->spawnArgs.SetBool( "arx_searchable_corpse", false );
+					// Script functions
+					const function_t	*func;
+					idThread			*thread;
 
-					if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+					func = target->scriptObject.GetFunction( "SavePersistentState" );
+
+					if ( func )
+					{
+						// create a thread and call the function
+						thread = new idThread();
+						thread->CallFunction( target, func, true );
+						thread->Start();
+					}
 				}
 			}
 		}
@@ -10975,9 +10998,19 @@ void idPlayer::GetEntityByViewRay( void )
 		{
 			if ( GiveSearchItem( target ) )
 			{
-				target->spawnArgs.SetBool( "arx_searchable_container", false );
+				// Script functions
+				const function_t	*func;
+				idThread			*thread;
 
-				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+				func = target->scriptObject.GetFunction( "SavePersistentState" );
+
+				if ( func )
+				{
+					// create a thread and call the function
+					thread = new idThread();
+					thread->CallFunction( target, func, true );
+					thread->Start();
+				}
 			}
 		}
 		//************************************************************************************************
@@ -11018,7 +11051,7 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 		if ( fixedGold > 0 )
 		{
 			// Give the player a specified amount of gold
-			inventory.money += fixedGold;
+			Event_PlayerMoney( fixedGold );
 			gave = true;
 		} else {
 			// Give the player a random amount of gold
@@ -11029,13 +11062,13 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 				int randomGoldMax = target->spawnArgs.GetInt( "player_money_gold_amount_max", "20" );
 				int randomGoldAmount = randomGoldMin + gameLocal.random.RandomInt( randomGoldMax - randomGoldMin );
 
-				inventory.money += randomGoldAmount;
+				Event_PlayerMoney( randomGoldAmount );
 				gave = true;
 			}
 		}
 	} else {
 		// Give the player a random item from the list
-		const int MAX_CHOICE = 10;
+		const int MAX_CHOICE = 12;
 		int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
 
 		idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
@@ -11047,7 +11080,6 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 	}
 
 	if ( gave ) {
-		if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
 		return true;
 	} else {
 		return false;
@@ -14568,13 +14600,18 @@ void idPlayer::Event_PlayerMoney( int amount )
 	if ( amount > 0 )
 	{
 		inventory.money += amount;
+		ShowHudMessage( common->GetLanguageDict()->GetString( "#str_general_00004" ) ); // "Your gold increased"
+		StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 		idThread::ReturnInt( 1 );
 	}
 	else
 	{
+		// Don't show hud message for gold decreased as the mesage will be item recieved from a shop or weapon repaired etc.
+
 		if ( inventory.money + amount >= 0 )
 		{
 			inventory.money += amount;
+			StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 			idThread::ReturnInt( 1 );
 		}
 		else
@@ -14582,8 +14619,6 @@ void idPlayer::Event_PlayerMoney( int amount )
 			idThread::ReturnInt( 0 );
 		}
 	}
-
-
 }
 
 void idPlayer::Event_OpenCloseShop( const char *newState )
