@@ -147,7 +147,7 @@ const int STEPUP_TIME = 200;
 const int MAX_INVENTORY_ITEMS = 512;				// Solarsplace - 5th July 2013 - Inventory related - Increaced to 512 to expand inventory capacity a lot
 
 const int ARX_FISTS_WEAPON = 0;
-const int ARX_MAGIC_WEAPON = 9;						// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
+const int ARX_MAGIC_WEAPON = 10;					// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
 const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
 const int ARX_MANA_TYPE = 1;						// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "1"
 const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
@@ -246,6 +246,8 @@ void idInventory::Clear( void ) {
 	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
 		arx_equiped_items[ i ] = "";
 	}
+
+	arx_snake_weapon				= ARX_MAGIC_WEAPON;
 
 	arx_player_level				= 0;
 
@@ -400,6 +402,8 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	}
 	dict.SetInt( "arx_equipt_items_num", arx_equipt_items.Num() );
 	*/
+
+	dict.SetInt( "arx_snake_weapon", arx_snake_weapon );
 
 	dict.SetInt( "arx_player_level", arx_player_level );
 
@@ -574,7 +578,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	}
 	*/
 
-	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
+	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", "10" );
+
+	arx_player_level				= dict.GetInt( "arx_player_level", idStr( ARX_MAGIC_WEAPON ) );
 
 	arx_player_x_points				= dict.GetInt( "arx_player_x_points", "0" );
 
@@ -740,6 +746,8 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	}
 	*/
 
+	savefile->WriteInt( arx_snake_weapon );
+
 	savefile->WriteInt( arx_player_level );
 
 	savefile->WriteInt( arx_player_x_points );
@@ -893,6 +901,8 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 		arx_equipt_items.Append( equipedItem );
 	}
 	*/
+
+	savefile->ReadInt( arx_snake_weapon );
 
 	savefile->ReadInt( arx_player_level );
 
@@ -3585,8 +3595,11 @@ void idPlayer::FireWeapon( void ) {
 
 	// Solarsplace - 22nd May 2010 - Magic related.
 	// Never allow the player to manually fire the magic weapon.
+	// Solarsplace - 18th March 2015 - Changed how this works. The magic weapons are now script controlled normal weapons.
+	/*
 	if ( currentWeapon == ARX_MAGIC_WEAPON )
 	{ return; }
+	*/
 
 	idMat3 axis;
 	idVec3 muzzle;
@@ -7113,6 +7126,8 @@ void idPlayer::ProcessMagic()
 				projectileName = magicSpellCombo->dict.GetString( "magic_projectile" );
 				if ( projectileName != "" )
 				{
+					// Solarsplace - 18th March 2015 - Old code. Changing the system to use standard script based D3 weapons.
+					/*
 					if ( usercmd.buttons & BUTTON_6 )
 					{
 						// Store pre-cast spell
@@ -7121,6 +7136,15 @@ void idPlayer::ProcessMagic()
 					else
 					{
 						FireMagicWeapon( projectileName, 4, spellManaCost ); // This will require >= 1 mana and will use 1 mana
+					}
+					*/
+
+					int tmp_snake_weapon = magicSpellCombo->dict.GetInt( "inv_weapon_def", idStr( ARX_MAGIC_WEAPON ) );
+
+					// If the current weapon == tmp_snake_weapon don't re-select it to prevent 'toggling'
+					if ( currentWeapon != tmp_snake_weapon ) {
+						inventory.arx_snake_weapon = magicSpellCombo->dict.GetInt( "inv_weapon_def", idStr( ARX_MAGIC_WEAPON ) );
+						SelectWeapon( inventory.arx_snake_weapon, true );
 					}
 
 					// Clear the buffer, so we can do another spell this magic session.
@@ -8302,8 +8326,8 @@ void idPlayer::ToggleMagicMode(void)
 	
 		//playerView.Flash( colorBlue, 500 );
 
-		if ( currentWeapon != ARX_MAGIC_WEAPON ) // If the current weapon is not the magic weapon, select it. Must check the current weapon to prevent 'toggling'
-		{ SelectWeapon( ARX_MAGIC_WEAPON, true ); }
+		if ( currentWeapon != arx_snake_weapon ) // If the current weapon is not the magic weapon, select it. Must check the current weapon to prevent 'toggling'
+		{ SelectWeapon( arx_snake_weapon, true ); }
 
 		StartSoundShader( declManager->FindSound( "arx_magic_drawing_ambient" ), SND_CHANNEL_BODY2, 0, false, NULL );
 		
@@ -8862,7 +8886,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 				)
 
 				{ 
-					SelectWeapon( ARX_MAGIC_WEAPON, true );
+					SelectWeapon( arx_snake_weapon, true );
 				}
 
 			break;
@@ -9224,6 +9248,12 @@ void idPlayer::LoadTransitionInfo( void )
 
 void idPlayer::FireMagicWeapon( const char *projectileName, int quickSpellIndex, int manaCost )
 {
+	// **************************************************************
+	// **************************************************************
+	// Solarsplace - 18th March 2015 - This is old retired code.
+	// Keeping here for reference.
+	// I was never happy with this implementation, it always felt clumsy and a hack although it did mostly work.
+
 	// Solarsplace - 13th May 2010 - Magic related
 	// Solarsplace - 03rd July 2010 - Modified
 

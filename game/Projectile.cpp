@@ -308,6 +308,13 @@ void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 
 	int				contents;
 	int				clipMask;
 
+	// Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	bool		randomDirection;
+	idVec3		newDir;
+	bool		randomVelocity;
+	float		randomAngular;
+	idVec2		fuse_random;
+
 	// allow characters to throw projectiles during cinematics, but not the player
 	if ( owner.GetEntity() && !owner.GetEntity()->IsType( idPlayer::Type ) ) {
 		cinematic = owner.GetEntity()->cinematic;
@@ -321,11 +328,41 @@ void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 
 
 	spawnArgs.GetVector( "velocity", "0 0 0", velocity );
 	
+	// Start - Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	randomDirection	= spawnArgs.GetBool( "random_direction" );
+	randomVelocity	= spawnArgs.GetBool( "random_velocity" );
+
+	if ( randomVelocity ) {
+		velocity.x *= gameLocal.random.RandomFloat() + 0.5f;
+		velocity.y *= gameLocal.random.RandomFloat() + 0.5f;
+		velocity.z *= gameLocal.random.RandomFloat() + 0.5f;
+	}
+
+	if ( randomDirection ) {
+		newDir.x = gameLocal.random.RandomInt(360) - 180;
+		newDir.y = gameLocal.random.RandomInt(360) - 180;
+		newDir.z = gameLocal.random.RandomInt(360) - 180;
+		newDir.Normalize();
+
+		velocity = velocity.Length() * newDir;
+	}
+	// End - Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+
 	speed = velocity.Length() * launchPower;
 
 	damagePower = dmgPower;
 
 	spawnArgs.GetAngles( "angular_velocity", "0 0 0", angular_velocity );
+
+	// Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	randomAngular		= spawnArgs.GetFloat( "random_angular_velocity" );
+
+	// Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	if ( randomAngular != 0.0f ) {
+		angular_velocity.yaw += gameLocal.random.RandomInt( randomAngular );
+		angular_velocity.pitch += gameLocal.random.RandomInt( randomAngular );
+		angular_velocity.roll += gameLocal.random.RandomInt( randomAngular );
+	}
 
 	linear_friction		= spawnArgs.GetFloat( "linear_friction" );
 	angular_friction	= spawnArgs.GetFloat( "angular_friction" );
@@ -334,6 +371,12 @@ void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 
 	mass				= spawnArgs.GetFloat( "mass" );
 	gravity				= spawnArgs.GetFloat( "gravity" );
 	fuse				= spawnArgs.GetFloat( "fuse" );
+
+	// Solarsplace - Arx End Of Sun - Credits to Hexen EOC
+	fuse_random			= spawnArgs.GetVec2( "fuse_random" );
+	if ( fuse_random.y > 0.0f ) {
+		fuse = gameLocal.random.CRandomFloat() * fuse_random.y + fuse_random.x;
+	}
 
 	projectileFlags.detonate_on_world	= spawnArgs.GetBool( "detonate_on_world" );
 	projectileFlags.detonate_on_actor	= spawnArgs.GetBool( "detonate_on_actor" );

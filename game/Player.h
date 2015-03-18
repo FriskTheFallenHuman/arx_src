@@ -116,6 +116,8 @@ public:
 
 	idStr					arx_equiped_items[ ARX_EQUIPED_ITEMS_MAX ];
 
+	int						arx_snake_weapon; // The current magic weapon
+
 	int						arx_player_level;
 	int						arx_player_x_points;
 
