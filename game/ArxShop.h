@@ -14,7 +14,7 @@ typedef enum {
 	ARX_SHOP_WEAPONS	= BIT(2),	// 4 - Weapons, armour, arrows, pickaxe
 	ARX_SHOP_FOOD		= BIT(3),	// 8 - All food & wine, health plants
 	ARX_SHOP_MAGIC		= BIT(4)	// 16 - Scrolls, potions, mana plants, runes
-} arx_shopFlags_t;
+} arx_shop_flags_t;
 
 class idArxShop : public idClass
 {

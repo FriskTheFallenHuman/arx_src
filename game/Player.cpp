@@ -287,6 +287,7 @@ void idInventory::Clear( void ) {
 	arx_timer_player_onfire			= -1;
 	arx_timer_player_telekinesis	= -1;
 	arx_timer_player_levitate		= -1;
+	arx_timer_player_warmth			= -1;
 
 	// ****************************************************
 	// ****************************************************
@@ -441,6 +442,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
 	dict.SetInt( "arx_timer_player_telekinesis", arx_timer_player_telekinesis );
 	dict.SetInt( "arx_timer_player_levitate", arx_timer_player_levitate );
+	dict.SetInt( "arx_timer_player_warmth", arx_timer_player_warmth );
 
 	// ****************************************************
 	// ****************************************************
@@ -578,9 +580,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	}
 	*/
 
-	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", "10" );
+	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", idStr( ARX_MAGIC_WEAPON ) );
 
-	arx_player_level				= dict.GetInt( "arx_player_level", idStr( ARX_MAGIC_WEAPON ) );
+	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
 
 	arx_player_x_points				= dict.GetInt( "arx_player_x_points", "0" );
 
@@ -618,7 +620,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_timer_player_onfire			= dict.GetInt( "arx_timer_player_onfire", "-1" );
 	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "-1" );
 	arx_timer_player_levitate		= dict.GetInt( "arx_timer_player_levitate", "-1" );
-
+	arx_timer_player_warmth			= dict.GetInt( "arx_timer_player_warmth", "-1" );
 
 	// ****************************************************
 	// ****************************************************
@@ -784,6 +786,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_timer_player_onfire );
 	savefile->WriteInt( arx_timer_player_telekinesis );
 	savefile->WriteInt( arx_timer_player_levitate );
+	savefile->WriteInt( arx_timer_player_warmth );
 
 	// ****************************************************
 	// ****************************************************
@@ -940,6 +943,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_timer_player_onfire );
 	savefile->ReadInt( arx_timer_player_telekinesis );
 	savefile->ReadInt( arx_timer_player_levitate );
+	savefile->ReadInt( arx_timer_player_warmth );
 
 	// ****************************************************
 	// ****************************************************
@@ -8326,8 +8330,8 @@ void idPlayer::ToggleMagicMode(void)
 	
 		//playerView.Flash( colorBlue, 500 );
 
-		if ( currentWeapon != arx_snake_weapon ) // If the current weapon is not the magic weapon, select it. Must check the current weapon to prevent 'toggling'
-		{ SelectWeapon( arx_snake_weapon, true ); }
+		if ( currentWeapon != inventory.arx_snake_weapon ) // If the current weapon is not the magic weapon, select it. Must check the current weapon to prevent 'toggling'
+		{ SelectWeapon( inventory.arx_snake_weapon, true ); }
 
 		StartSoundShader( declManager->FindSound( "arx_magic_drawing_ambient" ), SND_CHANNEL_BODY2, 0, false, NULL );
 		
@@ -8886,7 +8890,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 				)
 
 				{ 
-					SelectWeapon( arx_snake_weapon, true );
+					SelectWeapon( inventory.arx_snake_weapon, true );
 				}
 
 			break;
@@ -9541,6 +9545,12 @@ void idPlayer::UpdateShoppingSystem( void )
 					if ( item->GetBool( "inv_arx_key", "0" ) ) {
 						continue;
 					}
+				}
+
+				// Solarsplace - 20th March 2015 - Only sell matching item types to matching shops
+				int arx_item_flags = item->GetInt( "inv_arx_shop_flags", idStr( ARX_SHOP_ALL ) );
+				if ( !arxShopFunctions.MatchShopFlags( arx_item_flags ) ) {
+					continue;
 				}
 
 				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
@@ -15023,6 +15033,28 @@ void idPlayer::UpdateHeroStats( void ) {
 				}
 			}
 		}
+	}
+
+	// Solarsplace - Arx End Of Sun - cold system - Thanks Sikkmod
+	bool enableColdWorld = gameLocal.world->spawnArgs.GetBool( "arx_cold_world", "0" );
+	if ( enableColdWorld ) {
+	
+		if ( gameLocal.time > inventory.arx_timer_player_warmth ) {
+
+			if ( g_screenFrostTime.GetInteger() ) {
+				int n = g_screenFrostTime.GetInteger() * 60;
+				nScreenFrostAlpha++;
+				nScreenFrostAlpha = ( nScreenFrostAlpha > n ) ? n : nScreenFrostAlpha;
+			}
+		} else {
+
+			if ( g_screenFrostTime.GetInteger() ) {
+				nScreenFrostAlpha -= 2;
+				nScreenFrostAlpha = ( nScreenFrostAlpha < 0 ) ? 0 : nScreenFrostAlpha;
+			}
+		}
+	} else {
+		nScreenFrostAlpha = 0;
 	}
 
 	/*

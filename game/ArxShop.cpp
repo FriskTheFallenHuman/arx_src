@@ -60,7 +60,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 	idStr currentShopSlotItem;
 
 	// Load the shops buy flags
-	currentShopFlags = shopEntity->spawnArgs.GetInt( "arx_shop_flags", "1" );
+	currentShopFlags = shopEntity->spawnArgs.GetInt( "arx_shop_flags", idStr( ARX_SHOP_ALL ) );
 
 	/******************************************************************************/
 	/******************************************************************************/
@@ -439,11 +439,13 @@ int idArxShop::CountUsedShopSlots( void ) {
 
 bool idArxShop::MatchShopFlags ( int itemFlags ) {
 
-	if ( currentShopFlags && ARX_SHOP_ALL ) {
+	if ( currentShopFlags & ARX_SHOP_ALL ) {
+
 		return true;
 	}
 
-	if ( currentShopFlags && itemFlags ) {
+	if ( currentShopFlags & itemFlags ) {
+
 		return true;
 	}
 

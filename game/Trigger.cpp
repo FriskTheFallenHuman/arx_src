@@ -419,6 +419,18 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 	ActivateTargets( triggerWithSelf ? this : activator );
 	CallScript();
 
+	// Solarsplace - Arx End Of Sun
+	idPlayer * player = gameLocal.GetLocalPlayer();
+
+	// Solarsplace - Arx End Of Sun - Cold World
+	if ( activator == player ) {
+		bool warmthTrigger = spawnArgs.GetBool( "arx_warmth_trigger", "0" );
+		if ( warmthTrigger ) {
+			const int WARM_DELAY = 2; // trigger_arx_warmth "wait" = "1"
+			player->inventory.arx_timer_player_warmth = gameLocal.time + SEC2MS(WARM_DELAY); 
+		}
+	}
+
 	if ( wait >= 0 ) {
 		nextTriggerTime = gameLocal.time + SEC2MS( wait + random * gameLocal.random.CRandomFloat() );
 	} else {
@@ -427,7 +439,6 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 		gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
 
 		// SP - 4th July 2013 - Secret area found?
-		idPlayer * player = gameLocal.GetLocalPlayer();
 		if ( activator == player ) {
 			bool secretArea = spawnArgs.GetBool( "arx_secret_area", "0" );
 			if ( secretArea ) {
