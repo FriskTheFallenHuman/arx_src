@@ -14789,6 +14789,22 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 	}
 
+	// Chance of getting cold damage
+	if ( strcmp( chanceDescription, "add_cold" ) == 0 ) {
+
+		if ( godmode ) { return false; }
+
+		//REMOVEME
+		int cold_resistance_chance = 20; // 20%
+
+		if ( gameLocal.random.RandomFloat() * 100 > cold_resistance_chance ) {
+			returnChance = true;
+		}
+
+	}
+
+	
+
 	return returnChance;
 }
 
@@ -14812,6 +14828,8 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int tmp_arx_power_mana = 0;
 	int tmp_arx_power_armour = 0;
 
+	// SP - Not implementing ATM too much work.
+	/*
 	int tmp_arx_attr_strength = 0;
 	int tmp_arx_attr_mental = 0;
 	int tmp_arx_attr_dexterity = 0;
@@ -14826,6 +14844,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int tmp_arx_skill_projectile = 0;
 	int tmp_arx_skill_stealth = 0;
 	int tmp_arx_skill_technical = 0;
+	*/
 
 	// ****************************************************
 	// ****************************************************
@@ -14834,6 +14853,8 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int total_arx_power_mana = 0;
 	int total_arx_power_armour = 0;
 
+	// SP - Not implementing ATM too much work.
+	/*
 	int total_arx_attr_strength = 0;
 	int total_arx_attr_mental = 0;
 	int total_arx_attr_dexterity = 0;
@@ -14848,8 +14869,12 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int total_arx_skill_projectile = 0;
 	int total_arx_skill_stealth = 0;
 	int total_arx_skill_technical = 0;
-	
-	int tmp_arx_health_total = this->health; // Set to current player health
+	*/
+
+	int tmp_current_player_health = this->health; // Set to current player health
+
+	// TODO - Link with skills
+	int tmp_current_player_max_health = this->health_max; // Set to current player health
 
 	// ****************************************************
 	// ****************************************************
@@ -14875,7 +14900,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 					if ( tmp_arx_power_health < 0 ) {
 
 						// This item takes health away
-						tmp_arx_health_total += tmp_arx_power_health;
+						tmp_current_player_health -= tmp_arx_power_health;
 					}
 				}
 			}
@@ -14908,6 +14933,8 @@ void idPlayer::UpdateEquipedItems( void ) {
 					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0",			tmp_arx_power_mana );
 					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0",			tmp_arx_power_armour );
 
+					// SP - Not implementing ATM too much work.
+					/*
 					inventory.items[invItemIndex]->GetInt( "arx_attr_strength", "0",		tmp_arx_attr_strength );
 					inventory.items[invItemIndex]->GetInt( "arx_attr_mental", "0",			tmp_arx_attr_mental );
 					inventory.items[invItemIndex]->GetInt( "arx_attr_dexterity", "0",		tmp_arx_attr_dexterity );
@@ -14922,6 +14949,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 					inventory.items[invItemIndex]->GetInt( "arx_skill_projectile", "0",		tmp_arx_skill_projectile );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_stealth", "0",		tmp_arx_skill_stealth );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_technical", "0",		tmp_arx_skill_technical );
+					*/
 
 					// *********************************************
 					// Update running totals from temp variables
@@ -14930,6 +14958,8 @@ void idPlayer::UpdateEquipedItems( void ) {
 					total_arx_power_mana += tmp_arx_power_mana;
 					total_arx_power_armour += tmp_arx_power_armour;
 
+					// SP - Not implementing ATM too much work.
+					/*
 					total_arx_attr_strength += tmp_arx_attr_strength;
 					total_arx_attr_mental += tmp_arx_attr_mental;
 					total_arx_attr_dexterity += tmp_arx_attr_dexterity;
@@ -14944,19 +14974,20 @@ void idPlayer::UpdateEquipedItems( void ) {
 					total_arx_skill_projectile += tmp_arx_skill_projectile;
 					total_arx_skill_stealth += tmp_arx_skill_stealth;
 					total_arx_skill_technical += tmp_arx_skill_technical;
+					*/
 
 					// Does player need health?
-					int healthNeeded = health_max - tmp_arx_health_total;
+					int healthNeeded = tmp_current_player_max_health - tmp_current_player_health;
 
 					// If health needed and item gives health
 					if ( healthNeeded > 0 && tmp_arx_power_health > 0 ) {
 
 						// Item can give more than needed
 						if ( healthNeeded < tmp_arx_power_health ) {
-							tmp_arx_health_total += healthNeeded;
+							tmp_current_player_health += healthNeeded;
 							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - healthNeeded );
 						} else {
-							tmp_arx_health_total += tmp_arx_power_health;
+							tmp_current_player_health += tmp_arx_power_health;
 							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - tmp_arx_power_health );
 						}
 					}
@@ -14967,12 +14998,16 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 	// ****************************************************
 	// Damage player if ends up with less health than started with
-	int healthResult = health - tmp_arx_health_total;
+	int healthResult = this->health - tmp_current_player_health;
+
+	//REMOVEME
+	gameLocal.Printf( "idPlayer::UpdateEquipedItems - healthResult = %d\n", healthResult );
+
 	if ( healthResult > 0 ) {
 		if ( healthResult > 100 ) { healthResult = 100; }
 		Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", healthResult ), 1.0f, INVALID_JOINT );
 	} else {
-		this->health = tmp_arx_health_total;
+		this->health = tmp_current_player_health;
 	}
 }
 
@@ -14984,18 +15019,48 @@ idPlayer::UpdateHeroStats
 void idPlayer::UpdateHeroStats( void ) {
 
 	//TODO
-	const int MANA_LEVITATE_RATE = 2;
-
-	const int poisonDamageAmount = 5;
-	const int heroUpdateRate = 2000;
+	const int ARX_HERO_UPDATE_RATE = 2000;
+	const int ARX_MANA_LEVITATE_RATE = 2;
+	const int ARX_POISON_DAMAGE_BASE = 5;
+	const int ARX_COLD_DAMAGE_BASE = 3;
+	const int ARX_COLD_DAMAGE_START_RATE = 20; // Start to take damage after 20 seconds of cold exposure.
+	
 	int now = gameLocal.time;
 	int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
 	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 	int currentManaLevel = inventory.ammo[ ammo_mana ];
 
+	// *******************************************************************************
+	// *******************************************************************************
+	// Solarsplace - Arx End Of Sun - cold system - Thanks Sikkmod
+	// We do this every frame to make the visual effects smooth.
+	// However pain is only processed every 2 seconds.
+	bool enableColdWorld = gameLocal.world->spawnArgs.GetBool( "arx_cold_world", "0" );
+	if ( enableColdWorld ) {
+	
+		if ( gameLocal.time > inventory.arx_timer_player_warmth ) {
+
+			if ( g_screenFrostTime.GetInteger() ) {
+				int n = g_screenFrostTime.GetInteger() * 60;
+				nScreenFrostAlpha++;
+				nScreenFrostAlpha = ( nScreenFrostAlpha > n ) ? n : nScreenFrostAlpha;
+			}
+		} else {
+
+			if ( g_screenFrostTime.GetInteger() ) {
+				nScreenFrostAlpha -= 3; // SP was 2 set to 3 to warm up a little quicker
+				nScreenFrostAlpha = ( nScreenFrostAlpha < 0 ) ? 0 : nScreenFrostAlpha;
+			}
+		}
+	} else {
+		nScreenFrostAlpha = 0;
+	}
+	// *******************************************************************************
+	// *******************************************************************************
+
 	if ( now >= inventory.arx_timer_player_stats_update ) {
 
-		inventory.arx_timer_player_stats_update = now + heroUpdateRate;
+		inventory.arx_timer_player_stats_update = now + ARX_HERO_UPDATE_RATE;
 
 		UpdateEquipedItems();
 
@@ -15010,7 +15075,7 @@ void idPlayer::UpdateHeroStats( void ) {
 				Event_LevitateStop();
 			} else {
 				// Use mana to maintain levitate
-				inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] - MANA_LEVITATE_RATE; // TODO - Add skill factor
+				inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] - ARX_MANA_LEVITATE_RATE; // TODO - Add skill factor
 			}
 		}
 
@@ -15022,7 +15087,7 @@ void idPlayer::UpdateHeroStats( void ) {
 			// Poison damage
 			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
 				if ( CalculateHeroChance( "add_poison" ) ) {
-                    Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", poisonDamageAmount ), 1.0f, INVALID_JOINT );
+                    Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", ARX_POISON_DAMAGE_BASE ), 1.0f, INVALID_JOINT );
 				}
 			}
 
@@ -15032,30 +15097,25 @@ void idPlayer::UpdateHeroStats( void ) {
 					Damage( NULL, NULL, vec3_origin, "damage_arx_fire_interval", 1.0f, INVALID_JOINT );
 				}
 			}
+			
+			// Frost damage
+			if ( nScreenFrostAlpha > 0 ) {
+
+				float n = (float)g_screenFrostTime.GetInteger() * 60.0f;
+				if ( n > 0 ) {
+					n = n * 0.5f; // Start doing cold damage after 50% if full frost time
+				}
+
+				if ( (float)nScreenFrostAlpha > n ) {
+					if ( CalculateHeroChance( "add_cold" ) ) {
+						Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", ARX_COLD_DAMAGE_BASE ), 1.0f, INVALID_JOINT );
+					}
+				}
+			}
 		}
 	}
 
-	// Solarsplace - Arx End Of Sun - cold system - Thanks Sikkmod
-	bool enableColdWorld = gameLocal.world->spawnArgs.GetBool( "arx_cold_world", "0" );
-	if ( enableColdWorld ) {
 	
-		if ( gameLocal.time > inventory.arx_timer_player_warmth ) {
-
-			if ( g_screenFrostTime.GetInteger() ) {
-				int n = g_screenFrostTime.GetInteger() * 60;
-				nScreenFrostAlpha++;
-				nScreenFrostAlpha = ( nScreenFrostAlpha > n ) ? n : nScreenFrostAlpha;
-			}
-		} else {
-
-			if ( g_screenFrostTime.GetInteger() ) {
-				nScreenFrostAlpha -= 2;
-				nScreenFrostAlpha = ( nScreenFrostAlpha < 0 ) ? 0 : nScreenFrostAlpha;
-			}
-		}
-	} else {
-		nScreenFrostAlpha = 0;
-	}
 
 	/*
 
@@ -15105,11 +15165,10 @@ float idPlayer::ArxSkillGetAlertDistance( float defaultDistance ) {
 	returnValue = defaultDistance - (float)skillValue;
 
 	//REMOVEME
-	gameLocal.Printf( "ArxSkillGetAlertDistance = %f\n", returnValue );
+	//gameLocal.Printf( "ArxSkillGetAlertDistance = %f\n", returnValue );
 
 	return returnValue;
 }
-
 
 /*
 =================
@@ -15279,6 +15338,7 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		arx_timer_player_onfire				= RESET_TIME;
 		arx_timer_player_telekinesis		= RESET_TIME;
 		arx_timer_player_levitate			= RESET_TIME;
+		arx_timer_player_warmth				= RESET_TIME;
 
 	} else {
 

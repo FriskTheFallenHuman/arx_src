@@ -389,7 +389,8 @@ idCVar g_bloodSprayFrequency(		"g_bloodSprayFrequency",		"0.5",		CVAR_GAME | CVA
 // <---sikk
 
 // sikk---> Screen Frost
-idCVar g_screenFrostTime(			"g_screenFrostTime",			"0",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"time (in secs) for frost to fully build on the screen. 0 = disables effect" );
+// Solarsplace - Arx End Of Sun - 30 now default
+idCVar g_screenFrostTime(			"g_screenFrostTime",			"30",		CVAR_GAME | CVAR_NOCHEAT | CVAR_ARCHIVE | CVAR_INTEGER,	"time (in secs) for frost to fully build on the screen. 0 = disables effect" );
 // <---sikk
 
 // sikk---> Tracer Frequency
