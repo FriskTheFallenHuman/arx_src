@@ -14871,17 +14871,28 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int total_arx_skill_technical = 0;
 	*/
 
-	int tmp_current_player_health = this->health; // Set to current player health
-
+	// *******************************
+	// *******************************
+	// *******************************
 	// TODO - Link with skills
-	int tmp_current_player_max_health = this->health_max; // Set to current player health
+
+	int tmp_current_player_health = this->health;
+	int tmp_current_player_max_health = this->health_max;
+
+	int tmp_current_player_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	int tmp_current_player_max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+
+	int tmp_current_player_armour = this->inventory.armor;
+	int tmp_current_player_max_armour = this->inventory.maxarmor;
 
 	// ****************************************************
 	// ****************************************************
 
 	// ****************************************************
 	// ****************************************************
-	// Process negative health items
+	// Process negative attribute items
+	// These items reduce the attributes of health, mana and aromour
+
 	int x = 0;
 	for ( x = 0; x < ARX_EQUIPED_ITEMS_MAX; x++ ) {
 
@@ -14893,15 +14904,17 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 			if ( invItemIndex >= 0 ) {
 
+				inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
+
 				if ( itemHealth > 0 )
 				{
+					// Process health
 					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", tmp_arx_power_health );
-
 					if ( tmp_arx_power_health < 0 ) {
-
-						// This item takes health away
-						tmp_current_player_health -= tmp_arx_power_health;
+						tmp_current_player_health += tmp_arx_power_health;
 					}
+
+
 				}
 			}
 		}
@@ -14909,7 +14922,9 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 	// ****************************************************
 	// ****************************************************
-	// Process positive health items
+	// Process positive attribute items
+	// These items increase the attributes of health, mana and aromour
+
 	int i = 0;
 	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
 
