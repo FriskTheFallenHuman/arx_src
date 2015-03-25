@@ -14991,38 +14991,82 @@ void idPlayer::UpdateEquipedItems( void ) {
 					total_arx_skill_technical += tmp_arx_skill_technical;
 					*/
 
-					// Does player need health?
-					int healthNeeded = tmp_current_player_max_health - tmp_current_player_health;
+					// *************************************************
+					// *************************************************
+					// Process health
+					int needed_Health = tmp_current_player_max_health - tmp_current_player_health;
 
 					// If health needed and item gives health
-					if ( healthNeeded > 0 && tmp_arx_power_health > 0 ) {
+					if ( needed_Health > 0 && tmp_arx_power_health > 0 ) {
 
 						// Item can give more than needed
-						if ( healthNeeded < tmp_arx_power_health ) {
-							tmp_current_player_health += healthNeeded;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - healthNeeded );
+						if ( needed_Health < tmp_arx_power_health ) {
+							tmp_current_player_health += needed_Health;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Health );
 						} else {
 							tmp_current_player_health += tmp_arx_power_health;
 							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - tmp_arx_power_health );
 						}
 					}
+
+					// *************************************************
+					// *************************************************
+					// Process mana
+					int needed_Mana = tmp_current_player_max_mana - tmp_current_player_mana;
+
+					// If mana needed and item gives mana
+					if ( needed_Mana > 0 && tmp_arx_power_mana > 0 ) {
+
+						// Item can give more than needed
+						if ( needed_Mana < tmp_arx_power_mana ) {
+							tmp_current_player_mana += needed_Mana;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Mana );
+						} else {
+							tmp_current_player_mana += tmp_arx_power_mana;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - tmp_arx_power_mana );
+						}
+					}
+
+					// *************************************************
+					// *************************************************
+					// Process armour
 				}
 			}
 		}
 	}
 
-	// ****************************************************
-	// Damage player if ends up with less health than started with
+	// *************************************************
+	// *************************************************
+	// Process health
+	const int MAX_HEALTH_DAMAGE = 10;
 	int healthResult = this->health - tmp_current_player_health;
 
-	//REMOVEME
-	gameLocal.Printf( "idPlayer::UpdateEquipedItems - healthResult = %d\n", healthResult );
-
 	if ( healthResult > 0 ) {
-		if ( healthResult > 100 ) { healthResult = 100; }
+		if ( healthResult > MAX_HEALTH_DAMAGE ) { healthResult = MAX_HEALTH_DAMAGE; }
 		Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", healthResult ), 1.0f, INVALID_JOINT );
 	} else {
 		this->health = tmp_current_player_health;
+	}
+
+	// *************************************************
+	// *************************************************
+	// Process mana
+
+	const int MAX_MANA_DAMAGE = 10;
+	int manaResult = idWeapon::GetAmmoNumForName( "ammo_mana" ) - tmp_current_player_mana;
+
+	if ( manaResult > 0 ) {
+		if ( manaResult > MAX_MANA_DAMAGE ) { manaResult = MAX_MANA_DAMAGE; }
+		inventory.UseAmmo( ARX_MANA_TYPE, manaResult );
+	} else {
+
+		int i = inventory.AmmoIndexForAmmoClass( "ammo_mana" );
+
+		if ( inventory.ammo[ i ] >= tmp_current_player_max_mana ) {
+			return;
+		}
+		
+		inventory.ammo[ i ] += tmp_current_player_mana;
 	}
 }
 
