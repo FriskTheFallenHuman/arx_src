@@ -14824,9 +14824,9 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// ****************************************************
 	// ****************************************************
 	
-	int tmp_arx_power_health = 0;
-	int tmp_arx_power_mana = 0;
-	int tmp_arx_power_armour = 0;
+	int items_arx_power_health = 0;
+	int items_arx_power_mana = 0;
+	int items_arx_power_armour = 0;
 
 	// SP - Not implementing ATM too much work.
 	/*
@@ -14876,12 +14876,16 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// *******************************
 	// TODO - Link with skills
 
+	// Get current player health statistics
 	int tmp_current_player_health = this->health;
 	int tmp_current_player_max_health = this->health_max;
 
-	int tmp_current_player_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	// Get current player mana statistics
+	int ammo_mana_index = idWeapon::GetAmmoNumForName( "ammo_mana" );
+	int tmp_current_player_mana = inventory.ammo[ ammo_mana_index ];
 	int tmp_current_player_max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 
+	// Get current player armour statistics
 	int tmp_current_player_armour = this->inventory.armor;
 	int tmp_current_player_max_armour = this->inventory.maxarmor;
 
@@ -14904,17 +14908,32 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 			if ( invItemIndex >= 0 ) {
 
+				// If the item has run out of health then do not process it.
 				inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
 
 				if ( itemHealth > 0 )
 				{
+					// ****************************************************
+					// Get item attributes into temp variables
+
+					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", items_arx_power_health );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0", items_arx_power_mana );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0", items_arx_power_armour );
+
 					// Process health
-					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", tmp_arx_power_health );
-					if ( tmp_arx_power_health < 0 ) {
-						tmp_current_player_health += tmp_arx_power_health;
+					if ( items_arx_power_health < 0 ) {
+						tmp_current_player_health += items_arx_power_health;
 					}
 
+					// Process mana
+					if ( items_arx_power_mana < 0 ) {
+						tmp_current_player_mana += items_arx_power_mana;
+					}
 
+					// Process armour
+					if ( items_arx_power_armour < 0 ) {
+						tmp_current_player_armour += items_arx_power_armour;
+					}
 				}
 			}
 		}
@@ -14936,6 +14955,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 			if ( invItemIndex >= 0 ) {
 
+				// If the item has run out of health then do not process it.
 				inventory.items[invItemIndex]->GetInt( "inv_health", "0", itemHealth );
 
 				if ( itemHealth > 0 )
@@ -14944,11 +14964,11 @@ void idPlayer::UpdateEquipedItems( void ) {
 					// ****************************************************
 					// Get item attributes into temp variables
 
-					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0",			tmp_arx_power_health );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0",			tmp_arx_power_mana );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0",			tmp_arx_power_armour );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", items_arx_power_health );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0", items_arx_power_mana );
+					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0", items_arx_power_armour );
 
-					// SP - Not implementing ATM too much work.
+					// SP - Not implementing ATM too much work.]
 					/*
 					inventory.items[invItemIndex]->GetInt( "arx_attr_strength", "0",		tmp_arx_attr_strength );
 					inventory.items[invItemIndex]->GetInt( "arx_attr_mental", "0",			tmp_arx_attr_mental );
@@ -14969,9 +14989,11 @@ void idPlayer::UpdateEquipedItems( void ) {
 					// *********************************************
 					// Update running totals from temp variables
 
-					total_arx_power_health += tmp_arx_power_health;
-					total_arx_power_mana += tmp_arx_power_mana;
-					total_arx_power_armour += tmp_arx_power_armour;
+					/*
+					total_arx_power_health += items_arx_power_health;
+					total_arx_power_mana += items_arx_power_mana;
+					total_arx_power_armour += items_arx_power_armour;
+					*/
 
 					// SP - Not implementing ATM too much work.
 					/*
@@ -14994,18 +15016,19 @@ void idPlayer::UpdateEquipedItems( void ) {
 					// *************************************************
 					// *************************************************
 					// Process health
+
 					int needed_Health = tmp_current_player_max_health - tmp_current_player_health;
 
 					// If health needed and item gives health
-					if ( needed_Health > 0 && tmp_arx_power_health > 0 ) {
+					if ( needed_Health > 0 && items_arx_power_health > 0 ) {
 
 						// Item can give more than needed
-						if ( needed_Health < tmp_arx_power_health ) {
+						if ( needed_Health < items_arx_power_health ) {
 							tmp_current_player_health += needed_Health;
 							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Health );
 						} else {
-							tmp_current_player_health += tmp_arx_power_health;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - tmp_arx_power_health );
+							tmp_current_player_health += items_arx_power_health;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_health );
 						}
 					}
 
@@ -15015,21 +15038,35 @@ void idPlayer::UpdateEquipedItems( void ) {
 					int needed_Mana = tmp_current_player_max_mana - tmp_current_player_mana;
 
 					// If mana needed and item gives mana
-					if ( needed_Mana > 0 && tmp_arx_power_mana > 0 ) {
+					if ( needed_Mana > 0 && items_arx_power_mana > 0 ) {
 
 						// Item can give more than needed
-						if ( needed_Mana < tmp_arx_power_mana ) {
+						if ( needed_Mana < items_arx_power_mana ) {
 							tmp_current_player_mana += needed_Mana;
 							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Mana );
 						} else {
-							tmp_current_player_mana += tmp_arx_power_mana;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - tmp_arx_power_mana );
+							tmp_current_player_mana += items_arx_power_mana;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_mana );
 						}
 					}
 
 					// *************************************************
 					// *************************************************
 					// Process armour
+					int needed_Armour = tmp_current_player_max_armour - tmp_current_player_armour;
+
+					// If mana needed and item gives mana
+					if ( needed_Armour > 0 && items_arx_power_armour > 0 ) {
+
+						// Item can give more than needed
+						if ( needed_Armour < items_arx_power_armour ) {
+							tmp_current_player_armour += needed_Armour;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Armour );
+						} else {
+							tmp_current_player_armour += items_arx_power_armour;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_armour );
+						}
+					}
 				}
 			}
 		}
@@ -15051,22 +15088,27 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// *************************************************
 	// *************************************************
 	// Process mana
-
 	const int MAX_MANA_DAMAGE = 10;
-	int manaResult = idWeapon::GetAmmoNumForName( "ammo_mana" ) - tmp_current_player_mana;
+	int manaResult = inventory.ammo[ ammo_mana_index ] - tmp_current_player_mana;
 
 	if ( manaResult > 0 ) {
 		if ( manaResult > MAX_MANA_DAMAGE ) { manaResult = MAX_MANA_DAMAGE; }
-		inventory.UseAmmo( ARX_MANA_TYPE, manaResult );
+		inventory.ammo[ ammo_mana_index ] = inventory.ammo[ ammo_mana_index ] - manaResult;
 	} else {
+		inventory.ammo[ ammo_mana_index ] = tmp_current_player_mana;
+	}
 
-		int i = inventory.AmmoIndexForAmmoClass( "ammo_mana" );
+	// *************************************************
+	// *************************************************
+	// Process armour
+	const int MAX_ARMOUR_DAMAGE = 10;
+	int armourResult = this->inventory.armor - tmp_current_player_armour;
 
-		if ( inventory.ammo[ i ] >= tmp_current_player_max_mana ) {
-			return;
-		}
-		
-		inventory.ammo[ i ] += tmp_current_player_mana;
+	if ( armourResult > 0 ) {
+		if ( armourResult > MAX_ARMOUR_DAMAGE ) { armourResult = MAX_ARMOUR_DAMAGE; }
+		this->inventory.armor = this->inventory.armor - armourResult;
+	} else {
+		this->inventory.armor = tmp_current_player_armour;
 	}
 }
 
