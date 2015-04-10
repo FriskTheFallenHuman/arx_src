@@ -6056,12 +6056,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// *** Apply values
 	if ( token.Icmp( "arx_apply_attr_skill_points" ) == 0 ) {
 
-		inventory.arx_attribute_points = 0;
-		inventory.tmp_arx_attribute_points = 0;
-
-		inventory.arx_skill_points = 0;
-		inventory.tmp_arx_skill_points = 0;
-
+		// Update the permenant values with the temporary values
 		inventory.arx_attr_strength = inventory.tmp_arx_attr_strength;
 		inventory.arx_attr_mental = inventory.tmp_arx_attr_mental;
 		inventory.arx_attr_dexterity = inventory.tmp_arx_attr_dexterity;
@@ -6076,6 +6071,22 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_projectile = inventory.tmp_arx_skill_projectile;
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
+
+		// Clear down the temporary values
+		inventory.tmp_arx_attr_strength = 0;
+		inventory.tmp_arx_attr_mental = 0;
+		inventory.tmp_arx_attr_dexterity = 0;
+		inventory.tmp_arx_attr_constitution = 0;
+
+		inventory.tmp_arx_skill_casting = 0;
+		inventory.tmp_arx_skill_close_combat = 0;
+		inventory.tmp_arx_skill_defense = 0;
+		inventory.tmp_arx_skill_ethereal_link = 0;
+		inventory.tmp_arx_skill_intuition = 0;
+		inventory.tmp_arx_skill_intelligence = 0;
+		inventory.tmp_arx_skill_projectile = 0;
+		inventory.tmp_arx_skill_stealth = 0;
+		inventory.tmp_arx_skill_technical = 0;
 
 		ShowHudMessage( "#str_book_00005" ); // "Your points have been applied!"
 
@@ -9881,15 +9892,16 @@ void idPlayer::UpdateJournalGUI( void )
 		// *****************************************************************
 		// *****************************************************************
 		// *****************************************************************
-		// *** Book skills
+		// Equipped items
 
 		// *** Equipped armour
-		// LOGIC TODO
+		/* Not currently used
 		const int ARX_PLAYER_ARMOUR_NONE = 0;
 		const int ARX_PLAYER_ARMOUR_GOBINSKINS = 1;
 		const int ARX_PLAYER_ARMOUR_HUMANGUARD = 2;
 		const int ARX_PLAYER_ARMOUR_TRAVELERS = 3;
 		objectiveSystem->SetStateInt( "arx_player_armour", ARX_PLAYER_ARMOUR_GOBINSKINS );
+		*/
 
 		idStr equipedItemIcon;
 
@@ -9913,7 +9925,11 @@ void idPlayer::UpdateJournalGUI( void )
 			objectiveSystem->SetStateString( "ring_right_icon", equipedItemIcon.c_str() );
 		}
 
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
 		// Level and XP's
+
 		objectiveSystem->SetStateInt( "arx_player_level", inventory.arx_player_level );
 		objectiveSystem->SetStateInt( "arx_player_x_points", inventory.arx_player_x_points );
 
@@ -9926,26 +9942,6 @@ void idPlayer::UpdateJournalGUI( void )
 		if ( inventory.arx_skill_points > 0 ) {
 			hasSkillPointsToSpend = true;
 		}
-
-		/*
-		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
-		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
-
-		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
-		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
-		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
-		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
-
-		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
-		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
-		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
-		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
-		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
-		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
-		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
-		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
-		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
-		*/
 
 		// *** Start - Only show increment button if their are appropriate points to spend
 		objectiveSystem->SetStateBool( "arx_attr_strength_inc_visible", hasAttributePointsToSpend );
@@ -9964,7 +9960,7 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", hasSkillPointsToSpend );
 		// *** End - Only show increment button if their are appropriate points to spend
 
-		// *** Start - Only allow increment if attr or skill points to spend
+		// *** Start - Only allow decrement if above starting value
 		bool allowDecrement;
 		allowDecrement = ( inventory.tmp_arx_attr_strength > inventory.arx_attr_strength );
 		objectiveSystem->SetStateBool( "arx_attr_strength_dec_visible", allowDecrement );
@@ -10004,7 +10000,7 @@ void idPlayer::UpdateJournalGUI( void )
 
 		allowDecrement = ( inventory.tmp_arx_skill_technical > inventory.arx_skill_technical );
 		objectiveSystem->SetStateBool( "arx_skill_technical_dec_visible", allowDecrement );
-		// *** End - dont allow decrement lower than current value
+		// *** End - Only allow decrement if above starting value
 
 		// Attributes & attribute points
 		objectiveSystem->SetStateBool( "arx_attribute_points_visible", hasAttributePointsToSpend );
@@ -10038,6 +10034,10 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateInt( "arx_class_mana_points", inventory.arx_class_mana_points ); // 4
 		objectiveSystem->SetStateInt( "arx_class_resistance_to_magic", inventory.arx_class_resistance_to_magic ); // 3
 		objectiveSystem->SetStateInt( "arx_class_resistance_to_poison", inventory.arx_class_resistance_to_poison ); // 5
+
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
 
 		// Secrets found
 		objectiveSystem->SetStateInt( "arx_stat_secrets_found", inventory.arx_stat_secrets_found );
@@ -10313,12 +10313,13 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	const char			*itemAttribute;
 
 	// Common Arx properties and variables
-	bool	processedItem = false;
-	const	char *iname;
-	idStr	equipType;
-	idStr	uniqueName;
-	int		itemHealth;
-	int		itemHealthMax;
+	bool		processedItem = false;
+	const char	*iname;
+	idStr		equipType;
+	idStr		uniqueName;
+	int			itemHealth;
+	int			itemHealthMax;
+	const char	*itemConsumeFX;
 
 	// Get the inv_name of the item and use this to put its spawn args in item
 	iname = inventory.items[invItemIndex]->GetString( "inv_name" );
@@ -10329,8 +10330,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 	inventory.items[invItemIndex]->GetInt( "inv_health_max", "100", itemHealthMax );
 	inventory.items[invItemIndex]->GetString( "inv_arx_equipable_type", "", equipType );
 	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
+	inventory.items[invItemIndex]->GetString( "inv_unique_name", "", uniqueName );
 
 	sound = gameLocal.GetStringFromEntityDef( inventory.items[invItemIndex]->GetString( "inv_classname", "" ), "snd_consume" );
+	itemConsumeFX = gameLocal.GetStringFromEntityDef( inventory.items[invItemIndex]->GetString( "inv_classname", "" ), "fx_consume" );
 
 	// ********************************************************************************************
 	// ********************************************************************************************
@@ -10436,6 +10439,8 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			//*********************************************************************************
 			// Solarsplace - Arx End Of Sun - Special case functions.
 
+			// Custom particle effects
+
 			if ( arg->GetKey() == "inv_arx_item_attribute" )
 			{
 				itemAttribute = arg->GetValue();
@@ -10486,6 +10491,19 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					args.Set( "classname", "arx_light_hidden_torch_timed" );
 					gameLocal.SpawnEntityDef( args, &spawnedItem );
 					gave = true;
+				}
+
+				if ( gave ) {
+
+					// Play optional FX for these items
+					if ( itemConsumeFX ) {
+						idVec3 playerOrigin = GetPhysics()->GetOrigin();
+						idEntityFx::StartFx( itemConsumeFX, &playerOrigin, NULL, this, true );
+					}
+
+					// Play optional consume sound effect for these items
+					if ( sound )
+					{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
 				}
 			}
 
@@ -15110,6 +15128,81 @@ void idPlayer::UpdateEquipedItems( void ) {
 	} else {
 		this->inventory.armor = tmp_current_player_armour;
 	}
+}
+
+/*
+=================
+idPlayer::CreateNewHero
+=================
+*/
+void idPlayer::CreateNewHero( void ) {
+
+	inventory.arx_player_level = this->spawnArgs.GetFloat( "arx_player_level", "0" );
+	inventory.arx_player_x_points = this->spawnArgs.GetFloat( "arx_player_x_points", "0" );
+
+	inventory.arx_class_armour_points		= inventory.arx_class_armour_points_base;
+	inventory.arx_class_health_points		= inventory.arx_class_health_points_base;
+	inventory.arx_class_mana_points			= inventory.arx_class_mana_points_base;
+	inventory.arx_class_resistance_to_magic = inventory.arx_class_resistance_to_magic_base;
+	inventory.arx_class_resistance_to_poison= inventory.arx_class_resistance_to_poison_base;
+
+	inventory.arx_class_resistance_to_poison = 0;
+	inventory.arx_class_damage_points = 0;
+
+
+}
+
+/*
+=================
+idPlayer::LoadBasePointValues
+=================
+*/
+void idPlayer::LoadBasePointValues( void ) {
+
+	inventory.arx_class_armour_points_base			= this->spawnArgs.GetFloat( "maxarmor", "0" );
+	inventory.arx_class_health_points_base			= this->spawnArgs.GetFloat( "maxhealth", "0" );
+	inventory.arx_class_mana_points_base			= inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+	inventory.arx_class_resistance_to_magic_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_magic_base", "0" );
+	inventory.arx_class_resistance_to_poison_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_poison_base", "0" );
+}
+
+/*
+=================
+idPlayer::UpdateHeroSkills
+=================
+*/
+void idPlayer::UpdateHeroSkills( void ) {
+
+	// Class: Armour Points ( D3: max armour )
+	inventory.maxarmor = inventory.arx_class_armour_points_base
+		+ ( inventory.arx_skill_defense * DIV2 )
+		+ ( inventory.arx_player_level * 5 );
+	inventory.arx_class_armour_points = inventory.maxarmor;
+
+	// Class: Life Energy ( D3: max health )
+	inventory.maxHealth = inventory.arx_class_health_points_base
+		+ ( inventory.arx_attr_constitution * DIV2 )
+		+ ( inventory.arx_player_level * 5 );
+
+	// Class: Mana Energy ( D3: max ammo mana )
+	int tmpMaxMana = inventory.arx_class_mana_points_base
+		+ ( inventory.arx_attr_mental * DIV2 )
+		+ ( inventory.arx_player_level * 5 );
+	this->spawnArgs.SetInt( "max_ammo_mana", tmpMaxMana );
+
+	// Class: Magic Resist
+	int tmpResistMagicPercentage = inventory.arx_class_resistance_to_magic_base
+		+ ( inventory.arx_attr_mental * 2 )
+		+ ( inventory.arx_skill_casting * DIV10 );
+	if ( tmpResistMagicPercentage > 100 ) { tmpResistMagicPercentage = 100; }
+	inventory.arx_class_resistance_to_magic = tmpResistMagicPercentage;
+
+	// Class: Poison Resist
+	int tmpResistPoisonPercentage = inventory.arx_class_resistance_to_poison_base
+		+ ( inventory.arx_attr_constitution * 2 )
+		+ ( inventory.arx_skill_defense * DIV10 );
+	if ( tmpResistPoisonPercentage > 100 ) { tmpResistPoisonPercentage = 100; }
+	inventory.arx_class_resistance_to_poison = tmpResistPoisonPercentage;
 }
 
 /*

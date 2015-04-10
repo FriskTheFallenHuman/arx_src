@@ -146,6 +146,13 @@ public:
 	int						arx_class_resistance_to_poison;
 	int						arx_class_damage_points;
 
+	// Base values that do not change
+	int						arx_class_armour_points_base;
+	int						arx_class_health_points_base;
+	int						arx_class_mana_points_base;
+	int						arx_class_resistance_to_magic_base;
+	int						arx_class_resistance_to_poison_base;
+
 	int						arx_stat_secrets_found;
 
 	int						tmp_arx_attribute_points;
@@ -1021,6 +1028,9 @@ private:
 	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011
 
 	// Skills related
+	void					CreateNewHero( void );											// solarsplace 10th Apr 2015
+	void					LoadBasePointValues( void );									// solarsplace 10th Apr 2015
+	void					UpdateHeroSkills( void );										// solarsplace 10th Apr 2015
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
