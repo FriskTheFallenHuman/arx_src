@@ -146,21 +146,6 @@ const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
 const int MAX_INVENTORY_ITEMS = 512;				// Solarsplace - 5th July 2013 - Inventory related - Increaced to 512 to expand inventory capacity a lot
 
-const int ARX_FISTS_WEAPON = 0;
-const int ARX_MAGIC_WEAPON = 10;					// Solarsplace - 13th May 2010 - The id for the empty magic weapon.
-const int ARX_MANA_WEAPON = ARX_MAGIC_WEAPON;		// Solarsplace - 26th May 2010 - This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
-const int ARX_MANA_TYPE = 1;						// Solarsplace - 2nd June 2010 - See entityDef ammo_types - "ammo_mana" "1"
-const int ARX_MANA_BASE_COST = 10;					// Solarsplace - 6th June 2010 - Every spell consumes at least 10 mana. Add additional cost in arx_magic_spells.def
-const int ARX_INVIS_TIME = 60 * 1000;				// Solarsplace - 6th June 2010 - Time invis magic lasts 
-const int ARX_TELEKENESIS_TIME = 30 * 1000;			// Solarsplace - 15th June 2012 - Time telekenesis magic lasts 
-const int ARX_LEVITATE_TIME = 30 * 1000;			// Solarsplace - 3rd July 2014 - Time levitate magic lasts 
-
-const int ARX_MAX_PLAYER_LEVELS = 14;
-
-const int ARX_DEFAULT_BLACKSMITH_SKILL = 94;
-
-const int ARX_SKILL_BASE_VALUE = 10;
-
 //*****************************************************************
 //*****************************************************************
 // Solarsplace 2nd Sep 2010 - Arx - Level transition related
@@ -205,7 +190,6 @@ const int ARX_QUEST_STATE_COMPLETED = 999;
 //*****************************************************************
 
 const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;		// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
-const float ARX_MAX_ITEM_PICKUP_DISTANCE_TELE = 364;	// Solarsplace 15th June 2012  - The max trace distance for a pickup item with telekinesis 
 
 //*****************************************************************
 //*****************************************************************
@@ -243,7 +227,7 @@ void idInventory::Clear( void ) {
 	weaponUniqueName				= "";
 
 	int i;
-	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
 		arx_equiped_items[ i ] = "";
 	}
 
@@ -5769,7 +5753,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 					// Un-equip the item if equiped (if any match)
 					int i;
-					for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+					for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
 						if ( inventory.arx_equiped_items[ i ] == sellingItem->GetString( "inv_unique_name" ) ) {
 							inventory.arx_equiped_items[ i ] == "";
 						}
@@ -6865,7 +6849,7 @@ void idPlayer::TraceUsables()
 	float pickupDistance;
 
 	if ( inventory.arx_timer_player_telekinesis > gameLocal.GetTime() ) {
-		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+		pickupDistance = GetSpellBonus( ARX_SPELL_TELEKENESIS_DISTANCE );;
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
 	}
@@ -7131,7 +7115,7 @@ void idPlayer::ProcessMagic()
 				int playerCurrentMana = GetPlayerManaAmount();
 				spellManaCost = magicSpellCombo->dict.GetInt( "mana_cost", "0" );
 
-				if ( playerCurrentMana < ( spellManaCost ) ) //+ ARX_MANA_BASE_COST ) )
+				if ( playerCurrentMana < ( spellManaCost ) )
 				{
 					StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
 					return;
@@ -7264,7 +7248,7 @@ void idPlayer::ProcessMagic()
 
 					//Telekinesis
 					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
-						inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
+						inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );;
 					}
 
 					// *************************
@@ -7279,7 +7263,7 @@ void idPlayer::ProcessMagic()
 
 					//Levitate
 					if ( strcmp( customMagicSpell, "add_levitate" ) == 0 ) {
-						inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+						inventory.arx_timer_player_levitate = gameLocal.time + GetSpellBonus( ARX_SPELL_LEVITATE );
 						Event_LevitateStart();
 					}
 
@@ -7342,8 +7326,8 @@ void idPlayer::ProcessMagic()
 					//Invisibility
 					if ( strcmp( customMagicSpell, "add_invisibility" ) == 0 )
 					{
-						inventory.arx_timer_player_invisible = gameLocal.time + ARX_INVIS_TIME;
-						GivePowerUp( 1, ARX_INVIS_TIME );
+						inventory.arx_timer_player_invisible = gameLocal.time + GetSpellBonus( ARX_SPELL_INVIS );
+						GivePowerUp( 1, GetSpellBonus( ARX_SPELL_INVIS ) );
 					}
 
 					//Life drain
@@ -8453,28 +8437,8 @@ void idPlayer::TogglePDA( void ) {
 		UpdatePDAInfo( false );
 		UpdateObjectiveInfo();
 
-		// *** Start - Solarsplace - Arx End Of Sun
-
-		// Init any variables
-		inventory.tmp_arx_attribute_points = inventory.arx_attribute_points;
-		inventory.tmp_arx_skill_points = inventory.arx_skill_points;
-
-		inventory.tmp_arx_attr_strength = inventory.arx_attr_strength;
-		inventory.tmp_arx_attr_mental = inventory.arx_attr_mental;
-		inventory.tmp_arx_attr_dexterity = inventory.arx_attr_dexterity;
-		inventory.tmp_arx_attr_constitution = inventory.arx_attr_constitution;
-
-		inventory.tmp_arx_skill_casting = inventory.arx_skill_casting;
-		inventory.tmp_arx_skill_close_combat = inventory.arx_skill_close_combat;
-		inventory.tmp_arx_skill_defense = inventory.arx_skill_defense;
-		inventory.tmp_arx_skill_ethereal_link = inventory.arx_skill_ethereal_link;
-		inventory.tmp_arx_skill_intuition = inventory.arx_skill_intuition;
-		inventory.tmp_arx_skill_intelligence = inventory.arx_skill_intelligence;
-		inventory.tmp_arx_skill_projectile = inventory.arx_skill_projectile;
-		inventory.tmp_arx_skill_stealth = inventory.arx_skill_stealth;
-		inventory.tmp_arx_skill_technical = inventory.arx_skill_technical;
-
-		// *** End - Solarsplace - Arx End Of Sun
+		// Solarsplace - Arx End Of Sun - Load current skills into the temp variables
+		LoadCurrentSkillsIntoTemp();
 
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
@@ -9474,7 +9438,7 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 		// Un-equip the item if equiped (if any match)
 		int i;
-		for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+		for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
 			if ( inventory.arx_equiped_items[ i ] == droppingItem->GetString( "inv_unique_name" ) ) {
 				inventory.arx_equiped_items[ i ] == "";
 			}
@@ -10448,15 +10412,15 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				// Invisibility
 				if ( strcmp( itemAttribute, "add_invisibility" ) == 0 )
 				{
-					inventory.arx_timer_player_invisible = gameLocal.time + ARX_INVIS_TIME;
-					GivePowerUp( 1, ARX_INVIS_TIME );
+					inventory.arx_timer_player_invisible = gameLocal.time + GetSpellBonus( ARX_SPELL_INVIS );
+					GivePowerUp( 1, GetSpellBonus( ARX_SPELL_INVIS ) );
 					gave = true;
 				}
 
 				// Telekenesis
 				if ( strcmp( itemAttribute, "add_telekinesis" ) == 0 )
 				{
-					inventory.arx_timer_player_telekinesis = gameLocal.time + ARX_TELEKENESIS_TIME;
+					inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );;
 					gave = true;
 				}
 
@@ -10464,7 +10428,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				if ( strcmp( itemAttribute, "add_levitate" ) == 0 )
 				{
 					Event_LevitateStart();
-					inventory.arx_timer_player_levitate = gameLocal.time + ARX_LEVITATE_TIME;
+					inventory.arx_timer_player_levitate = gameLocal.time + GetSpellBonus( ARX_SPELL_LEVITATE );
 					gave = true;
 				}
 
@@ -10662,7 +10626,7 @@ void idPlayer::GetEntityByViewRay( void )
 	idStr requiredItemInvName;
 
 	if ( inventory.arx_timer_player_telekinesis >= gameLocal.GetTime() ) {
-		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE_TELE;
+		pickupDistance = GetSpellBonus( ARX_SPELL_TELEKENESIS_DISTANCE );;
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
 	}
@@ -14777,6 +14741,9 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 	// Use the format add_xxxx or remove_xxxx
 
+	const int MAX_COLD_RESISTANCE_CHANCE = 60; // %
+	const int MAX_FIRE_RESISTANCE_CHANCE = 60; // %
+
 	bool returnChance = false;
 
 	// Chance of getting poisoned
@@ -14784,13 +14751,10 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//REMOVEME
-		int poison_resistance_chance = 20; // 20%
-
-		if ( gameLocal.random.RandomFloat() * 100 > poison_resistance_chance ) {
+		//TESTME
+		if ( gameLocal.random.RandomFloat() * 100 > inventory.arx_class_resistance_to_poison ) {
 			returnChance = true;
 		}
-
 	}
 
 	// Chance of getting burnt
@@ -14798,13 +14762,13 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//REMOVEME
-		int fire_resistance_chance = 20; // 20%
+		//TESTME
+		int fire_resistance_chance = ( inventory.arx_attr_dexterity * 2 ) + ( inventory.arx_attr_constitution * 2 ) + ( inventory.arx_player_level * 2 );
+		if ( fire_resistance_chance > MAX_FIRE_RESISTANCE_CHANCE ) { fire_resistance_chance = MAX_FIRE_RESISTANCE_CHANCE; };
 
 		if ( gameLocal.random.RandomFloat() * 100 > fire_resistance_chance ) {
 			returnChance = true;
 		}
-
 	}
 
 	// Chance of getting cold damage
@@ -14812,16 +14776,14 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//REMOVEME
-		int cold_resistance_chance = 20; // 20%
+		//TESTME
+		int cold_resistance_chance = ( inventory.arx_attr_constitution * 4 ) + ( inventory.arx_player_level * 2 );
+		if ( cold_resistance_chance > MAX_COLD_RESISTANCE_CHANCE ) { cold_resistance_chance = MAX_COLD_RESISTANCE_CHANCE; }
 
 		if ( gameLocal.random.RandomFloat() * 100 > cold_resistance_chance ) {
 			returnChance = true;
 		}
-
 	}
-
-	
 
 	return returnChance;
 }
@@ -14916,7 +14878,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// These items reduce the attributes of health, mana and aromour
 
 	int x = 0;
-	for ( x = 0; x < ARX_EQUIPED_ITEMS_MAX; x++ ) {
+	for ( x = 0; x < ARX_MAX_EQUIPED_ITEMS; x++ ) {
 
 		invUniqueName = inventory.arx_equiped_items[ x ];
 
@@ -14963,7 +14925,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// These items increase the attributes of health, mana and aromour
 
 	int i = 0;
-	for ( i = 0; i < ARX_EQUIPED_ITEMS_MAX; i++ ) {
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
 
 		invUniqueName = inventory.arx_equiped_items[ i ];
 
@@ -15137,19 +15099,92 @@ idPlayer::CreateNewHero
 */
 void idPlayer::CreateNewHero( void ) {
 
+	LoadBasePointValues();
+
 	inventory.arx_player_level = this->spawnArgs.GetFloat( "arx_player_level", "0" );
 	inventory.arx_player_x_points = this->spawnArgs.GetFloat( "arx_player_x_points", "0" );
+
+	inventory.arx_attr_strength = 0;
+	inventory.arx_attr_mental = 0;
+	inventory.arx_attr_dexterity = 0;
+	inventory.arx_attr_constitution = 0;
+
+	inventory.arx_skill_casting = 0;
+	inventory.arx_skill_close_combat = 0;
+	inventory.arx_skill_defense = 0;
+	inventory.arx_skill_ethereal_link = 0;
+	inventory.arx_skill_intuition = 0;
+	inventory.arx_skill_intelligence = 0;
+	inventory.arx_skill_projectile = 0;
+	inventory.arx_skill_stealth = 0;
+	inventory.arx_skill_technical = 0;
 
 	inventory.arx_class_armour_points		= inventory.arx_class_armour_points_base;
 	inventory.arx_class_health_points		= inventory.arx_class_health_points_base;
 	inventory.arx_class_mana_points			= inventory.arx_class_mana_points_base;
 	inventory.arx_class_resistance_to_magic = inventory.arx_class_resistance_to_magic_base;
 	inventory.arx_class_resistance_to_poison= inventory.arx_class_resistance_to_poison_base;
+	inventory.arx_class_damage_points		= inventory.arx_class_damage_points_base;
 
-	inventory.arx_class_resistance_to_poison = 0;
-	inventory.arx_class_damage_points = 0;
+	LoadCurrentSkillsIntoTemp();
+	
+}
 
 
+/*
+=================
+idPlayer::LoadCurrentSkillsIntoTemp
+=================
+*/
+void idPlayer::LoadCurrentSkillsIntoTemp( void ) {
+
+	inventory.tmp_arx_attr_strength				= inventory.arx_attr_strength;
+	inventory.tmp_arx_attr_mental				= inventory.arx_attr_mental;
+	inventory.tmp_arx_attr_dexterity			= inventory.arx_attr_dexterity;
+	inventory.tmp_arx_attr_constitution			= inventory.arx_attr_constitution;
+
+	inventory.tmp_arx_skill_casting				= inventory.arx_skill_casting;
+	inventory.tmp_arx_skill_close_combat		= inventory.arx_skill_close_combat;
+	inventory.tmp_arx_skill_defense				= inventory.arx_skill_defense;
+	inventory.tmp_arx_skill_ethereal_link		= inventory.arx_skill_ethereal_link;
+	inventory.tmp_arx_skill_intuition			= inventory.arx_skill_intuition;
+	inventory.tmp_arx_skill_intelligence		= inventory.arx_skill_intelligence;
+	inventory.tmp_arx_skill_projectile			= inventory.arx_skill_projectile;
+	inventory.tmp_arx_skill_stealth				= inventory.arx_skill_stealth;
+	inventory.tmp_arx_skill_technical			= inventory.arx_skill_technical;
+
+	inventory.tmp_arx_class_armour_points		= inventory.arx_class_armour_points;
+	inventory.tmp_arx_class_health_points		= inventory.arx_class_health_points;
+	inventory.tmp_arx_class_mana_points			= inventory.arx_class_mana_points;
+	inventory.tmp_arx_class_resistance_to_magic	= inventory.arx_class_resistance_to_magic;
+	inventory.tmp_arx_class_resistance_to_poison= inventory.arx_class_resistance_to_poison;
+	inventory.tmp_arx_class_damage_points		= inventory.arx_class_damage_points;
+}
+
+
+/*
+=================
+idPlayer::LoadCurrentSkillsIntoTemp
+=================
+*/
+float idPlayer::ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill ) {
+
+	static const float ARX_ATTR_SKILL_MATRIX[ARX_MAX_SKILLS][ARX_MAX_ATTRIBUTES] = {
+
+		// Str   Men   Dex   Con
+		{ 0.0f, 0.0f, 2.0f, 0.0f }, // Stealth
+		{ 0.0f, 1.0f, 1.0f, 0.0f }, // Technical
+		{ 0.0f, 2.0f, 0.0f, 0.0f }, // Intuition
+		{ 0.0f, 2.0f, 0.0f, 0.0f }, // Ethereal link
+		{ 0.5f, 1.5f, 0.5f, 0.0f }, // Object knowledge
+		{ 0.0f, 2.0f, 0.0f, 0.0f }, // Casting
+		{ 2.0f, 0.0f, 1.0f, 0.0f }, // Close combat
+		{ 1.0f, 0.0f, 2.0f, 0.0f }, // Projectile
+		{ 0.0f, 0.0f, 0.0f, 1.0f }, // Defense
+
+	};
+
+	return ARX_ATTR_SKILL_MATRIX[ ArxAttribute ][ ArxSkill ];
 }
 
 /*
@@ -15164,6 +15199,70 @@ void idPlayer::LoadBasePointValues( void ) {
 	inventory.arx_class_mana_points_base			= inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 	inventory.arx_class_resistance_to_magic_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_magic_base", "0" );
 	inventory.arx_class_resistance_to_poison_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_poison_base", "0" );
+	inventory.arx_class_damage_points_base			= this->spawnArgs.GetFloat( "arx_class_damage_points_base", "0" );
+}
+
+/*
+=================
+idPlayer::UpdateHeroSkills
+=================
+*/
+int idPlayer::GetSpellBonus( int spell ) {
+
+	float baseSpellValue = 0;
+	int returnValue = 0;
+
+	switch( spell ) {
+
+	case ARX_SPELL_INVIS :
+
+		baseSpellValue = this->spawnArgs.GetFloat( "arx_spell_base_invis", "0" );
+		baseSpellValue += ( (float)inventory.arx_skill_stealth * DIV10 ) * 10.0f;
+		baseSpellValue += inventory.arx_player_level;
+
+		return (int)SEC2MS(baseSpellValue);
+
+	case ARX_SPELL_TELEKENESIS_DURATION :
+
+		baseSpellValue = this->spawnArgs.GetFloat( "arx_spell_base_telekenesis_duration", "0" );
+		baseSpellValue += ( (float)inventory.arx_attr_mental * 5.0f );
+		baseSpellValue += inventory.arx_player_level;
+
+		return (int)SEC2MS(baseSpellValue);
+  
+	case ARX_SPELL_TELEKENESIS_DISTANCE :
+
+		baseSpellValue = this->spawnArgs.GetFloat( "arx_spell_base_telekenesis_distance", "0" );
+		baseSpellValue += ( (float)inventory.arx_attr_mental * 5.0f );
+		baseSpellValue += inventory.arx_player_level;
+
+		return (int)baseSpellValue;
+
+	case ARX_SPELL_LEVITATE :
+
+		baseSpellValue = this->spawnArgs.GetFloat( "arx_spell_base_levitate", "0" );
+		baseSpellValue += ( (float)inventory.arx_attr_dexterity * 5.0f );
+		baseSpellValue += inventory.arx_player_level;
+
+		return (int)SEC2MS(baseSpellValue);
+
+	default :
+		return 0;
+	}
+
+}
+
+/*
+=================
+idPlayer::GetPercentageBonus
+=================
+*/
+float idPlayer::GetPercentageBonus( float BaseValue, float BonusPercentage ) {
+
+	if ( BaseValue <= 0 ) { return 0; }
+	if ( BonusPercentage <= 0 ) { return 0; }
+
+	return ( BaseValue / 100.0f ) * BonusPercentage;
 }
 
 /*
@@ -15173,36 +15272,151 @@ idPlayer::UpdateHeroSkills
 */
 void idPlayer::UpdateHeroSkills( void ) {
 
+	const int MAX_RESISTANCE_MAGIC_PERCENT = 100;
+	const int MAX_RESISTANCE_POISON_PERCENT = 100;
+	const int MAX_BONUS_DAMAGE_PERCENT = 100;
+
+	float tmpFloatValue = 0.0f;
+	float tmp_tmpFloatValue = 0.0f;
+	int tmpIntValue = 0;
+	int tmp_tmpIntValue = 0;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
+
 	// Class: Armour Points ( D3: max armour )
-	inventory.maxarmor = inventory.arx_class_armour_points_base
-		+ ( inventory.arx_skill_defense * DIV2 )
-		+ ( inventory.arx_player_level * 5 );
-	inventory.arx_class_armour_points = inventory.maxarmor;
+	tmpFloatValue =
+		( (float)inventory.arx_skill_defense * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.tmp_arx_skill_defense * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	// Arx
+	inventory.arx_class_armour_points		= inventory.arx_class_armour_points_base + (int)tmpFloatValue;
+	inventory.tmp_arx_class_armour_points	= inventory.arx_class_armour_points_base + (int)tmp_tmpFloatValue;
+
+	// D3
+	inventory.maxarmor = inventory.arx_class_armour_points;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
 
 	// Class: Life Energy ( D3: max health )
-	inventory.maxHealth = inventory.arx_class_health_points_base
-		+ ( inventory.arx_attr_constitution * DIV2 )
-		+ ( inventory.arx_player_level * 5 );
+	tmpFloatValue =
+		( (float)inventory.arx_attr_constitution * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.tmp_arx_attr_constitution * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	inventory.arx_class_health_points		= inventory.arx_class_health_points_base + (int)tmpFloatValue;
+	inventory.tmp_arx_class_health_points	= inventory.arx_class_health_points_base + (int)tmp_tmpFloatValue;
+
+	// D3
+	inventory.maxHealth = inventory.arx_class_health_points;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
 
 	// Class: Mana Energy ( D3: max ammo mana )
-	int tmpMaxMana = inventory.arx_class_mana_points_base
-		+ ( inventory.arx_attr_mental * DIV2 )
-		+ ( inventory.arx_player_level * 5 );
-	this->spawnArgs.SetInt( "max_ammo_mana", tmpMaxMana );
+	tmpFloatValue =
+		( (float)inventory.arx_attr_mental * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.tmp_arx_attr_mental * DIV2 )
+		+ ( (float)inventory.arx_player_level * 5.0f );
+
+	inventory.arx_class_mana_points = inventory.arx_class_mana_points_base + (int)tmpFloatValue;
+	inventory.tmp_arx_class_mana_points = inventory.arx_class_mana_points_base + (int)tmp_tmpFloatValue;
+
+	//D3
+	this->spawnArgs.SetInt( "max_ammo_mana", inventory.arx_class_mana_points );
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
 
 	// Class: Magic Resist
-	int tmpResistMagicPercentage = inventory.arx_class_resistance_to_magic_base
-		+ ( inventory.arx_attr_mental * 2 )
-		+ ( inventory.arx_skill_casting * DIV10 );
-	if ( tmpResistMagicPercentage > 100 ) { tmpResistMagicPercentage = 100; }
-	inventory.arx_class_resistance_to_magic = tmpResistMagicPercentage;
+	tmpFloatValue =
+		( (float)inventory.arx_attr_mental * 2.0f )
+		+ ( (float)inventory.arx_skill_casting * DIV10 );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.tmp_arx_attr_mental * 2.0f )
+		+ ( (float)inventory.arx_skill_casting * DIV10 );
+
+	tmpIntValue = inventory.arx_class_resistance_to_magic_base + (int)tmpFloatValue;
+	tmp_tmpIntValue = inventory.arx_class_resistance_to_magic_base + (int)tmp_tmpFloatValue;
+
+	if ( tmpIntValue > MAX_RESISTANCE_MAGIC_PERCENT ) { tmpIntValue = MAX_RESISTANCE_MAGIC_PERCENT; }
+	if ( tmp_tmpIntValue > MAX_RESISTANCE_MAGIC_PERCENT ) { tmp_tmpIntValue = MAX_RESISTANCE_MAGIC_PERCENT; }
+
+	inventory.arx_class_resistance_to_magic = tmpIntValue;
+	inventory.tmp_arx_class_resistance_to_magic = tmp_tmpIntValue;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
 
 	// Class: Poison Resist
-	int tmpResistPoisonPercentage = inventory.arx_class_resistance_to_poison_base
-		+ ( inventory.arx_attr_constitution * 2 )
-		+ ( inventory.arx_skill_defense * DIV10 );
-	if ( tmpResistPoisonPercentage > 100 ) { tmpResistPoisonPercentage = 100; }
-	inventory.arx_class_resistance_to_poison = tmpResistPoisonPercentage;
+	tmpFloatValue =
+		( (float)inventory.arx_attr_constitution * 2.0f )
+		+ ( (float)inventory.arx_skill_defense * DIV10 );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.tmp_arx_attr_constitution * 2.0f )
+		+ ( (float)inventory.arx_skill_defense * DIV10 );
+
+	tmpIntValue = inventory.arx_class_resistance_to_poison_base + (int)tmpFloatValue;
+	tmp_tmpIntValue = inventory.arx_class_resistance_to_poison_base + (int)tmp_tmpFloatValue;
+
+	if ( tmpIntValue > MAX_RESISTANCE_POISON_PERCENT ) { tmpIntValue = MAX_RESISTANCE_POISON_PERCENT; }
+	if ( tmp_tmpIntValue > MAX_RESISTANCE_POISON_PERCENT ) { tmp_tmpIntValue = MAX_RESISTANCE_POISON_PERCENT; }
+
+	inventory.arx_class_resistance_to_poison = tmpIntValue;
+	inventory.tmp_arx_class_resistance_to_poison = tmp_tmpIntValue;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
+
+	// Class: Damage Bonus
+	tmpFloatValue =
+		( (float)inventory.arx_attr_strength * DIV2 )
+		+ ( (float)inventory.arx_player_level * 1.5f );
+
+	tmp_tmpFloatValue =
+		( (float)inventory.arx_attr_strength * DIV2 )
+		+ ( (float)inventory.arx_player_level * 1.5f );
+
+	tmpIntValue = inventory.arx_class_damage_points_base + (int)tmpFloatValue;
+	tmp_tmpIntValue = inventory.arx_class_damage_points_base + (int)tmp_tmpFloatValue;
+
+	if ( tmpIntValue > MAX_BONUS_DAMAGE_PERCENT ) { tmpIntValue = MAX_BONUS_DAMAGE_PERCENT; }
+	if ( tmp_tmpIntValue > MAX_BONUS_DAMAGE_PERCENT ) { tmp_tmpIntValue = MAX_BONUS_DAMAGE_PERCENT; }
+	
+	inventory.arx_class_damage_points = tmpIntValue;
+	inventory.tmp_arx_class_damage_points = tmp_tmpIntValue;
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
+
+	// Misc Bonus
+
+
+
+	// ********************************************************************
+	// ********************************************************************
+	// ********************************************************************
+
 }
 
 /*
@@ -15494,20 +15708,6 @@ void idPlayer::ArxPlayerLevelUp( void ) {
 	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 	inventory.ammo[ ammo_mana ] = max_mana;
 
-	// Compute player stats here
-
-	/*
-	player.Old_Skill_Stealth			=	player.Skill_Stealth;
-	player.Old_Skill_Mecanism			=	player.Skill_Mecanism;
-	player.Old_Skill_Intuition			=	player.Skill_Intuition;
-	player.Old_Skill_Etheral_Link		=	player.Skill_Etheral_Link;
-	player.Old_Skill_Object_Knowledge	=	player.Skill_Object_Knowledge;
-	player.Old_Skill_Casting			=	player.Skill_Casting;
-	player.Old_Skill_Projectile			=	player.Skill_Projectile;
-	player.Old_Skill_Close_Combat		=	player.Skill_Close_Combat;
-	player.Old_Skill_Defense			=	player.Skill_Defense;
-	*/
-
 }
 
 /*
@@ -15661,7 +15861,7 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 	{
 		idEntity *ent = gameLocal.GetTraceEntity( trace );
 
-		if ( ent->IsType( idActor::Type ) ) {
+		if ( ent->IsType( idActor::Type ) && ent->health > 0 ) {
 
 			noDamage = ent->spawnArgs.GetBool( "noDamage", "0" );
 			team = ent->spawnArgs.GetInt( "team", "-1" );

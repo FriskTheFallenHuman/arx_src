@@ -14,13 +14,51 @@
 
 // <---- *** Arx ***
 
-const int ARX_EQUIPED_ITEMS_MAX = 4;
+const int ARX_FISTS_WEAPON				= 0;
+const int ARX_MAGIC_WEAPON				= 10;					// Id of the magic casting weapon
+const int ARX_MANA_WEAPON				= ARX_MAGIC_WEAPON;		// This weapon will need to be a weapon that uses mana in order to use this as a guage for the mana hud item.
+const int ARX_MANA_TYPE					= 1;					// See entityDef ammo_types - "ammo_mana" "1"
+
+const int ARX_DEFAULT_BLACKSMITH_SKILL = 94;
+
+const int ARX_MAX_EQUIPED_ITEMS = 4;
+const int ARX_MAX_PLAYER_LEVELS = 10;
+const int ARX_MAX_SKILLS = 9;
+const int ARX_MAX_ATTRIBUTES = 4;
+const int ARX_SKILL_BASE_VALUE = 10;
+
+enum {
+	ARX_SPELL_INVIS = 0,
+	ARX_SPELL_TELEKENESIS_DURATION,
+	ARX_SPELL_TELEKENESIS_DISTANCE,
+	ARX_SPELL_LEVITATE
+};
 
 enum {
 	ARX_EQUIPED_RING_LEFT = 0,
 	ARX_EQUIPED_RING_RIGHT,
 	ARX_EQUIPED_SUIT,
 	ARX_EQUIPED_WEAPON
+};
+
+// Arx - Attributes / SKills / Classes
+enum {
+	ARX_ATTR_STRENGTH = 0,
+	ARX_ATTR_MENTAL,
+	ARX_ATTR_DEXTERITY,
+	ARX_ATTR_CONSTITUTION
+};
+
+enum {
+	ARX_SKILL_STEALTH = 0,
+	ARX_SKILL_TECHNICAL,
+	ARX_SKILL_INTUITION,
+	ARX_SKILL_ETHEREAL_LINK,
+	ARX_SKILL_INTELLIGENCE,
+	ARX_SKILL_CASTING,
+	ARX_SKILL_CLOSE_COMBAT,
+	ARX_SKILL_PROJECTILE,
+	ARX_SKILL_DEFENSE
 };
 
 // ----> *** Arx ***
@@ -114,7 +152,7 @@ public:
 
 	idStr					weaponUniqueName; // Store unique string name of current active weapon
 
-	idStr					arx_equiped_items[ ARX_EQUIPED_ITEMS_MAX ];
+	idStr					arx_equiped_items[ ARX_MAX_EQUIPED_ITEMS ];
 
 	int						arx_snake_weapon; // The current magic weapon
 
@@ -152,6 +190,7 @@ public:
 	int						arx_class_mana_points_base;
 	int						arx_class_resistance_to_magic_base;
 	int						arx_class_resistance_to_poison_base;
+	int						arx_class_damage_points_base;
 
 	int						arx_stat_secrets_found;
 
@@ -172,6 +211,13 @@ public:
 	int						tmp_arx_skill_projectile;
 	int						tmp_arx_skill_stealth;
 	int						tmp_arx_skill_technical;
+
+	int						tmp_arx_class_armour_points;
+	int						tmp_arx_class_health_points;
+	int						tmp_arx_class_mana_points;
+	int						tmp_arx_class_resistance_to_magic;
+	int						tmp_arx_class_resistance_to_poison;
+	int						tmp_arx_class_damage_points;
 
 	int						arx_timer_player_stats_update;
 	int						arx_timer_player_poison;
@@ -1030,6 +1076,10 @@ private:
 	// Skills related
 	void					CreateNewHero( void );											// solarsplace 10th Apr 2015
 	void					LoadBasePointValues( void );									// solarsplace 10th Apr 2015
+	void					LoadCurrentSkillsIntoTemp( void );								// solarsplace 24th Apr 2015
+	float					ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill );	// solarsplace 24th Apr 2015
+	int						GetSpellBonus( int spell );										// solarsplace 24th Apr 2015
+	float					GetPercentageBonus( float BaseValue, float BonusPercentage );	// solarsplace 24th Apr 2015
 	void					UpdateHeroSkills( void );										// solarsplace 10th Apr 2015
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
