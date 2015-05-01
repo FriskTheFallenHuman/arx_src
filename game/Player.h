@@ -156,6 +156,7 @@ public:
 
 	int						arx_snake_weapon; // The current magic weapon
 
+	bool					arx_player_level_up_in_progress;
 	int						arx_player_level;
 	int						arx_player_x_points;
 
@@ -1078,9 +1079,10 @@ private:
 	void					LoadBasePointValues( void );									// solarsplace 10th Apr 2015
 	void					LoadCurrentSkillsIntoTemp( void );								// solarsplace 24th Apr 2015
 	float					ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill );	// solarsplace 24th Apr 2015
+	bool					ArxHasUnspentPoints( void );									// solarsplace 1st May 2015
 	int						GetSpellBonus( int spell );										// solarsplace 24th Apr 2015
 	float					GetPercentageBonus( float BaseValue, float BonusPercentage );	// solarsplace 24th Apr 2015
-	void					UpdateHeroSkills( void );										// solarsplace 10th Apr 2015
+	void					ArxUpdateHeroSkills( void );										// solarsplace 10th Apr 2015
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013

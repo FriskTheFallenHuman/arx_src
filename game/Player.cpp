@@ -233,6 +233,8 @@ void idInventory::Clear( void ) {
 
 	arx_snake_weapon				= ARX_MAGIC_WEAPON;
 
+	arx_player_level_up_in_progress = false;
+
 	arx_player_level				= 0;
 
 	arx_player_x_points				= 0;
@@ -389,6 +391,8 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	*/
 
 	dict.SetInt( "arx_snake_weapon", arx_snake_weapon );
+
+	dict.SetBool( "arx_player_level_up_in_progress", arx_player_level_up_in_progress );
 
 	dict.SetInt( "arx_player_level", arx_player_level );
 
@@ -566,6 +570,8 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 
 	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", idStr( ARX_MAGIC_WEAPON ) );
 
+	arx_player_level_up_in_progress = dict.GetBool( "arx_player_level_up_in_progress", "0" );
+
 	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
 
 	arx_player_x_points				= dict.GetInt( "arx_player_x_points", "0" );
@@ -734,6 +740,8 @@ void idInventory::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( arx_snake_weapon );
 
+	savefile->WriteBool( arx_player_level_up_in_progress );
+
 	savefile->WriteInt( arx_player_level );
 
 	savefile->WriteInt( arx_player_x_points );
@@ -890,6 +898,8 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	*/
 
 	savefile->ReadInt( arx_snake_weapon );
+
+	savefile->ReadBool( arx_player_level_up_in_progress );
 
 	savefile->ReadInt( arx_player_level );
 
@@ -2994,6 +3004,10 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 
 	if ( inventory.pdas.Num() == 0 ) {
 		GivePDA( "arx_default", NULL );
+	}
+
+	if ( gameLocal.ArxNewGameStarted ) {
+		CreateNewHero();
 	}
 
 	//---> Arx - EOS - Solarsplace
@@ -5879,166 +5893,204 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	//gameLocal.Printf( "Journal updated at time %d\n", gameLocal.time );
 	//gameLocal.Printf( "Journal token is %s\n", token.c_str() );
 
+
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// *** Decrement values
 	if ( token.Icmp( "arx_attr_strength_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_strength --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_mental_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_mental --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_dexterity_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_dexterity --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_constitution_dec" ) == 0 ) {
 		inventory.tmp_arx_attribute_points ++;
 		inventory.tmp_arx_attr_constitution --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_casting_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_casting --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_close_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_close_combat --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_defense_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_defense --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_ethereal_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_ethereal_link --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intuition_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_intuition --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intelligence_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_intelligence --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_projectile_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_projectile --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_stealth_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_stealth --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_technical_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
 		inventory.tmp_arx_skill_technical --;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// *** Increment values
 	if ( token.Icmp( "arx_attr_strength_inc" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_strength ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_mental_inc" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_mental ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_dexterity_inc" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_dexterity ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_attr_constitution_inc" ) == 0 ) {
 		inventory.tmp_arx_attribute_points --;
 		inventory.tmp_arx_attr_constitution ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_casting_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_casting ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_close_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_close_combat ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_defense_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_defense ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_ethereal_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_ethereal_link ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intuition_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_intuition ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_intelligence_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_intelligence ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_projectile_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_projectile ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_stealth_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_stealth ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
 	if ( token.Icmp( "arx_skill_technical_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
 		inventory.tmp_arx_skill_technical ++;
+		ArxUpdateHeroSkills();
 		return true;
 	}
 
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// *** Apply values
 	if ( token.Icmp( "arx_apply_attr_skill_points" ) == 0 ) {
+
+		inventory.arx_player_level_up_in_progress = false;
 
 		// Update the permenant values with the temporary values
 		inventory.arx_attr_strength = inventory.tmp_arx_attr_strength;
@@ -6055,6 +6107,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_projectile = inventory.tmp_arx_skill_projectile;
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
+
+		ArxUpdateHeroSkills();
 
 		// Clear down the temporary values
 		inventory.tmp_arx_attr_strength = 0;
@@ -6077,6 +6131,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		return true;
 	}
 
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// *** Unequip items
 	if ( token.Icmp( "unequip_left_ring" ) == 0 ) {
 		inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = "";
@@ -6088,7 +6145,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		return true;
 	}
 
-	// *************************************************
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// Start - Solarsplace - Arx End Of Sun - Blacksmith
 
 	int blackSmithRepairCost = 0;
@@ -9892,6 +9951,12 @@ void idPlayer::UpdateJournalGUI( void )
 		// *****************************************************************
 		// *****************************************************************
 		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
 		// Level and XP's
 
 		objectiveSystem->SetStateInt( "arx_player_level", inventory.arx_player_level );
@@ -9969,36 +10034,90 @@ void idPlayer::UpdateJournalGUI( void )
 		// Attributes & attribute points
 		objectiveSystem->SetStateBool( "arx_attribute_points_visible", hasAttributePointsToSpend );
 		objectiveSystem->SetStateInt( "arx_attribute_points", inventory.tmp_arx_attribute_points );
-		objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.tmp_arx_attr_constitution ); // 4
-		objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.tmp_arx_attr_dexterity ); // 3
-		objectiveSystem->SetStateInt( "arx_attr_mental", inventory.tmp_arx_attr_mental ); // 2
-		objectiveSystem->SetStateInt( "arx_attr_strength", inventory.tmp_arx_attr_strength ); // 1
 
+		if ( ArxHasUnspentPoints() ) {
+			// Show totals using tmp_ versions
+			objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.tmp_arx_attr_constitution ); // 4
+			objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.tmp_arx_attr_dexterity ); // 3
+			objectiveSystem->SetStateInt( "arx_attr_mental", inventory.tmp_arx_attr_mental ); // 2
+			objectiveSystem->SetStateInt( "arx_attr_strength", inventory.tmp_arx_attr_strength ); // 1
+		} else {
+			// No points to spend show real versions
+			objectiveSystem->SetStateInt( "arx_attr_constitution", inventory.arx_attr_constitution ); // 4
+			objectiveSystem->SetStateInt( "arx_attr_dexterity", inventory.arx_attr_dexterity ); // 3
+			objectiveSystem->SetStateInt( "arx_attr_mental", inventory.arx_attr_mental ); // 2
+			objectiveSystem->SetStateInt( "arx_attr_strength", inventory.arx_attr_strength ); // 1
+		}
+
+		// **********************************************************************************************
+		// **********************************************************************************************
+		// **********************************************************************************************
 		// Skills & skill points
 		objectiveSystem->SetStateBool( "arx_skill_points_visible", hasSkillPointsToSpend && !hasAttributePointsToSpend );
 		objectiveSystem->SetStateInt( "arx_skill_points", inventory.tmp_arx_skill_points );
-		objectiveSystem->SetStateInt( "arx_skill_casting", inventory.tmp_arx_skill_casting ); // 10
-		objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.tmp_arx_skill_close_combat ); // 11
-		objectiveSystem->SetStateInt( "arx_skill_defense", inventory.tmp_arx_skill_defense ); // 13
-		objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.tmp_arx_skill_ethereal_link ); // 8
-		objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.tmp_arx_skill_intelligence ); // 9
-		objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.tmp_arx_skill_intuition ); // 7
-		objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.tmp_arx_skill_projectile ); // 12
-		objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.tmp_arx_skill_stealth ); // 5
-		objectiveSystem->SetStateInt( "arx_skill_technical", inventory.tmp_arx_skill_technical ); // 6
 
+		if ( ArxHasUnspentPoints() ) {
+			// Show totals using tmp_ versions
+			objectiveSystem->SetStateInt( "arx_skill_casting", inventory.tmp_arx_skill_casting ); // 10
+			objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.tmp_arx_skill_close_combat ); // 11
+			objectiveSystem->SetStateInt( "arx_skill_defense", inventory.tmp_arx_skill_defense ); // 13
+			objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.tmp_arx_skill_ethereal_link ); // 8
+			objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.tmp_arx_skill_intelligence ); // 9
+			objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.tmp_arx_skill_intuition ); // 7
+			objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.tmp_arx_skill_projectile ); // 12
+			objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.tmp_arx_skill_stealth ); // 5
+			objectiveSystem->SetStateInt( "arx_skill_technical", inventory.tmp_arx_skill_technical ); // 6
+		} else {
+			// No points to spend show real versions
+			objectiveSystem->SetStateInt( "arx_skill_casting", inventory.arx_skill_casting ); // 10
+			objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.arx_skill_close_combat ); // 11
+			objectiveSystem->SetStateInt( "arx_skill_defense", inventory.arx_skill_defense ); // 13
+			objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.arx_skill_ethereal_link ); // 8
+			objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.arx_skill_intelligence ); // 9
+			objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.arx_skill_intuition ); // 7
+			objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.arx_skill_projectile ); // 12
+			objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.arx_skill_stealth ); // 5
+			objectiveSystem->SetStateInt( "arx_skill_technical", inventory.arx_skill_technical ); // 6
+		}
+
+		// **********************************************************************************************
+		// **********************************************************************************************
+		// **********************************************************************************************
 		// Apply button for skills and attributes
-		bool allowStatsAttrApply = ( inventory.arx_attribute_points > 0 && inventory.arx_skill_points > 0 && inventory.tmp_arx_attribute_points == 0 && inventory.tmp_arx_skill_points == 0 );
+		bool allowStatsAttrApply = ( inventory.arx_attribute_points > 0 && inventory.arx_skill_points > 0
+			&& inventory.tmp_arx_attribute_points == 0
+			&& inventory.tmp_arx_skill_points == 0 );
+
 		objectiveSystem->SetStateBool( "arx_points_apply_button_visible", allowStatsAttrApply ); // LOGIC = TODO
 
+		// **********************************************************************************************
+		// **********************************************************************************************
+		// **********************************************************************************************
 		// Player class totals
-		objectiveSystem->SetStateInt( "arx_class_armour_points", inventory.arx_class_armour_points ); // 1
-		objectiveSystem->SetStateInt( "arx_class_damage_points", inventory.arx_class_damage_points ); // 6
-		objectiveSystem->SetStateInt( "arx_class_health_points", inventory.arx_class_health_points ); // 2
-		objectiveSystem->SetStateInt( "arx_class_mana_points", inventory.arx_class_mana_points ); // 4
-		objectiveSystem->SetStateInt( "arx_class_resistance_to_magic", inventory.arx_class_resistance_to_magic ); // 3
-		objectiveSystem->SetStateInt( "arx_class_resistance_to_poison", inventory.arx_class_resistance_to_poison ); // 5
+		if ( ArxHasUnspentPoints() ) {
+			// Show totals using tmp_ versions
+			objectiveSystem->SetStateInt( "arx_class_armour_points", inventory.tmp_arx_class_armour_points ); // 1
+			objectiveSystem->SetStateInt( "arx_class_damage_points", inventory.tmp_arx_class_damage_points ); // 6
+			objectiveSystem->SetStateInt( "arx_class_health_points", inventory.tmp_arx_class_health_points ); // 2
+			objectiveSystem->SetStateInt( "arx_class_mana_points", inventory.tmp_arx_class_mana_points ); // 4
+			objectiveSystem->SetStateInt( "arx_class_resistance_to_magic", inventory.tmp_arx_class_resistance_to_magic ); // 3
+			objectiveSystem->SetStateInt( "arx_class_resistance_to_poison", inventory.tmp_arx_class_resistance_to_poison ); // 5
+		} else {
+			// No points to spend show real versions
+			objectiveSystem->SetStateInt( "arx_class_armour_points", inventory.arx_class_armour_points ); // 1
+			objectiveSystem->SetStateInt( "arx_class_damage_points", inventory.arx_class_damage_points ); // 6
+			objectiveSystem->SetStateInt( "arx_class_health_points", inventory.arx_class_health_points ); // 2
+			objectiveSystem->SetStateInt( "arx_class_mana_points", inventory.arx_class_mana_points ); // 4
+			objectiveSystem->SetStateInt( "arx_class_resistance_to_magic", inventory.arx_class_resistance_to_magic ); // 3
+			objectiveSystem->SetStateInt( "arx_class_resistance_to_poison", inventory.arx_class_resistance_to_poison ); // 5
+		}
 
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
+		// *****************************************************************
 		// *****************************************************************
 		// *****************************************************************
 		// *****************************************************************
@@ -15099,10 +15218,18 @@ idPlayer::CreateNewHero
 */
 void idPlayer::CreateNewHero( void ) {
 
+	//REMOVEME
+	gameLocal.Printf( "Arx - CreateNewHero -\n" );
+
 	LoadBasePointValues();
+
+	inventory.arx_player_level_up_in_progress = true;
 
 	inventory.arx_player_level = this->spawnArgs.GetFloat( "arx_player_level", "0" );
 	inventory.arx_player_x_points = this->spawnArgs.GetFloat( "arx_player_x_points", "0" );
+
+	inventory.arx_attribute_points = this->spawnArgs.GetFloat( "arx_attribute_points", "0" );
+	inventory.arx_skill_points = this->spawnArgs.GetFloat( "arx_skill_points", "0" );
 
 	inventory.arx_attr_strength = 0;
 	inventory.arx_attr_mental = 0;
@@ -15137,6 +15264,9 @@ idPlayer::LoadCurrentSkillsIntoTemp
 =================
 */
 void idPlayer::LoadCurrentSkillsIntoTemp( void ) {
+
+	inventory.tmp_arx_attribute_points			= inventory.arx_attribute_points;
+	inventory.tmp_arx_skill_points				= inventory.arx_skill_points;
 
 	inventory.tmp_arx_attr_strength				= inventory.arx_attr_strength;
 	inventory.tmp_arx_attr_mental				= inventory.arx_attr_mental;
@@ -15204,7 +15334,7 @@ void idPlayer::LoadBasePointValues( void ) {
 
 /*
 =================
-idPlayer::UpdateHeroSkills
+idPlayer::ArxUpdateHeroSkills
 =================
 */
 int idPlayer::GetSpellBonus( int spell ) {
@@ -15267,10 +15397,28 @@ float idPlayer::GetPercentageBonus( float BaseValue, float BonusPercentage ) {
 
 /*
 =================
-idPlayer::UpdateHeroSkills
+idPlayer::ArxHasUnspentPoints
 =================
 */
-void idPlayer::UpdateHeroSkills( void ) {
+bool idPlayer::ArxHasUnspentPoints( void ) {
+
+	if ( inventory.arx_attribute_points > 0 ) {
+		return true;
+	}
+
+	if ( inventory.arx_skill_points > 0 ) {
+		return true;
+	}
+
+	return false;
+}
+
+/*
+=================
+idPlayer::ArxUpdateHeroSkills
+=================
+*/
+void idPlayer::ArxUpdateHeroSkills( void ) {
 
 	const int MAX_RESISTANCE_MAGIC_PERCENT = 100;
 	const int MAX_RESISTANCE_POISON_PERCENT = 100;
@@ -15695,6 +15843,8 @@ void idPlayer::ArxPlayerLevelUp( void ) {
 	// Play a sound to level up. Cached in player.def
 	StartSound( "snd_arx_level_up", SND_CHANNEL_ANY, 0, false, NULL );
 
+	inventory.arx_player_level_up_in_progress = true;
+
 	inventory.arx_player_level ++;
 
 	inventory.arx_attribute_points = spawnArgs.GetInt( "arx_levelup_attribute_points", "1" );
@@ -15780,6 +15930,13 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 			arx_timer_player_levitate = arx_timer_player_levitate - gameLocal.time;
 		} else {
 			arx_timer_player_levitate = RESET_TIME;
+		}
+
+		// Warmth
+		if ( arx_timer_player_warmth > gameLocal.time ) {
+			arx_timer_player_warmth = arx_timer_player_warmth - gameLocal.time;
+		} else {
+			arx_timer_player_warmth = RESET_TIME;
 		}
 	}
 }
@@ -15925,13 +16082,13 @@ void idPlayer::ToggleSuppression( bool bSuppress ) {
 	if ( bSuppress ) {
 		if ( modelDefHandle != -1 ) {
 // sikk---> First Person Body
-			/*
-			if ( !g_showFirstPersonBody.GetBool() ) {
+
+			//if ( !g_showFirstPersonBody.GetBool() ) {
 				// suppress body in DoF render view
 				renderEntity.suppressSurfaceInViewID = -8;
 				gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
-			}
-			*/
+			//}
+
 // <---sikk
 			if ( head.GetEntity() && headHandle != -1 ) {
 				// suppress head in DoF render view

@@ -575,7 +575,8 @@ public:
 	// Solarsplace - Arx EOS
 	const char *			GetSafeLanguageMessage( const char *message );
     bool					mainMenuExitHasDisabledAttack; // http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
-	const char *			GetStringFromEntityDef( idStr entityDefName, idStr searchString ); 
+	const char *			GetStringFromEntityDef( idStr entityDefName, idStr searchString );
+	bool					ArxNewGameStarted;
 
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
