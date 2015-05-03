@@ -3322,7 +3322,11 @@ idPlayer::UpdateHudStats
 ===============
 */
 void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
-	int staminapercentage;
+	// Solarsplace - Arx End Of Sun
+	int armourPercentage;
+	int max_armour;
+
+	int staminaPercentage;
 	float max_stamina;
 
 	assert( _hud );
@@ -3330,13 +3334,18 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	max_stamina = pm_stamina.GetFloat();
 	if ( !max_stamina ) {
 		// stamina disabled, so show full stamina bar
-		staminapercentage = 100.0f;
+		staminaPercentage = 100.0f;
 	} else {
-		staminapercentage = idMath::FtoiFast( 100.0f * stamina / max_stamina );
+		staminaPercentage = idMath::FtoiFast( 100.0f * stamina / max_stamina );
 	}
 
+	// Solarsplace - Arx End Of Sun
+	max_armour = inventory.maxarmor;
+	armourPercentage = idMath::FtoiFast( 100.0f * inventory.armor / max_armour );
+	_hud->SetStateInt( "player_armour_percentage", armourPercentage );
+
 	_hud->SetStateInt( "player_health", health );
-	_hud->SetStateInt( "player_stamina", staminapercentage );
+	_hud->SetStateInt( "player_stamina", staminaPercentage );
 	_hud->SetStateInt( "player_armor", inventory.armor );
 	_hud->SetStateInt( "player_hr", heartRate );
 	_hud->SetStateInt( "player_nostamina", ( max_stamina == 0 ) ? 1 : 0 );
