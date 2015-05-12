@@ -1062,6 +1062,7 @@ private:
 	void					Event_GiveJournal( const char *name );								// 13th Sep 2012 - Solarsplace
 	void					Event_GetMapName( void );											// 22nd Sep 2012 - Solarsplace
 	void					Event_ModifyPlayerXPs( int XPs );
+	void					Event_GetWeaponChargeTime( float baseTime );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
@@ -1076,7 +1077,7 @@ private:
 
 	// Skills related
 	void					CreateNewHero( void );											// solarsplace 10th Apr 2015
-	void					LoadBasePointValues( void );									// solarsplace 10th Apr 2015
+	void					ArxLoadSkillSpawnArgsIntoInventory( void );									// solarsplace 10th Apr 2015
 	void					LoadCurrentSkillsIntoTemp( void );								// solarsplace 24th Apr 2015
 	float					ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill );	// solarsplace 24th Apr 2015
 	bool					ArxHasUnspentPoints( void );									// solarsplace 1st May 2015

@@ -186,6 +186,7 @@ private:
 	// Solarsplace - Arx EOS - 27th Feb 2012
 	int						lastHealth;
 	bool					allowWeaponDamage;
+	bool					allowWeaponDamage_Projectile;
 	int						weaponDamageAlert;
 
 	// hiding (for GUIs and NPCs)

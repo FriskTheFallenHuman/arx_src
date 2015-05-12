@@ -136,6 +136,7 @@ idWeapon::idWeapon() {
 	hasChargeAttack = false;
 	lastHealth = 0;
 	allowWeaponDamage = false;
+	allowWeaponDamage_Projectile = false;
 	weaponDamageAlert = -1;
 }
 
@@ -365,6 +366,7 @@ void idWeapon::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( hasChargeAttack );
 	savefile->WriteInt( lastHealth );
 	savefile->WriteBool( allowWeaponDamage );
+	savefile->WriteBool( allowWeaponDamage_Projectile );
 	savefile->WriteInt( weaponDamageAlert );
 }
 
@@ -528,6 +530,7 @@ void idWeapon::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( hasChargeAttack );
 	savefile->ReadInt( lastHealth);
 	savefile->ReadBool( allowWeaponDamage );
+	savefile->ReadBool( allowWeaponDamage_Projectile );
 	savefile->ReadInt( weaponDamageAlert );
 }
 
@@ -715,10 +718,11 @@ void idWeapon::Clear( void ) {
 	isFiring			= false;
 
 	// Solarsplace - Arx EOS
-	hasChargeAttack		= false;
-	lastHealth			= 0;
-	allowWeaponDamage	= false;
-	weaponDamageAlert	= -1;
+	hasChargeAttack					= false;
+	lastHealth						= 0;
+	allowWeaponDamage				= false;
+	allowWeaponDamage_Projectile	= false;
+	weaponDamageAlert				= -1;
 }
 
 /*
@@ -793,10 +797,11 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 	weaponDef			= gameLocal.FindEntityDef( objectname );
 
 	// Solarsplace - Arx EOS
-	lastHealth			= 0;
-	weaponDamageAlert	= -1;
-	hasChargeAttack		= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
-	allowWeaponDamage	= weaponDef->dict.GetBool( "inv_allow_weapon_damage", "0" );
+	lastHealth						= 0;
+	weaponDamageAlert				= -1;
+	hasChargeAttack					= weaponDef->dict.GetBool( "arx_has_charge_attack", "0" );
+	allowWeaponDamage				= weaponDef->dict.GetBool( "inv_allow_weapon_damage", "0" );
+	allowWeaponDamage_Projectile	= weaponDef->dict.GetBool( "inv_allow_weapon_damage_projectile", "0" );
 
 	ammoType			= GetAmmoNumForName( weaponDef->dict.GetString( "ammoType" ) );
 	ammoRequired		= weaponDef->dict.GetInt( "ammoRequired" );
@@ -1296,7 +1301,7 @@ void idWeapon::Think( void ) {
 	// do nothing because the present is called from the player through PresentWeapon
 
 	// Solarsplace - Arx End Of Sun
-	if ( allowWeaponDamage ) {
+	if ( allowWeaponDamage || allowWeaponDamage_Projectile ) {
 
 		const char *damageSkinKey = "";
 
@@ -2991,9 +2996,6 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 			}
 		}
 
-		//REMOVEMEx
-		//gameLocal.Printf( "ammoType = %i\n", ammoType );
-
 		owner->inventory.UseAmmo( ammoType, ( powerAmmo ) ? dmgPower : ammoRequired );
 		if ( clipSize && ammoRequired ) {
 			ammoClip -= powerAmmo ? dmgPower : 1;
@@ -3118,6 +3120,25 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 
 	// reset muzzle smoke
 	weaponSmokeStartTime = gameLocal.realClientTime;
+
+	// ************************************************
+	// SP - Arx - 12th May 2015 - Weapon health related
+	// at the moment this is a special case for the bow weapon
+
+	//REMOVEME
+	gameLocal.Printf( "Weapon (REMOVE) '%s' health = %d\n", this->name.c_str(), health );
+
+	if ( allowWeaponDamage_Projectile ) {
+
+		int damageWeapon = 0;
+		weaponDef->dict.GetInt( "damage_to_weapon_bow", "0", damageWeapon);
+		damageWeapon = gameLocal.random.RandomInt( damageWeapon );
+		health -= damageWeapon;
+
+		//REMOVEME
+		gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+	}
+	// ************************************************
 }
 
 /*
@@ -3165,16 +3186,18 @@ void idWeapon::Event_Melee( void ) {
 
 			// ************************************************
 			// SP - Arx - 21st Feb 2013 - Weapon health related
-			const char *key;
-			int damageWeapon = 0;
-			const char *materialType = gameLocal.sufaceTypeNames[ tr.c.material->GetSurfaceType() ];
-			key = va( "damage_to_weapon_%s", materialType );
-			weaponDef->dict.GetInt( key, "0", damageWeapon);
-			damageWeapon = gameLocal.random.RandomInt( damageWeapon );
-			health -= damageWeapon;
+			if ( allowWeaponDamage ) {
 
-			//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+				const char *key;
+				int damageWeapon = 0;
+				const char *materialType = gameLocal.sufaceTypeNames[ tr.c.material->GetSurfaceType() ];
+				key = va( "damage_to_weapon_%s", materialType );
+				weaponDef->dict.GetInt( key, "0", damageWeapon);
+				damageWeapon = gameLocal.random.RandomInt( damageWeapon );
+				health -= damageWeapon;
 
+				//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+			}
 			// ************************************************
 
 			float push = meleeDef->dict.GetFloat( "push" );

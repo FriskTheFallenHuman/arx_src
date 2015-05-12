@@ -87,6 +87,7 @@ const idEventDef EV_FindInventoryItemCount( "FindInventoryItemCount", "s", 'f' )
 const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
 const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
 const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
+const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -134,6 +135,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GiveJournal,						idPlayer::Event_GiveJournal )
 	EVENT( EV_GetMapName,						idPlayer::Event_GetMapName )
 	EVENT( EV_ModifyPlayerXPs,					idPlayer::Event_ModifyPlayerXPs )
+	EVENT( EV_GetWeaponChargeTime,              idPlayer::Event_GetWeaponChargeTime )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -264,6 +266,33 @@ void idInventory::Clear( void ) {
 	arx_class_resistance_to_poison	= 0;
 	arx_class_damage_points			= 0;
 	arx_stat_secrets_found			= 0;
+
+	// **********
+	tmp_arx_attribute_points		= 0;
+	tmp_arx_skill_points			= 0;
+
+	tmp_arx_attr_strength			= 0;
+	tmp_arx_attr_mental				= 0;
+	tmp_arx_attr_dexterity			= 0;
+	tmp_arx_attr_constitution		= 0;
+
+	tmp_arx_skill_casting			= 0;
+	tmp_arx_skill_close_combat		= 0;
+	tmp_arx_skill_defense			= 0;
+	tmp_arx_skill_ethereal_link		= 0;
+	tmp_arx_skill_intuition			= 0;
+	tmp_arx_skill_intelligence		= 0;
+	tmp_arx_skill_projectile		= 0;
+	tmp_arx_skill_stealth			= 0;
+	tmp_arx_skill_technical			= 0;
+
+	tmp_arx_class_armour_points		= 0;
+	tmp_arx_class_health_points		= 0;
+	tmp_arx_class_mana_points		= 0;
+	tmp_arx_class_resistance_to_magic	= 0;
+	tmp_arx_class_resistance_to_poison	= 0;
+	tmp_arx_class_damage_points		= 0;
+	// **********
 
 	arx_timer_player_stats_update	= 0;
 
@@ -423,6 +452,33 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_class_resistance_to_poison", arx_class_resistance_to_poison );
 	dict.SetInt( "arx_class_damage_points", arx_class_damage_points );
     dict.SetInt( "arx_stat_secrets_found", arx_stat_secrets_found );
+
+	// **********
+	dict.SetInt( "tmp_arx_attribute_points", tmp_arx_attribute_points );
+	dict.SetInt( "tmp_arx_skill_points", tmp_arx_skill_points );
+
+	dict.SetInt( "tmp_arx_attr_strength", tmp_arx_attr_strength );
+	dict.SetInt( "tmp_arx_attr_mental", tmp_arx_attr_mental );
+	dict.SetInt( "tmp_arx_attr_dexterity", tmp_arx_attr_dexterity );
+	dict.SetInt( "tmp_arx_attr_constitution", tmp_arx_attr_constitution );
+
+	dict.SetInt( "tmp_arx_skill_casting", tmp_arx_skill_casting );
+	dict.SetInt( "tmp_arx_skill_close_combat", tmp_arx_skill_close_combat );
+	dict.SetInt( "tmp_arx_skill_defense", tmp_arx_skill_defense );
+	dict.SetInt( "tmp_arx_skill_ethereal_link", tmp_arx_skill_ethereal_link );
+	dict.SetInt( "tmp_arx_skill_intuition", tmp_arx_skill_intuition );
+	dict.SetInt( "tmp_arx_skill_intelligence", tmp_arx_skill_intelligence );
+	dict.SetInt( "tmp_arx_skill_projectile", tmp_arx_skill_projectile );
+	dict.SetInt( "tmp_arx_skill_stealth", tmp_arx_skill_stealth );
+	dict.SetInt( "tmp_arx_skill_technical", tmp_arx_skill_technical );
+
+	dict.SetInt( "tmp_arx_class_armour_points", tmp_arx_class_armour_points );
+	dict.SetInt( "tmp_arx_class_health_points", tmp_arx_class_health_points );
+	dict.SetInt( "tmp_arx_class_mana_points", tmp_arx_class_mana_points );
+	dict.SetInt( "tmp_arx_class_resistance_to_magic", tmp_arx_class_resistance_to_magic );
+	dict.SetInt( "tmp_arx_class_resistance_to_poison", tmp_arx_class_resistance_to_poison );
+	dict.SetInt( "tmp_arx_class_damage_points", tmp_arx_class_damage_points );
+	// **********
 
 	dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update );
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
@@ -601,6 +657,33 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_class_resistance_to_poison	= dict.GetInt( "arx_class_resistance_to_poison", "0" );
 	arx_class_damage_points			= dict.GetInt( "arx_class_damage_points", "0" );
 	arx_stat_secrets_found			= dict.GetInt( "arx_stat_secrets_found", "0" );
+
+	// **********
+	tmp_arx_attribute_points		= dict.GetInt( "tmp_arx_attribute_points", "0" );
+	tmp_arx_skill_points			= dict.GetInt( "tmp_arx_skill_points", "0" );
+
+	tmp_arx_attr_strength			= dict.GetInt( "tmp_arx_attr_strength", "0" );
+	tmp_arx_attr_mental				= dict.GetInt( "tmp_arx_attr_mental", "0" );
+	tmp_arx_attr_dexterity			= dict.GetInt( "tmp_arx_attr_dexterity", "0" );
+	tmp_arx_attr_constitution		= dict.GetInt( "tmp_arx_attr_constitution", "0" );
+
+	tmp_arx_skill_casting			= dict.GetInt( "tmp_arx_skill_casting", "0" );
+	tmp_arx_skill_close_combat		= dict.GetInt( "tmp_arx_skill_close_combat", "0" );
+	tmp_arx_skill_defense			= dict.GetInt( "tmp_arx_skill_defense", "0" );
+	tmp_arx_skill_ethereal_link		= dict.GetInt( "tmp_arx_skill_ethereal_link", "0" );
+	tmp_arx_skill_intuition			= dict.GetInt( "tmp_arx_skill_intuition", "0" );
+	tmp_arx_skill_intelligence		= dict.GetInt( "tmp_arx_skill_intelligence", "0" );
+	tmp_arx_skill_projectile		= dict.GetInt( "tmp_arx_skill_projectile", "0" );
+	tmp_arx_skill_stealth			= dict.GetInt( "tmp_arx_skill_stealth", "0" );
+	tmp_arx_skill_technical			= dict.GetInt( "tmp_arx_skill_technical", "0" );
+
+	tmp_arx_class_armour_points			= dict.GetInt( "tmp_arx_class_armour_points", "0" );
+	tmp_arx_class_health_points			= dict.GetInt( "tmp_arx_class_health_points", "0" );
+	tmp_arx_class_mana_points			= dict.GetInt( "tmp_arx_class_mana_points", "0" );
+	tmp_arx_class_resistance_to_magic	= dict.GetInt( "tmp_arx_class_resistance_to_magic", "0" );
+	tmp_arx_class_resistance_to_poison	= dict.GetInt( "tmp_arx_class_resistance_to_poison", "0" );
+	tmp_arx_class_damage_points			= dict.GetInt( "tmp_arx_class_damage_points", "0" );
+	// **********
 
 	arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" );
 
@@ -3056,14 +3139,14 @@ void idPlayer::RestorePersistantInfo( void ) {
 
 	inventory.RestoreInventory( this, spawnArgs );
 
+	// Solarsplace - Arx End Of Sun
+	ArxLoadSkillSpawnArgsIntoInventory();
+	UpdateWeaponHealth();
+
 	health = spawnArgs.GetInt( "health", "100" );
 
 	if ( !gameLocal.isClient ) {
-
 		idealWeapon = spawnArgs.GetInt( "current_weapon", "1" );
-
-		// Solarsplace - Arx End Of Sun - 26th Nov 2013
-		UpdateWeaponHealth();
 	}
 }
 
@@ -9891,13 +9974,13 @@ void idPlayer::UpdateInventoryGUI( void )
 			int tempHealthMax = item->GetInt( "inv_health_max", "100" );
 			const char *iname;
 
-			if ( !item->GetBool( "inv_allow_weapon_damage", "0" ) ) {
-				iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
-			} else {
+			if ( item->GetBool( "inv_allow_weapon_damage", "0" ) || item->GetBool( "inv_allow_weapon_damage_projectile", "0" ) ) {
 				// Display current health / max health in inventory
 				idStr tempInvName;
 				sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
 				iname = tempInvName.c_str();
+			} else {
+				iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 			}
 
 			//const char *iicon = item->GetString( "inv_icon" );
@@ -15230,7 +15313,7 @@ void idPlayer::CreateNewHero( void ) {
 	//REMOVEME
 	gameLocal.Printf( "Arx - CreateNewHero -\n" );
 
-	LoadBasePointValues();
+	ArxLoadSkillSpawnArgsIntoInventory();
 
 	inventory.arx_player_level_up_in_progress = true;
 
@@ -15328,10 +15411,10 @@ float idPlayer::ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill ) {
 
 /*
 =================
-idPlayer::LoadBasePointValues
+idPlayer::ArxLoadSkillSpawnArgsIntoInventory
 =================
 */
-void idPlayer::LoadBasePointValues( void ) {
+void idPlayer::ArxLoadSkillSpawnArgsIntoInventory( void ) {
 
 	inventory.arx_class_armour_points_base			= this->spawnArgs.GetFloat( "maxarmor", "0" );
 	inventory.arx_class_health_points_base			= this->spawnArgs.GetFloat( "maxhealth", "0" );
@@ -15838,6 +15921,31 @@ void idPlayer::ModifyPlayerXPs( int XPs, bool showMessage )
 			ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
 		}
 	}
+}
+
+/*
+================
+idPlayer::Event_GetWeaponChargeTime
+================
+*/
+void idPlayer::Event_GetWeaponChargeTime( float baseTime )
+{
+	const float MIN_CHARGE_TIME = 0.1f; // 100ms
+
+	if ( baseTime <= 0.0f ) {
+		idThread::ReturnFloat( MIN_CHARGE_TIME );
+	}
+
+	float skillBonus = inventory.arx_skill_close_combat
+		+ inventory.arx_player_level;
+
+	float baseTimeBonus = baseTime - GetPercentageBonus( baseTime, skillBonus );
+
+	if ( baseTimeBonus < MIN_CHARGE_TIME ) {
+		idThread::ReturnFloat( MIN_CHARGE_TIME );
+	} else {
+		idThread::ReturnFloat( baseTimeBonus );
+	}	
 }
 
 /*
