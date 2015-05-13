@@ -131,7 +131,7 @@ extern idSoundWorld *				gameSoundWorld;
 // the "gameversion" client command will print this plus compile date
 #define	GAME_VERSION		"baseDOOM-1"
 
-#define	TC_VERSION			"Arx - End Of Sun - V0.0.2"
+#define	TC_VERSION			"Arx - End Of Sun - V1.0"
 
 // classes used by idGameLocal
 class idEntity;

@@ -28,6 +28,11 @@ const int ARX_MAX_ATTRIBUTES = 4;
 const int ARX_SKILL_BASE_VALUE = 10;
 
 enum {
+	ARX_WEAPON_TYPE_MELEE = 0,
+	ARX_WEAPON_TYPE_PROJECTILE = 1
+};
+
+enum {
 	ARX_SPELL_INVIS = 0,
 	ARX_SPELL_TELEKENESIS_DURATION,
 	ARX_SPELL_TELEKENESIS_DISTANCE,
@@ -418,8 +423,8 @@ public:
 
 	// Skills & stats related
 	void					ModifyPlayerXPs( int XPs, bool showMessage );
-
 	float					ArxSkillGetAlertDistance( float defaultDistance );
+	int						ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillType );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC

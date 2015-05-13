@@ -15001,6 +15001,41 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 /*
 =================
+idPlayer::ArxCalculateWeaponDamage
+=================
+*/
+int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillType ) {
+
+	const int MIN_DAMAGE_AMOUNT = 1;
+	float newDamageAmount = 0;
+
+	if ( baseDamageAmount <= 0 ) { return 0; }
+
+	switch( weaponSkillType ) {
+
+		case ARX_WEAPON_TYPE_MELEE :
+
+			newDamageAmount = baseDamageAmount - GetPercentageBonus( baseDamageAmount, inventory.arx_skill_intelligence
+				+ inventory.arx_skill_close_combat + inventory.arx_player_level );
+
+		case ARX_WEAPON_TYPE_PROJECTILE :
+
+			newDamageAmount = baseDamageAmount - GetPercentageBonus( baseDamageAmount, inventory.arx_skill_intelligence
+				+ inventory.arx_skill_projectile + inventory.arx_player_level );
+	}
+
+	if ( newDamageAmount <= 0 ) {
+		newDamageAmount = MIN_DAMAGE_AMOUNT;
+	}
+
+	//REMOVEME
+	gameLocal.Printf( "ArxCalculateWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
+
+	return newDamageAmount;
+}
+
+/*
+=================
 idPlayer::UpdateEquipedItems
 =================
 */

@@ -3133,7 +3133,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 		int damageWeapon = 0;
 		weaponDef->dict.GetInt( "damage_to_weapon_bow", "0", damageWeapon);
 		damageWeapon = gameLocal.random.RandomInt( damageWeapon );
-		health -= damageWeapon;
+		health -= gameLocal.GetLocalPlayer()->ArxCalculateWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
 
 		//REMOVEME
 		gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
@@ -3194,7 +3194,8 @@ void idWeapon::Event_Melee( void ) {
 				key = va( "damage_to_weapon_%s", materialType );
 				weaponDef->dict.GetInt( key, "0", damageWeapon);
 				damageWeapon = gameLocal.random.RandomInt( damageWeapon );
-				health -= damageWeapon;
+
+				health -= gameLocal.GetLocalPlayer()->ArxCalculateWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
 
 				//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
 			}
