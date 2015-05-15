@@ -12786,6 +12786,28 @@ void idPlayer::CalcDamagePoints( idEntity *inflictor, idEntity *attacker, const 
 			damage = 0;
 	}
 
+	// *****************************************
+	// *****************************************
+	// Arx End Of Sun
+	// Calculate damage reduction based on damage type and player skills
+	bool magicDamage = 0;
+	bool meleeDamage = 0;
+	int damageReductionBonus = 0;
+
+	damageDef->GetBool( "arx_magic_damage", "0", magicDamage );
+	damageDef->GetBool( "arx_melee_damage", "0", meleeDamage );
+
+	if ( magicDamage ) {
+		damage = damage - ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_MAGICAL );
+	}
+
+	if ( meleeDamage ) {
+		damage = damage - ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_MELEE );
+	}
+	// Arx End Of Sun
+	// *****************************************
+	// *****************************************
+
 	*health = damage;
 	*armor = armorSave;
 }
@@ -12894,15 +12916,22 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		lastArmorPulse = gameLocal.time;
 	}
 	
-	// Solarsplace - 16th May 2010 - Poision related
+	// *************************************
+	// *************************************
+	// Arx End Of Sun - Solarsplace
 	int poisonTime = damageDef->dict.GetInt( "poisoned", "0" );
 	if ( poisonTime > 0 )
 	{
-		// SP - Updated 15th Mar 2013 - Player skills related
+		int poisonSkill = inventory.arx_class_resistance_to_poison + inventory.arx_player_level;
+
+		poisonTime = poisonTime - (int)GetPercentageBonus( (float)poisonTime, (float)poisonSkill );
+
 		if ( CalculateHeroChance( "add_poison" ) ) {
 			inventory.arx_timer_player_poison += gameLocal.time + SEC2MS( poisonTime );
 		}
 	}
+	// *************************************
+	// *************************************
 
 	if ( damageDef->dict.GetBool( "burn" ) ) {
 		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
@@ -12986,11 +13015,16 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 	}
 
+	// *************************************
+	// *************************************
+	// Arx End Of Sun
 	// Solarsplace - 14th Nov 2013 - Fire related
 	if ( damageDef->dict.GetBool( "onFire" ) ) {
 		int fireDamageDuration = (int)( ( (float)damage / 6.0f ) + 0.5f ); // Duration based on damage. Should never be less than 1 second.
 		inventory.arx_timer_player_onfire = gameLocal.time + SEC2MS( fireDamageDuration );
 	}
+	// *************************************
+	// *************************************
 
 	lastDamageDef = damageDef->Index();
 	lastDamageDir = damage_from;
@@ -15006,8 +15040,11 @@ idPlayer::ArxCalculateWeaponDamage
 */
 int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillType ) {
 
+	// Calculates the bonus reduction in how much wear is done to a weapon based on the players skills.
+
 	const int MIN_DAMAGE_AMOUNT = 1;
-	float newDamageAmount = 0;
+	int newDamageAmount = 0;
+	int tmpSkillValue = 0;
 
 	if ( baseDamageAmount <= 0 ) { return 0; }
 
@@ -15015,13 +15052,17 @@ int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillTyp
 
 		case ARX_WEAPON_TYPE_MELEE :
 
-			newDamageAmount = baseDamageAmount - GetPercentageBonus( baseDamageAmount, inventory.arx_skill_intelligence
+			tmpSkillValue = ( inventory.arx_skill_intelligence
 				+ inventory.arx_skill_close_combat + inventory.arx_player_level );
+
+			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
 
 		case ARX_WEAPON_TYPE_PROJECTILE :
 
-			newDamageAmount = baseDamageAmount - GetPercentageBonus( baseDamageAmount, inventory.arx_skill_intelligence
+			tmpSkillValue = ( baseDamageAmount, inventory.arx_skill_intelligence
 				+ inventory.arx_skill_projectile + inventory.arx_player_level );
+
+			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
 	}
 
 	if ( newDamageAmount <= 0 ) {
@@ -15032,6 +15073,48 @@ int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillTyp
 	gameLocal.Printf( "ArxCalculateWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
 
 	return newDamageAmount;
+}
+
+/*
+=================
+idPlayer::ArxCalculatePlayerDamage
+=================
+*/
+int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
+
+	// Calculates the bonus reduction in how much damage is done to the weapon based on the players skills.
+
+	const int MIN_DAMAGE_AMOUNT = 1;
+	int newDamageAmount = 0;
+	int tmpSkillValue = 0;
+
+	if ( baseDamageAmount <= 0 ) { return 0; }
+
+	switch( damageType ) {
+
+		case ARX_DAMAGE_TYPE_MELEE :
+
+			tmpSkillValue = ( baseDamageAmount, inventory.arx_skill_defense
+				+ inventory.arx_skill_projectile + inventory.arx_player_level );
+
+			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
+
+		case ARX_DAMAGE_TYPE_MAGICAL :
+
+			tmpSkillValue = ( inventory.arx_class_resistance_to_magic + inventory.arx_player_level );
+
+			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
+	}
+
+	if ( newDamageAmount <= 0 ) {
+		newDamageAmount = MIN_DAMAGE_AMOUNT;
+	}
+
+	//REMOVEME
+	gameLocal.Printf( "ArxCalculatePlayerDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
+
+	return newDamageAmount;
+
 }
 
 /*
@@ -15516,10 +15599,18 @@ idPlayer::GetPercentageBonus
 */
 float idPlayer::GetPercentageBonus( float BaseValue, float BonusPercentage ) {
 
+	float returnValue = 0.0f;
+
 	if ( BaseValue <= 0 ) { return 0; }
 	if ( BonusPercentage <= 0 ) { return 0; }
 
-	return ( BaseValue / 100.0f ) * BonusPercentage;
+	returnValue = ( BaseValue / 100.0f ) * BonusPercentage;
+
+	if ( returnValue < 0 ) {
+		returnValue = 0;
+	}
+
+	return returnValue;
 }
 
 /*

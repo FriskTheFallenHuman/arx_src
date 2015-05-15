@@ -33,6 +33,11 @@ enum {
 };
 
 enum {
+	ARX_DAMAGE_TYPE_MELEE = 0,
+	ARX_DAMAGE_TYPE_MAGICAL = 1
+};
+
+enum {
 	ARX_SPELL_INVIS = 0,
 	ARX_SPELL_TELEKENESIS_DURATION,
 	ARX_SPELL_TELEKENESIS_DISTANCE,
@@ -1094,6 +1099,7 @@ private:
 	bool					CalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
 	int						GetRequiredXPForLevel( int level );
 	void					ArxPlayerLevelUp( void );
+	int						ArxCalculatePlayerDamage( int baseDamageAmount, int damageType );
 
 	// Magic related
 	int						GetPlayerManaAmount( void );									// Solarsplace 28th Feb 2010
