@@ -6202,7 +6202,14 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 		ArxUpdateHeroSkills();
 
+		// Clear down the current values
+		inventory.arx_attribute_points = 0;
+		inventory.arx_skill_points = 0;
+
 		// Clear down the temporary values
+		inventory.tmp_arx_attribute_points = 0;
+		inventory.tmp_arx_skill_points = 0;
+
 		inventory.tmp_arx_attr_strength = 0;
 		inventory.tmp_arx_attr_mental = 0;
 		inventory.tmp_arx_attr_dexterity = 0;
@@ -10055,12 +10062,12 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateInt( "arx_player_x_points", inventory.arx_player_x_points );
 
 		bool hasAttributePointsToSpend = false;
-		if ( inventory.arx_attribute_points > 0 ) {
+		if ( inventory.tmp_arx_attribute_points > 0 ) {
 			hasAttributePointsToSpend = true;
 		}
 
 		bool hasSkillPointsToSpend = false;
-		if ( inventory.arx_skill_points > 0 ) {
+		if ( inventory.tmp_arx_skill_points > 0 ) {
 			hasSkillPointsToSpend = true;
 		}
 
