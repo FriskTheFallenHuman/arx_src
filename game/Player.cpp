@@ -10152,7 +10152,7 @@ void idPlayer::UpdateJournalGUI( void )
 		// **********************************************************************************************
 		// **********************************************************************************************
 		// Skills & skill points
-		objectiveSystem->SetStateBool( "arx_skill_points_visible", hasSkillPointsToSpend && !hasAttributePointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_points_visible", hasSkillPointsToSpend ); //&& !hasAttributePointsToSpend );
 		objectiveSystem->SetStateInt( "arx_skill_points", inventory.tmp_arx_skill_points );
 
 		if ( ArxHasUnspentPoints() ) {
