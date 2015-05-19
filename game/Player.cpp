@@ -5980,6 +5980,24 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	/*****************************************************************************************/
 	/*****************************************************************************************/
 	/*****************************************************************************************/
+	// *** Readables
+	const int PAGES_PER_BOOK = 2;
+
+	if ( token.Icmp( "arx_book_arrow_left" ) == 0 ) {
+		lastReadablePage = lastReadablePage - PAGES_PER_BOOK;
+		return true;
+	}
+
+	if ( token.Icmp( "arx_book_arrow_right" ) == 0 ) {
+		lastReadablePage = lastReadablePage + PAGES_PER_BOOK;
+		return true;
+	}
+
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
+	/*****************************************************************************************/
 	// *** Journal
 
 	//gameLocal.Printf( "Journal updated at time %d\n", gameLocal.time );
@@ -9774,6 +9792,46 @@ void idPlayer::UpdateShoppingSystem( void )
 	}
 }
 
+void idPlayer::UpdateReadableGUI( void )
+{
+	if ( readableSystem && readableSystemOpen )
+	{
+		if ( lastReadableEntity ) {
+
+			int numberOfPages = lastReadableEntity->spawnArgs.GetInt( "arx_book_page_count", "1" );
+
+			// Text for left page of book
+			idStr pageLeftText = lastReadableEntity->spawnArgs.GetString( va( "arx_book_page_%i", lastReadablePage ), "" );
+			readableSystem->SetStateString( "arx_book_page_left_text", pageLeftText );
+
+			// Text for right page of book
+			idStr pageRightText = lastReadableEntity->spawnArgs.GetString( va( "arx_book_page_%i", lastReadablePage + 1 ), "" );
+			readableSystem->SetStateString( "arx_book_page_right_text", pageRightText );
+
+			// Book page numbers
+			readableSystem->SetStateInt( "arx_book_page_left_number", lastReadablePage );
+			readableSystem->SetStateInt( "arx_book_page_right_number", lastReadablePage + 1 );
+
+			// Back page arrow
+			bool leftArrowVisible = false;
+			if ( lastReadablePage > 1 ) {
+				leftArrowVisible = true;
+			}
+			readableSystem->SetStateBool( "arx_book_page_left_arrow", leftArrowVisible );
+
+			// Forward page arrow
+			bool rightArrowVisible = false;
+			if ( (lastReadablePage + 1) < numberOfPages ) {
+				rightArrowVisible = true;
+			}
+			readableSystem->SetStateBool( "arx_book_page_right_arrow", rightArrowVisible );
+		}
+	}
+
+	// !!! Critical - MUST DO THIS !!!
+	readableSystem->StateChanged( gameLocal.time );
+}
+
 void idPlayer::UpdateConversationSystem( void )
 {
 	int j = 0;
@@ -11020,6 +11078,9 @@ void idPlayer::GetEntityByViewRay( void )
 					const char *str = journalDef->dict.GetString( "pda_name" );
 					player->GivePDA( str, &journalArgs );
 				}
+
+				lastReadableEntity = target;
+				lastReadablePage = 1;
 
 				readableSystem = uiManager->FindGui( target->spawnArgs.GetString( "target_gui" ), true, false, true );
 				ToggleReadableSystem();
@@ -12351,6 +12412,7 @@ void idPlayer::Think( void ) {
 	UpdateInventoryGUI();
 	UpdateShoppingSystem();
 	UpdateConversationSystem();
+	UpdateReadableGUI();
 
 	// This code is ONLY used for pre-cast magic projectiles.
 	if ( magicDoingPreCastSpellProjectile )

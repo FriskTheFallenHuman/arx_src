@@ -403,6 +403,8 @@ public:
 	// Solarsplace 6th May 2010 - Readable GUI related
 	idUserInterface *		readableSystem;
 	bool					readableSystemOpen;
+	idEntity *				lastReadableEntity;
+	int						lastReadablePage;
 
 	// Solarsplace 2nd Nov 2011 - NPC GUI related
 	idUserInterface *		conversationSystem;
