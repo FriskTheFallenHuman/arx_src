@@ -2109,6 +2109,8 @@ void idPlayer::Spawn( void ) {
 			cursor->Activate( true, gameLocal.time );
 		}
 
+		fullScreenMenuGUIId = "";
+
 		objectiveSystem = uiManager->FindGui( "guis/arx_journal.gui", true, false, true );
 		objectiveSystemOpen = false;
 
@@ -5204,6 +5206,20 @@ idUserInterface *idPlayer::ActiveGui( void ) {
 		return shoppingSystem;
 	}
 
+
+	if ( fullScreenMenuGUIId != "" ) {
+
+		idEntity *ent = gameLocal.FindEntity( fullScreenMenuGUIId );
+
+		if ( ent ) {
+
+			idTrigger_FullScreenMenuGUI *gui = static_cast<idTrigger_FullScreenMenuGUI*>( ent );
+			
+			if ( gui->fullScreenGUIInterfaceOpen ) {
+				return gui->fullScreenGUIInterface;
+			}
+		}
+	}
 
 	return focusUI;
 }

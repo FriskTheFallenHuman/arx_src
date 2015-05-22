@@ -656,6 +656,20 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 		player->shoppingSystem->Redraw( gameLocal.time );
 	}
 
+	if ( player->fullScreenMenuGUIId != "" ) {
+
+		idEntity *ent = gameLocal.FindEntity( player->fullScreenMenuGUIId );
+
+		if ( ent ) {
+
+			idTrigger_FullScreenMenuGUI *gui = static_cast<idTrigger_FullScreenMenuGUI*>( ent );
+			
+			if ( gui->fullScreenGUIInterfaceOpen ) {
+				gui->Redraw();
+			}
+		}
+	}
+
 	// End - Solarsplace - Arx End Of Sun
 	//******************************************************************************************************
 	//******************************************************************************************************

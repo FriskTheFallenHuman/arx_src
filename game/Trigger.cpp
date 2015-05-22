@@ -1312,3 +1312,154 @@ idTrigger_Touch::Disable
 void idTrigger_Touch::Disable( void ) {
 	BecomeInactive( TH_THINK );
 }
+
+/*
+===============================================================================
+
+	Arx - End Of Sun
+
+	idTrigger_FullScreenMenuGUI
+	
+===============================================================================
+*/
+
+CLASS_DECLARATION( idTrigger, idTrigger_FullScreenMenuGUI )
+	EVENT( EV_Activate,		idTrigger_FullScreenMenuGUI::Event_Trigger )
+END_CLASS
+
+
+/*
+================
+idTrigger_FullScreenMenuGUI::idTrigger_FullScreenMenuGUI
+================
+*/
+idTrigger_FullScreenMenuGUI::idTrigger_FullScreenMenuGUI( void ) {
+	clipModel = NULL;
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Spawn
+================
+*/
+void idTrigger_FullScreenMenuGUI::Spawn( void ) {
+	// get the clip model
+	clipModel = new idClipModel( GetPhysics()->GetClipModel() );
+
+	// remove the collision model from the physics object
+	GetPhysics()->SetClipModel( NULL, 1.0f );
+
+	//TODO - Add safety checks
+	idStr interfaceGUI = this->spawnArgs.GetString( "gui_fullScreenMenu", "" );
+	fullScreenGUIInterface = uiManager->FindGui( interfaceGUI, true, false, true );
+
+	if ( spawnArgs.GetBool( "start_on" ) ) {
+		BecomeActive( TH_THINK );
+	}
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Save
+================
+*/
+void idTrigger_FullScreenMenuGUI::Save( idSaveGame *savefile ) {
+	savefile->WriteClipModel( clipModel );
+	savefile->WriteUserInterface( fullScreenGUIInterface, false );
+	savefile->WriteBool( fullScreenGUIInterfaceOpen );
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Restore
+================
+*/
+void idTrigger_FullScreenMenuGUI::Restore( idRestoreGame *savefile ) {
+	savefile->ReadClipModel( clipModel );
+	savefile->ReadUserInterface( fullScreenGUIInterface );
+	savefile->ReadBool( fullScreenGUIInterfaceOpen );
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Redraw
+================
+*/
+void idTrigger_FullScreenMenuGUI::Redraw( void ) {
+	if ( fullScreenGUIInterface && fullScreenGUIInterfaceOpen ) {
+		fullScreenGUIInterface->Redraw( gameLocal.time );
+	}
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Think
+================
+*/
+void idTrigger_FullScreenMenuGUI::Think( void ) {
+	if ( thinkFlags & TH_THINK ) {
+		UpdateGUI();
+	}
+	idEntity::Think();
+}
+
+
+/*
+================
+idTrigger_FullScreenMenuGUI::UpdateGUI
+================
+*/
+void idTrigger_FullScreenMenuGUI::UpdateGUI( void ) {
+
+	// This is probably not needed at the moment.
+
+	if ( fullScreenGUIInterface && fullScreenGUIInterfaceOpen ) {
+
+		fullScreenGUIInterface->StateChanged( gameLocal.time );
+	}
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::ToggleFullScreenGUIInterface
+================
+*/
+void idTrigger_FullScreenMenuGUI::ToggleFullScreenGUIInterface( void ) {
+
+	if( !fullScreenGUIInterfaceOpen )
+	{
+		gameLocal.Printf("ToggleFullScreenGUIInterface = opening\n" ); //REMOVEME
+
+		fullScreenGUIInterface->Activate( true, gameLocal.time );
+		fullScreenGUIInterfaceOpen = true;
+
+		gameLocal.GetLocalPlayer()->fullScreenMenuGUIId = this->name;
+		gameLocal.GetLocalPlayer()->SetInfluenceLevel( INFLUENCE_LEVEL2 );
+	}
+	else
+	{
+		gameLocal.Printf("ToggleFullScreenGUIInterface = closing\n" ); //REMOVEME
+
+		fullScreenGUIInterface->Activate( false, gameLocal.time );
+		fullScreenGUIInterfaceOpen = false;
+
+		gameLocal.GetLocalPlayer()->fullScreenMenuGUIId = "";
+		gameLocal.GetLocalPlayer()->SetInfluenceLevel( INFLUENCE_NONE );
+	}
+}
+
+/*
+================
+idTrigger_FullScreenMenuGUI::Event_Trigger
+================
+*/
+void idTrigger_FullScreenMenuGUI::Event_Trigger( idEntity *activator ) {
+
+	ToggleFullScreenGUIInterface();
+
+	if ( thinkFlags & TH_THINK ) {
+		BecomeInactive( TH_THINK );
+	} else {
+		BecomeActive( TH_THINK );
+	}
+}

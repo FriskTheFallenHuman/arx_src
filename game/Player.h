@@ -392,6 +392,8 @@ public:
 
 	*/
 
+	idStr					fullScreenMenuGUIId;
+
 	// Solarsplace 10th April 2010 - Inventory related
 	idUserInterface *		inventorySystem;
 	bool					inventorySystemOpen;

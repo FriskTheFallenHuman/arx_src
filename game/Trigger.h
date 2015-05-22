@@ -269,4 +269,40 @@ private:
 	void				Event_Trigger( idEntity *activator );
 };
 
+/*
+===============================================================================
+
+	Arx - End Of Sun
+
+	Trigger which displays a full screen GUI over the view
+
+===============================================================================
+*/
+
+class idTrigger_FullScreenMenuGUI : public idTrigger {
+public:
+
+	CLASS_PROTOTYPE( idTrigger_FullScreenMenuGUI );
+
+						idTrigger_FullScreenMenuGUI( void );
+
+	void				Spawn( void );
+	virtual void		Think( void );
+
+	void				Save( idSaveGame *savefile );
+	void				Restore( idRestoreGame *savefile );
+
+	void				Redraw( void );
+
+	idUserInterface *	fullScreenGUIInterface;
+	bool				fullScreenGUIInterfaceOpen;
+
+private:
+	idClipModel *		clipModel;
+
+	void				UpdateGUI( void );
+	void				ToggleFullScreenGUIInterface( void );
+	void				Event_Trigger( idEntity *activator );
+};
+
 #endif /* !__GAME_TRIGGER_H__ */
