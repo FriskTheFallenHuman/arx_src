@@ -13065,6 +13065,25 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 			damage = 1;
 		}
 
+		// *************************************
+		// *************************************
+		// Arx End Of Sun - Solarsplace
+		bool magicDamage = damageDef->dict.GetBool( "arx_magic_damage", "0" );
+		if ( magicDamage ) {
+
+			int tmpDamage = damage;
+			int magicSkill = inventory.arx_class_resistance_to_magic + inventory.arx_player_level;
+
+			damage = damage - (int)GetPercentageBonus( (float)damage, (float)magicSkill );
+
+			if ( damage == 0 && tmpDamage > 0 ) {
+				// Never 100% immune to damage from magic. Need this so we recieve pain feedback adding to the tension.
+				damage += 2;
+			}
+		}
+		// *************************************
+		// *************************************
+
 		int oldHealth = health;
 		health -= damage;
 
@@ -15686,13 +15705,20 @@ float idPlayer::GetPercentageBonus( float BaseValue, float BonusPercentage ) {
 
 	float returnValue = 0.0f;
 
+	// Safety checks to prevent a divide by 0 error
 	if ( BaseValue <= 0 ) { return 0; }
 	if ( BonusPercentage <= 0 ) { return 0; }
 
 	returnValue = ( BaseValue / 100.0f ) * BonusPercentage;
 
+	// Don't return a value less than zero
 	if ( returnValue < 0 ) {
 		returnValue = 0;
+	}
+
+	// Don't return a value greater than the BaseValue
+	if ( returnValue > BaseValue ) {
+		returnValue = BaseValue;
 	}
 
 	return returnValue;
