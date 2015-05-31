@@ -3080,6 +3080,11 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		attacker = gameLocal.world;
 	}
 
+	// Arx End Of Sun - Don't damage hidden things!
+	if ( this->IsHidden() ) {
+		return;
+	}
+
 	const idDict *damageDef = gameLocal.FindEntityDefDict( damageDefName );
 	if ( !damageDef ) {
 		gameLocal.Error( "Unknown damageDef '%s'\n", damageDefName );

@@ -1345,7 +1345,9 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 
 	} else {
 		// unknown item
-		gameLocal.Warning( "Unknown stat '%s' added to player's inventory", statname );
+		
+		// Arx End Of Sun - Warning suppressed
+		//gameLocal.Warning( "Unknown stat '%s' added to player's inventory", statname );
 		return false;
 	}
 
@@ -4430,10 +4432,30 @@ idPlayer::FindInventoryItemIndex - Solarsplace - 2nd July 2010
 */
 int idPlayer::FindInventoryItemIndex( const char *name ) {
 
+	idStr name_idstr;
+	idStr iname_idstr;
+
+	// SP - 6th Sep 2013 - Make names and string conversions consistent.
+	if ( idStr::FindText( name, "#str_" ) == 0 ) {
+		name_idstr = common->GetLanguageDict()->GetString( name );
+	} else {
+		// SP - 7th June 2014 - Corrected bug where non "#str_" would not be matched.
+		name_idstr = idStr( name );
+	}
+
 	for ( int i = 0; i < inventory.items.Num(); i++ ) {
 		const char *iname = inventory.items[i]->GetString( "inv_name" );
 		if ( iname && *iname ) {
-			if ( idStr::Icmp( name, iname ) == 0 ) {
+
+			// SP - 6th Sep 2013 - Make names and string conversions consistent.
+			if ( idStr::FindText( iname, "#str_" ) == 0 ) {
+				iname_idstr = common->GetLanguageDict()->GetString( iname );
+			} else {
+				// SP - 31st Oct 2014 - Corrected bug where non "#str_" would not be matched.
+				iname_idstr = idStr( iname );
+			}
+
+			if ( idStr::Icmp( name_idstr, iname_idstr ) == 0 ) {
 				return i;
 			}
 		}
