@@ -3133,7 +3133,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 		int damageWeapon = 0;
 		weaponDef->dict.GetInt( "damage_to_weapon_bow", "0", damageWeapon);
 		damageWeapon = gameLocal.random.RandomInt( damageWeapon );
-		health -= gameLocal.GetLocalPlayer()->ArxCalculateWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
+		health -= gameLocal.GetLocalPlayer()->ArxCalculateOwnWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
 
 		//REMOVEME
 		gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
@@ -3160,7 +3160,11 @@ void idWeapon::Event_Melee( void ) {
 
 	if ( !gameLocal.isClient ) {
 		idVec3 start = playerViewOrigin;
-		idVec3 end = start + playerViewAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
+
+		// Arx End Of Sun
+		//idVec3 end = start + playerViewAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
+		idVec3 end = start + playerViewAxis[0] * ( owner->ArxCalculateD3GameBonuses( meleeDistance, ARX_MELEE_DISTANCE ) );
+
 		gameLocal.clip.TracePoint( tr, start, end, MASK_SHOT_RENDERMODEL, owner );
 		if ( tr.fraction < 1.0f ) {
 			ent = gameLocal.GetTraceEntity( tr );
@@ -3195,13 +3199,14 @@ void idWeapon::Event_Melee( void ) {
 				weaponDef->dict.GetInt( key, "0", damageWeapon);
 				damageWeapon = gameLocal.random.RandomInt( damageWeapon );
 
-				health -= gameLocal.GetLocalPlayer()->ArxCalculateWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
+				health -= gameLocal.GetLocalPlayer()->ArxCalculateOwnWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
 
 				//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
 			}
 			// ************************************************
 
 			float push = meleeDef->dict.GetFloat( "push" );
+
 			idVec3 impulse = -push * owner->PowerUpModifier( SPEED ) * tr.c.normal;
 
 			if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) && ( ent->IsType( idActor::Type ) || ent->IsType( idAFAttachment::Type) ) ) {
@@ -3230,7 +3235,10 @@ void idWeapon::Event_Melee( void ) {
 				globalKickDir = muzzleAxis * kickDir;
 				
 #ifdef _DT
-				damageScale = owner->PowerUpModifier( MELEE_DAMAGE ) * dmgScale;
+				// Arx End Of Sun
+				//damageScale = owner->PowerUpModifier( MELEE_DAMAGE ) * dmgScale;
+				damageScale = owner->ArxCalculateD3GameBonuses( damageScale, ARX_MELEE_DAMAGE ) * dmgScale;
+				
 				ent->Damage( owner, owner, globalKickDir, meleeDefName, damageScale, tr.c.id );
 				
 				hit = 2; // 2 = Something that can be damaged.

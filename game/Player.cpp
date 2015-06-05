@@ -235,6 +235,8 @@ void idInventory::Clear( void ) {
 
 	arx_snake_weapon				= ARX_MAGIC_WEAPON;
 
+	arx_new_hero_created			= false;
+
 	arx_player_level_up_in_progress = false;
 
 	arx_player_level				= 0;
@@ -420,6 +422,8 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	*/
 
 	dict.SetInt( "arx_snake_weapon", arx_snake_weapon );
+
+	dict.SetBool( "arx_new_hero_created", arx_new_hero_created );
 
 	dict.SetBool( "arx_player_level_up_in_progress", arx_player_level_up_in_progress );
 
@@ -626,6 +630,8 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 
 	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", idStr( ARX_MAGIC_WEAPON ) );
 
+	arx_new_hero_created			= dict.GetBool( "arx_new_hero_created", "0" );
+
 	arx_player_level_up_in_progress = dict.GetBool( "arx_player_level_up_in_progress", "0" );
 
 	arx_player_level				= dict.GetInt( "arx_player_level", "0" );
@@ -823,6 +829,8 @@ void idInventory::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( arx_snake_weapon );
 
+	savefile->WriteBool( arx_new_hero_created );
+
 	savefile->WriteBool( arx_player_level_up_in_progress );
 
 	savefile->WriteInt( arx_player_level );
@@ -981,6 +989,8 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	*/
 
 	savefile->ReadInt( arx_snake_weapon );
+
+	savefile->ReadBool( arx_new_hero_created );
 
 	savefile->ReadBool( arx_player_level_up_in_progress );
 
@@ -3093,7 +3103,8 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 		GivePDA( "arx_default", NULL );
 	}
 
-	if ( gameLocal.ArxNewGameStarted ) {
+	if ( !inventory.arx_new_hero_created ) {
+		inventory.arx_new_hero_created = true;
 		CreateNewHero();
 	}
 
@@ -11787,7 +11798,9 @@ void idPlayer::AdjustSpeed( void ) {
 		speed = idMath::ClampFloat(0, pm_walkspeed.GetFloat(), speed);
 	}
 
-	speed *= PowerUpModifier(SPEED);
+	// Arx End Of Sun
+	//speed *= PowerUpModifier(SPEED);
+	speed = ArxCalculateD3GameBonuses( speed, ARX_BONUS_SPEED );
 
 	if ( influenceActive == INFLUENCE_LEVEL3 ) {
 		speed *= 0.33f;
@@ -15161,10 +15174,10 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 
 /*
 =================
-idPlayer::ArxCalculateWeaponDamage
+idPlayer::ArxCalculateOwnWeaponDamage
 =================
 */
-int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillType ) {
+int idPlayer::ArxCalculateOwnWeaponDamage( int baseDamageAmount, int weaponSkillType ) {
 
 	// Calculates the bonus reduction in how much wear is done to a weapon based on the players skills.
 
@@ -15196,9 +15209,45 @@ int idPlayer::ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillTyp
 	}
 
 	//REMOVEME
-	gameLocal.Printf( "ArxCalculateWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
+	gameLocal.Printf( "ArxCalculateOwnWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
 
 	return newDamageAmount;
+}
+
+/*
+=================
+idPlayer::ArxCalculatePlayerDamage
+=================
+*/
+float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
+
+	switch (bonusType)
+	{
+	case ARX_BONUS_SPEED:
+		return (float)baseValue;
+		break;
+
+	case ARX_NORMAL_PROJECTILE_DAMAGE:
+		return (float)baseValue;
+		break;
+
+	case ARX_MAGIC_PROJECTILE_DAMAGE:
+		return (float)baseValue;
+		break;
+
+	case ARX_MELEE_DAMAGE:
+		return (float)baseValue;
+		break;
+
+	case ARX_MELEE_DISTANCE:
+		return (float)baseValue;
+		break;
+
+	default:
+		return (float)baseValue;
+		break;
+	}
+
 }
 
 /*

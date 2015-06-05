@@ -689,7 +689,25 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 			if ( ent->IsType( idActor::Type ) ) {
 				idPlayer *player = static_cast<idPlayer *>( owner.GetEntity() );
 				player->AddProjectileHits( 1 );
-				damageScale *= player->PowerUpModifier( PROJECTILE_DAMAGE );
+
+				// Arx End Of Sun
+				//damageScale *= player->PowerUpModifier( PROJECTILE_DAMAGE );
+
+				// ****************************************
+				// ****************************************
+				// Arx End Of Sun
+				const idDeclEntityDef *dmgDef = gameLocal.FindEntityDef( damageDefName, false );
+				if ( dmgDef != NULL ) {
+					bool arx_magic_damage = dmgDef->dict.GetString( "arx_magic_damage" );
+
+					if ( arx_magic_damage ) {
+						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
+					} else {
+						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
+					}
+				}
+				// ****************************************
+				// ****************************************
 			}
 		}
 

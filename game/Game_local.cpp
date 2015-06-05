@@ -226,8 +226,6 @@ void idGameLocal::Clear( void ) {
 
 	// Solarsplace - 4th Sep 2013 - http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
 	mainMenuExitHasDisabledAttack = false;
-
-	ArxNewGameStarted = false;
 }
 
 /*
@@ -2619,9 +2617,7 @@ void idGameLocal::HandleMainMenuCommands( const char *menuCommand, idUserInterfa
 		// Clear out the persistent level info. The player has started a new game from the menu.
 		//gameLocal.Printf( "idGameLocal::HandleMainMenuCommands - persistentLevelInfo.Clear()\n" );
 		gameLocal.persistentLevelInfo.Clear();
-		ArxNewGameStarted = true;
 	}
-
 }
 
 /*

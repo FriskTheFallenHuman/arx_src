@@ -71,6 +71,14 @@ enum {
 	ARX_SKILL_DEFENSE
 };
 
+enum {
+	ARX_BONUS_SPEED = 0,
+	ARX_NORMAL_PROJECTILE_DAMAGE,
+	ARX_MAGIC_PROJECTILE_DAMAGE,
+	ARX_MELEE_DAMAGE,
+	ARX_MELEE_DISTANCE
+};
+
 // ----> *** Arx ***
 
 extern const idEventDef EV_Player_GetButtons;
@@ -165,6 +173,8 @@ public:
 	idStr					arx_equiped_items[ ARX_MAX_EQUIPED_ITEMS ];
 
 	int						arx_snake_weapon; // The current magic weapon
+
+	bool					arx_new_hero_created;
 
 	bool					arx_player_level_up_in_progress;
 	int						arx_player_level;
@@ -433,7 +443,8 @@ public:
 	// Skills & stats related
 	void					ModifyPlayerXPs( int XPs, bool showMessage );
 	float					ArxSkillGetAlertDistance( float defaultDistance );
-	int						ArxCalculateWeaponDamage( int baseDamageAmount, int weaponSkillType );
+	int						ArxCalculateOwnWeaponDamage( int baseDamageAmount, int weaponSkillType );
+	float					ArxCalculateD3GameBonuses( float baseValue, int bonusType );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
