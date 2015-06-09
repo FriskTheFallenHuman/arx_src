@@ -2326,6 +2326,8 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( objectiveSystemOpen );
 
 	// Start - Solarsplace - 15th May 2010  - Save Arx EOS user interfaces
+	savefile->WriteString( fullScreenMenuGUIId );
+
 	savefile->WriteUserInterface( inventorySystem, false );
 	savefile->WriteBool( inventorySystemOpen );
 
@@ -2622,6 +2624,8 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( objectiveSystemOpen );
 
 	// Start - Solarsplace - 15th May 2010  - Load Arx EOS user interfaces
+	savefile->ReadString( fullScreenMenuGUIId );
+
 	savefile->ReadUserInterface( inventorySystem );
 	savefile->ReadBool( inventorySystemOpen );
 
@@ -5239,7 +5243,7 @@ idUserInterface *idPlayer::ActiveGui( void ) {
 		return shoppingSystem;
 	}
 
-
+	// Solarsplace 9th Jun 2015 - Full Screen Trigger GUI related
 	if ( fullScreenMenuGUIId != "" ) {
 
 		idEntity *ent = gameLocal.FindEntity( fullScreenMenuGUIId );
@@ -11729,6 +11733,11 @@ idPlayer::AdjustSpeed
 ==============
 */
 void idPlayer::AdjustSpeed( void ) {
+
+	// Arx End Of Sun
+	float newRunSpeedArx = ArxCalculateD3GameBonuses( pm_runspeed.GetFloat(), ARX_BONUS_SPEED );
+	float newCrouchSpeedArx = ArxCalculateD3GameBonuses( pm_crouchspeed.GetFloat(), ARX_BONUS_SPEED );
+
 	float speed;
 	float rate;
 
@@ -11769,7 +11778,7 @@ void idPlayer::AdjustSpeed( void ) {
 #endif
 			bobFrac = stamina / pm_staminathreshold.GetFloat();
 		}
-		speed = pm_walkspeed.GetFloat() * ( 1.0f - bobFrac ) + pm_runspeed.GetFloat() * bobFrac;
+		speed = pm_walkspeed.GetFloat() * ( 1.0f - bobFrac ) + newRunSpeedArx * bobFrac;
 	} else {
 #ifdef _DT
 		if ( isRunning ) {
@@ -11800,13 +11809,12 @@ void idPlayer::AdjustSpeed( void ) {
 
 	// Arx End Of Sun
 	//speed *= PowerUpModifier(SPEED);
-	speed = ArxCalculateD3GameBonuses( speed, ARX_BONUS_SPEED );
 
 	if ( influenceActive == INFLUENCE_LEVEL3 ) {
 		speed *= 0.33f;
 	}
 
-	physicsObj.SetSpeed( speed, pm_crouchspeed.GetFloat() );
+	physicsObj.SetSpeed( speed, newCrouchSpeedArx );
 }
 
 /*
