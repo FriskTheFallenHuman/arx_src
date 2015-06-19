@@ -3237,7 +3237,7 @@ void idWeapon::Event_Melee( void ) {
 #ifdef _DT
 				// Arx End Of Sun
 				//damageScale = owner->PowerUpModifier( MELEE_DAMAGE ) * dmgScale;
-				damageScale = owner->ArxCalculateD3GameBonuses( damageScale, ARX_MELEE_DAMAGE ) * dmgScale;
+				damageScale = owner->ArxCalculateD3GameBonuses( 1.0, ARX_MELEE_DAMAGE ) * dmgScale;
 				
 				ent->Damage( owner, owner, globalKickDir, meleeDefName, damageScale, tr.c.id );
 				

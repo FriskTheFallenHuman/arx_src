@@ -2237,8 +2237,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		Critical Hit, which represents the percentage of chance to double the damages on a succesful hit. 
 		*/
 		if ( !damageDef->GetBool( "no_critical_damage", "0" ) ) { // Disable the weapon projectiles from causing a critical hit
-			float chanceOfCriticalHit = 60.0f;
-			if ( gameLocal.random.RandomFloat() * 100 > chanceOfCriticalHit ) {
+			if ( player->ArxCalculateHeroChance( "add_critical_hit" ) ) {
 				damage = damage + ( damage * 0.5 ); // This is cumulative if you get a backstab too.
 				player->ShowHudMessage( "#str_general_00003" ); // "! Critical hit !"
 			}

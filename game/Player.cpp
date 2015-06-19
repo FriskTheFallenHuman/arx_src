@@ -13054,7 +13054,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 		poisonTime = poisonTime - (int)GetPercentageBonus( (float)poisonTime, (float)poisonSkill );
 
-		if ( CalculateHeroChance( "add_poison" ) ) {
+		if ( ArxCalculateHeroChance( "add_poison" ) ) {
 			inventory.arx_timer_player_poison += gameLocal.time + SEC2MS( poisonTime );
 		}
 	}
@@ -15126,15 +15126,16 @@ void idPlayer::Event_GetCommonEnemy( void ) {
 
 /*
 =================
-idPlayer::CalculateHeroChance
+idPlayer::ArxCalculateHeroChance
 =================
 */
-bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
+bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 	// Use the format add_xxxx or remove_xxxx
 
 	const int MAX_COLD_RESISTANCE_CHANCE = 60; // %
 	const int MAX_FIRE_RESISTANCE_CHANCE = 60; // %
+	const int MAX_PERCENTAGE = 100; // %
 
 	bool returnChance = false;
 
@@ -15173,6 +15174,22 @@ bool idPlayer::CalculateHeroChance( idStr chanceDescription ) {
 		if ( cold_resistance_chance > MAX_COLD_RESISTANCE_CHANCE ) { cold_resistance_chance = MAX_COLD_RESISTANCE_CHANCE; }
 
 		if ( gameLocal.random.RandomFloat() * 100 > cold_resistance_chance ) {
+			returnChance = true;
+		}
+	}
+
+	// Chance of critical hit
+	if ( strcmp( chanceDescription, "add_critical_hit" ) == 0 ) {
+
+		//TESTME
+		int critical_hit_chance = ( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 );
+
+		//REMOVEME
+		gameLocal.Printf( "ArxCalculateHeroChance: critical_hit_chance = %f\n", critical_hit_chance );
+
+		if ( critical_hit_chance > MAX_PERCENTAGE ) { critical_hit_chance = MAX_PERCENTAGE; }
+
+		if ( gameLocal.random.RandomFloat() * 100 > critical_hit_chance ) {
 			returnChance = true;
 		}
 	}
@@ -15229,33 +15246,64 @@ idPlayer::ArxCalculatePlayerDamage
 */
 float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
+	float returnValue = 0.0f;
+
 	switch (bonusType)
 	{
 	case ARX_BONUS_SPEED:
-		return (float)baseValue;
+
+		returnValue = ( (float)inventory.arx_attr_dexterity * 2.0f ) + (float)inventory.arx_player_level;
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_BONUS_SPEED ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 
 	case ARX_NORMAL_PROJECTILE_DAMAGE:
-		return (float)baseValue;
+		
+		returnValue = ( (float)inventory.arx_skill_projectile ) + ( (float)inventory.arx_player_level * 2.0f );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_NORMAL_PROJECTILE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 
 	case ARX_MAGIC_PROJECTILE_DAMAGE:
-		return (float)baseValue;
+		
+		returnValue = ( (float)inventory.arx_skill_casting ) + ( (float)inventory.arx_player_level * 2.0f );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MAGIC_PROJECTILE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 
 	case ARX_MELEE_DAMAGE:
-		return (float)baseValue;
+		
+		// This is recreating the code in idPlayer::PowerUpModifier
+		float tmpMeleeDamage = (float)inventory.arx_skill_close_combat + ( (float)inventory.arx_player_level * 2.0f );
+		tmpMeleeDamage = tmpMeleeDamage * DIV100;
+		tmpMeleeDamage = tmpMeleeDamage + 1.0f;
+		returnValue = tmpMeleeDamage;
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 
 	case ARX_MELEE_DISTANCE:
-		return (float)baseValue;
+		
+		returnValue = ( (float)inventory.arx_skill_close_combat * DIV2 ) + ( (float)inventory.arx_player_level * 2.0f );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DISTANCE ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 
 	default:
-		return (float)baseValue;
+
+		returnValue = (float)baseValue;
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, default ) ( Out = %d )\n", baseValue, returnValue);
+
 		break;
 	}
 
+	return returnValue;
 }
 
 /*
@@ -16050,14 +16098,14 @@ void idPlayer::UpdateHeroStats( void ) {
 
 			// Poison damage
 			if ( inventory.arx_timer_player_poison >= gameLocal.time ) {
-				if ( CalculateHeroChance( "add_poison" ) ) {
+				if ( ArxCalculateHeroChance( "add_poison" ) ) {
                     Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", ARX_POISON_DAMAGE_BASE ), 1.0f, INVALID_JOINT );
 				}
 			}
 
 			// Fire damage
 			if ( inventory.arx_timer_player_onfire >= gameLocal.time ) {
-				if ( CalculateHeroChance( "add_fire" ) ) {
+				if ( ArxCalculateHeroChance( "add_fire" ) ) {
 					Damage( NULL, NULL, vec3_origin, "damage_arx_fire_interval", 1.0f, INVALID_JOINT );
 				}
 			}
@@ -16071,7 +16119,7 @@ void idPlayer::UpdateHeroStats( void ) {
 				}
 
 				if ( (float)nScreenFrostAlpha > n ) {
-					if ( CalculateHeroChance( "add_cold" ) ) {
+					if ( ArxCalculateHeroChance( "add_cold" ) ) {
 						Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", ARX_COLD_DAMAGE_BASE ), 1.0f, INVALID_JOINT );
 					}
 				}
