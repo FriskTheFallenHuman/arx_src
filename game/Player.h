@@ -33,7 +33,7 @@ enum {
 };
 
 enum {
-	ARX_DAMAGE_TYPE_MELEE = 0,
+	ARX_DAMAGE_TYPE_NON_MAGIC = 0,
 	ARX_DAMAGE_TYPE_MAGICAL = 1
 };
 
@@ -446,6 +446,7 @@ public:
 	int						ArxCalculateOwnWeaponDamage( int baseDamageAmount, int weaponSkillType );
 	float					ArxCalculateD3GameBonuses( float baseValue, int bonusType );
 	bool					ArxCalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
+	void					ArxPlayerLevelUp( void );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
@@ -1113,7 +1114,6 @@ private:
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
 	int						GetRequiredXPForLevel( int level );
-	void					ArxPlayerLevelUp( void );
 	int						ArxCalculatePlayerDamage( int baseDamageAmount, int damageType );
 
 	// Magic related

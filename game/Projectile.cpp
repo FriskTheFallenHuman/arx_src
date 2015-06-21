@@ -698,11 +698,16 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 				// Arx End Of Sun
 				const idDeclEntityDef *dmgDef = gameLocal.FindEntityDef( damageDefName, false );
 				if ( dmgDef != NULL ) {
-					bool arx_magic_damage = dmgDef->dict.GetString( "arx_magic_damage" );
 
-					if ( arx_magic_damage ) {
+					//REMOVEME
+					gameLocal.Printf ( "idProjectile::Collide '%s'\n", damageDefName );
+
+					if ( dmgDef->dict.GetBool( "arx_magic_damage_skills" ) ) {
 						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
-					} else {
+					}
+					
+					// Duplicated in idGameLocal::RadiusDamage
+					if ( dmgDef->dict.GetBool( "arx_projectile_damage_skills" ) ) {
 						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
 					}
 				}

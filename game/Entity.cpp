@@ -3093,7 +3093,7 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	int	damage = damageDef->GetInt( "damage" );
 
 	//REMOVEME
-	gameLocal.Printf ( "idEntity '%s' was (%d) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+	gameLocal.Printf ( "idEntity::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );

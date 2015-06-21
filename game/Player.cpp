@@ -6271,6 +6271,14 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
 
+		// Give max health
+		health = inventory.maxHealth;
+
+		// Give max mana
+		int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+		int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+		inventory.ammo[ ammo_mana ] = max_mana;
+
 		ArxUpdateHeroSkills();
 
 		// Clear down the current values
@@ -12918,20 +12926,16 @@ void idPlayer::CalcDamagePoints( idEntity *inflictor, idEntity *attacker, const 
 	// *****************************************
 	// Arx End Of Sun
 	// Calculate damage reduction based on damage type and player skills
-	bool magicDamage = 0;
-	bool meleeDamage = 0;
-	int damageReductionBonus = 0;
 
-	damageDef->GetBool( "arx_magic_damage", "0", magicDamage );
-	damageDef->GetBool( "arx_melee_damage", "0", meleeDamage );
-
-	if ( magicDamage ) {
-		damage = damage - ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_MAGICAL );
+	if ( damageDef->GetBool( "arx_magic_damage", "0" ) ) {
+		damage = ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_MAGICAL );
+	} else {
+		damage = ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_NON_MAGIC );
 	}
 
-	if ( meleeDamage ) {
-		damage = damage - ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_MELEE );
-	}
+	//REMOVEME
+	gameLocal.Printf ( "idPlayer::CalcDamagePoints 'armorSave' was (%i) points.\n", armorSave );
+
 	// Arx End Of Sun
 	// *****************************************
 	// *****************************************
@@ -13126,6 +13130,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		}
 		// *************************************
 		// *************************************
+
+		//REMOVEME
+		gameLocal.Printf ( "idPlayer::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
 
 		int oldHealth = health;
 		health -= damage;
@@ -15182,12 +15189,12 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 	if ( strcmp( chanceDescription, "add_critical_hit" ) == 0 ) {
 
 		//TESTME
-		int critical_hit_chance = ( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 );
+		int critical_hit_chance = MAX_PERCENTAGE - (int)( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 );
 
 		//REMOVEME
-		gameLocal.Printf( "ArxCalculateHeroChance: critical_hit_chance = %f\n", critical_hit_chance );
+		gameLocal.Printf( "ArxCalculateHeroChance: critical_hit_chance = %i\n", critical_hit_chance );
 
-		if ( critical_hit_chance > MAX_PERCENTAGE ) { critical_hit_chance = MAX_PERCENTAGE; }
+		if ( critical_hit_chance < 0 ) { critical_hit_chance = 0; }
 
 		if ( gameLocal.random.RandomFloat() * 100 > critical_hit_chance ) {
 			returnChance = true;
@@ -15246,51 +15253,59 @@ idPlayer::ArxCalculatePlayerDamage
 */
 float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
+	float tmpSkillValue = 0.0f;
 	float returnValue = 0.0f;
 
 	switch (bonusType)
 	{
 	case ARX_BONUS_SPEED:
 
-		returnValue = ( (float)inventory.arx_attr_dexterity * 2.0f ) + (float)inventory.arx_player_level;
+		tmpSkillValue = ( (float)inventory.arx_attr_dexterity * 2.0f ) + (float)inventory.arx_player_level;
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_BONUS_SPEED ) ( Out = %d )\n", baseValue, returnValue);
+		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
+
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_BONUS_SPEED ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
 	case ARX_NORMAL_PROJECTILE_DAMAGE:
 		
-		returnValue = ( (float)inventory.arx_skill_projectile ) + ( (float)inventory.arx_player_level * 2.0f );
+		tmpSkillValue = ( (float)inventory.arx_skill_projectile ) + ( (float)inventory.arx_player_level * 2.0f );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_NORMAL_PROJECTILE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_NORMAL_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
 	case ARX_MAGIC_PROJECTILE_DAMAGE:
 		
-		returnValue = ( (float)inventory.arx_skill_casting ) + ( (float)inventory.arx_player_level * 2.0f );
+		tmpSkillValue = ( (float)inventory.arx_skill_casting ) + ( (float)inventory.arx_player_level * 2.0f );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MAGIC_PROJECTILE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MAGIC_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
 	case ARX_MELEE_DAMAGE:
 		
 		// This is recreating the code in idPlayer::PowerUpModifier
-		float tmpMeleeDamage = (float)inventory.arx_skill_close_combat + ( (float)inventory.arx_player_level * 2.0f );
-		tmpMeleeDamage = tmpMeleeDamage * DIV100;
-		tmpMeleeDamage = tmpMeleeDamage + 1.0f;
-		returnValue = tmpMeleeDamage;
+		tmpSkillValue = (float)inventory.arx_skill_close_combat + ( (float)inventory.arx_player_level * 2.0f );
+		tmpSkillValue = tmpSkillValue * DIV100;
+		returnValue = tmpSkillValue + 1.0f;
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %d )\n", baseValue, returnValue);
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
 	case ARX_MELEE_DISTANCE:
 		
-		returnValue = ( (float)inventory.arx_skill_close_combat * DIV2 ) + ( (float)inventory.arx_player_level * 2.0f );
+		tmpSkillValue = ( (float)inventory.arx_skill_close_combat * DIV2 ) + ( (float)inventory.arx_player_level * 2.0f );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DISTANCE ) ( Out = %d )\n", baseValue, returnValue);
+		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
+
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DISTANCE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
@@ -15298,7 +15313,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
 		returnValue = (float)baseValue;
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, default ) ( Out = %d )\n", baseValue, returnValue);
+		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, default ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 	}
@@ -15313,7 +15328,7 @@ idPlayer::ArxCalculatePlayerDamage
 */
 int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
 
-	// Calculates the bonus reduction in how much damage is done to the weapon based on the players skills.
+	// Calculate reduction in damage to player depending on magic or non-magic defense skills
 
 	const int MIN_DAMAGE_AMOUNT = 1;
 	int newDamageAmount = 0;
@@ -15323,29 +15338,34 @@ int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
 
 	switch( damageType ) {
 
-		case ARX_DAMAGE_TYPE_MELEE :
+		case ARX_DAMAGE_TYPE_NON_MAGIC :
 
-			tmpSkillValue = ( baseDamageAmount, inventory.arx_skill_defense
-				+ inventory.arx_skill_projectile + inventory.arx_player_level );
+			tmpSkillValue = ( inventory.arx_skill_defense + inventory.arx_skill_projectile + inventory.arx_player_level );
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
+
+			//REMOVEME
+			gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_NON_MAGIC' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
 
 		case ARX_DAMAGE_TYPE_MAGICAL :
 
 			tmpSkillValue = ( inventory.arx_class_resistance_to_magic + inventory.arx_player_level );
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
+
+			//REMOVEME
+			gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_MAGICAL' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
 	}
 
 	if ( newDamageAmount <= 0 ) {
+
+		//REMOVEME
+		gameLocal.Printf( "idPlayer::ArxCalculatePlayerDamage setting damage to (%i)\n", MIN_DAMAGE_AMOUNT );
+
 		newDamageAmount = MIN_DAMAGE_AMOUNT;
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "ArxCalculatePlayerDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
-
 	return newDamageAmount;
-
 }
 
 /*
@@ -15660,7 +15680,7 @@ idPlayer::CreateNewHero
 void idPlayer::CreateNewHero( void ) {
 
 	//REMOVEME
-	gameLocal.Printf( "Arx - CreateNewHero -\n" );
+	gameLocal.Printf( "idPlayer::CreateNewHero\n" );
 
 	ArxLoadSkillSpawnArgsIntoInventory();
 
@@ -15735,7 +15755,7 @@ void idPlayer::LoadCurrentSkillsIntoTemp( void ) {
 
 /*
 =================
-idPlayer::LoadCurrentSkillsIntoTemp
+idPlayer::ArxGetAttributeSkillMatrix
 =================
 */
 float idPlayer::ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill ) {
@@ -16189,58 +16209,46 @@ idPlayer::GetRequiredXPForLevel
 */
 int	idPlayer::GetRequiredXPForLevel( int level ) {
 
+	const int LEVEL_UP_AMOUNT = 1000;
+
 	switch ( level )
 	{
 		case 0:
 			return 0;
 			break;
 		case 1:
-			return 2000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 2:
-			return 4000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 3:
-			return 6000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 4:
-			return 10000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 5:
-			return 16000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 6:
-			return 26000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 7:
-			return 42000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 8:
-			return 68000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 9:
-			return 110000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		case 10:
-			return 178000;
-			break;
-		case 11:
-			return 300000;
-			break;
-		case 12:
-			return 450000;
-			break;
-		case 13:
-			return 600000;
-			break;
-		case 14:
-			return 750000;
+			return LEVEL_UP_AMOUNT;
 			break;
 		default:
-			return level * 60000;
+			return LONG_MAX;
 	}
-
-	return LONG_MAX;
 }
 
 /*
@@ -16319,7 +16327,7 @@ idPlayer::ArxPlayerLevelUp
 */
 void idPlayer::ArxPlayerLevelUp( void ) {
 
-	ShowHudMessage( "##str_general_00014" );	// "!!! You Level Up !!!"
+	ShowHudMessage( "#str_general_00014" );	// "!!! You Level Up !!!"
 
 	// Play a sound to level up. Cached in player.def
 	StartSound( "snd_arx_level_up", SND_CHANNEL_ANY, 0, false, NULL );
@@ -16330,15 +16338,6 @@ void idPlayer::ArxPlayerLevelUp( void ) {
 
 	inventory.arx_attribute_points = spawnArgs.GetInt( "arx_levelup_attribute_points", "1" );
 	inventory.arx_skill_points = spawnArgs.GetInt( "arx_levelup_skill_points", "15" );
-
-	// Give max health
-	health = inventory.maxHealth;
-
-	// Give max mana
-	int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
-	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
-	inventory.ammo[ ammo_mana ] = max_mana;
-
 }
 
 /*

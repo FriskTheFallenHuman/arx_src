@@ -3757,6 +3757,20 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 				damageScale *= attackerDamageScale;
 			}
 
+			// ****************************************
+			// ****************************************
+			// Arx End Of Sun
+
+			// Duplicated in idProjectile::Collide
+			if ( damageDef->GetBool( "arx_projectile_damage_skills" ) ) {
+				damageScale *= gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
+			}
+			// ****************************************
+			// ****************************************
+
+			//REMOVEME
+			gameLocal.Printf ( "idGameLocal::RadiusDamage '%s' was (%i) damaged by '%s'\n", ent->name.c_str(), damage, damageDefName );
+
 			ent->Damage( inflictor, attacker, dir, damageDefName, damageScale, INVALID_JOINT );
 		} 
 	}

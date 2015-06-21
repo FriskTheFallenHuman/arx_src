@@ -2409,6 +2409,17 @@ void Cmd_VidRestart_f( const idCmdArgs &args ) {
 	Cmd_guiUpdateSettings_f( nil );
 }
 
+
+// ****************************************
+// ****************************************
+// Arx End Of Sun
+
+void Cmd_ArxLevelUp_f( const idCmdArgs &args ) {
+	
+	gameLocal.GetLocalPlayer()->ArxPlayerLevelUp();
+
+}
+
 /*
 =================
 idGameLocal::InitConsoleCommands
@@ -2441,6 +2452,7 @@ void idGameLocal::InitConsoleCommands( void ) {
 	// Solarsplace - Arx End Of Sun
 	cmdSystem->AddCommand( "arx_vid_restart",		Cmd_VidRestart_f,			CMD_FL_RENDERER,			"" );
 	cmdSystem->AddCommand( "arx_guiUpdateSettings",	Cmd_guiUpdateSettings_f,	CMD_FL_SYSTEM,				"used by the mainmenu GUI. determine which parts of the settings GUI should be visible and display the proper settings on it." );
+	cmdSystem->AddCommand( "arx_levelup",			Cmd_ArxLevelUp_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"Force the Arx EOS hero to level up" );
 
 #ifdef _DT // levitate spell
 	cmdSystem->AddCommand( "levitate",				Cmd_Levitate_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"test cmd for methods levitateStart and levitateStop" );
