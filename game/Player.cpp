@@ -3381,7 +3381,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 	// Solarsplace 28th Feb 2010
 	// Show the mana total for the player
-	totalMana = GetPlayerManaAmount();
+	totalMana = (int)ArxGetStatAsPercentage( ARX_STAT_MANA );
 	_hud->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 	// Solarsplace 4th Sep 2013
@@ -9715,12 +9715,12 @@ void idPlayer::UpdateShoppingSystem( void )
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the mana total for the player
-		totalMana = GetPlayerManaAmount();
+		totalMana = idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_MANA ) );
 		shoppingSystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
-		shoppingSystem->SetStateInt( "player_health", health );
+		shoppingSystem->SetStateInt( "player_health", idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_HEALTH ) ) );
 
 		// This clears out the hud strings - not 100% sure if needed.
 		int j, c = inventory.items.Num();
@@ -10033,12 +10033,12 @@ void idPlayer::UpdateInventoryGUI( void )
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the mana total for the player
-		totalMana = GetPlayerManaAmount();
+		totalMana = idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_MANA ) );
 		inventorySystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
-		inventorySystem->SetStateInt( "player_health", health );
+		inventorySystem->SetStateInt( "player_health", idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_HEALTH ) ) );
 
 		// This clears out the hud strings - not 100% sure if needed.
 		int j, c = inventory.items.Num();
@@ -10357,12 +10357,12 @@ void idPlayer::UpdateJournalGUI( void )
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the mana total for the player
-		totalMana = GetPlayerManaAmount();
+		totalMana = idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_MANA ) );
 		objectiveSystem->SetStateString( "player_totalmana", va( "%i", totalMana ) );
 
 		// Solarsplace 26th April 2010 - Inventory related
 		// Show the player health
-		objectiveSystem->SetStateInt( "player_health", health );
+		objectiveSystem->SetStateInt( "player_health", idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_HEALTH ) ) );
 
 		// Runes -- Not sure if this is efficient? suspect not.... Don't see the game doing it anywhere :(
 		const char *result;
@@ -15366,6 +15366,36 @@ int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
 	}
 
 	return newDamageAmount;
+}
+
+/*
+=================
+idPlayer::ArxGetStatAsPercentage
+=================
+*/
+float idPlayer::ArxGetStatAsPercentage( int statType ) {
+
+	float returnValue = 0.0f;
+
+	switch( statType ) {
+
+		case ARX_STAT_HEALTH :
+
+			returnValue = ( (float)inventory.arx_class_health_points / 100.00f ) * (float)health;
+
+		case ARX_STAT_MANA :
+
+			int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
+			int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+
+			returnValue = ( (float)max_mana / 100.00f ) * (float)ammo_mana;
+
+		case ARX_STAT_STAMINA :
+
+			returnValue = ( pm_stamina.GetFloat() / 100.00f ) * (float)stamina;
+	}
+
+	return returnValue;
 }
 
 /*

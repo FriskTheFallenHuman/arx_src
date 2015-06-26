@@ -60,6 +60,12 @@ enum {
 };
 
 enum {
+	ARX_STAT_HEALTH = 0,
+	ARX_STAT_MANA,
+	ARX_STAT_STAMINA
+};
+
+enum {
 	ARX_SKILL_STEALTH = 0,
 	ARX_SKILL_TECHNICAL,
 	ARX_SKILL_INTUITION,
@@ -1115,6 +1121,7 @@ private:
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014
 	int						GetRequiredXPForLevel( int level );
 	int						ArxCalculatePlayerDamage( int baseDamageAmount, int damageType );
+	float					ArxGetStatAsPercentage( int statType );
 
 	// Magic related
 	int						GetPlayerManaAmount( void );									// Solarsplace 28th Feb 2010
