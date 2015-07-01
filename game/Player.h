@@ -1180,6 +1180,10 @@ private:
 	// Searchable
 	bool					GiveSearchItem( idEntity *searchTarget );
 
+	// Misc
+	void					ArxProcessTimedEvents( void );
+	int						ArxNextProcessEvent;
+
 	/*
 	*** END - Solarsplace - Arx EOS - Private
 	*****************************************************************************************************

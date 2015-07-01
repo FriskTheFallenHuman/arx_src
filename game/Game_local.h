@@ -576,6 +576,7 @@ public:
 	const char *			GetSafeLanguageMessage( const char *message );
     bool					mainMenuExitHasDisabledAttack; // http://bugs.thedarkmod.com/print_bug_page.php?bug_id=2424
 	const char *			GetStringFromEntityDef( idStr entityDefName, idStr searchString );
+	void					ArxProcessSimpleLOD( void );
 
 private:
 	const static int		INITIAL_SPAWN_COUNT = 1;
@@ -681,6 +682,7 @@ private:
 	void					UpdateLagometer( int aheadOfServer, int dupeUsercmds );
 
 	void					GetMapLoadingGUI( char gui[ MAX_STRING_CHARS ] );
+
 };
 
 //============================================================================

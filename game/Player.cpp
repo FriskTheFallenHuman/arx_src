@@ -1489,6 +1489,8 @@ idPlayer::idPlayer() {
 
 	lastPlayerAlertOrigin		= vec3_zero;
 
+	ArxNextProcessEvent			= gameLocal.time;
+
 	// *********************************************************************************
 	// *********************************************************************************
 	// *********************************************************************************
@@ -12295,6 +12297,9 @@ Called every tic for each player
 */
 void idPlayer::Think( void ) {
 
+	// Arx End Of Sun
+	ArxProcessTimedEvents();
+
 	bool allowAttack = false;
 	renderEntity_t *headRenderEnt;
 	UpdatePlayerIcons();
@@ -15126,6 +15131,20 @@ void idPlayer::Event_GetCommonEnemy( void ) {
 // ****************************************************************************************************************************
 // Arx - End Of Sun
 
+/*
+=================
+idPlayer::ArxProcessTimedEvents
+=================
+*/
+void idPlayer::ArxProcessTimedEvents( void ) {
+
+	if ( gameLocal.time >= ArxNextProcessEvent ) {
+
+		ArxNextProcessEvent = gameLocal.time + 200; // Try updates every 200ms
+
+		gameLocal.ArxProcessSimpleLOD();
+	}
+}
 
 // ==================================================================
 // ==================================================================

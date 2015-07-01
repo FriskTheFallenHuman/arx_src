@@ -4631,3 +4631,43 @@ const char * idGameLocal::GetStringFromEntityDef( idStr entityDefName, idStr sea
 		return str;
 	}
 }
+
+/*
+=================
+idPlayer::ArxProcessSimpleLOD
+=================
+*/
+void idGameLocal::ArxProcessSimpleLOD( void ) {
+
+	int i;
+	idEntity *ent;
+	float levelOfDetailDistance;
+	idVec3 playerOrigin;
+
+	playerOrigin = GetLocalPlayer()->GetPhysics()->GetOrigin();
+
+	for( i = 0; i < MAX_GENTITIES; i++ ) {
+
+		ent = entities[i];
+
+		if ( ent && ent->IsType( idStaticEntity::Type ) ) {
+			
+			levelOfDetailDistance = ent->spawnArgs.GetFloat( "arx_lod_distance", "0" );
+
+			if ( levelOfDetailDistance > 0 ) {
+
+				float distanceToEntity = ( ent->GetPhysics()->GetOrigin().ToVec2() - playerOrigin.ToVec2() ).Length();
+
+				if ( distanceToEntity > levelOfDetailDistance ) {
+
+					ent->Hide();
+
+				} else {
+
+					ent->Show();
+
+				}
+			}
+		}
+	}
+}
