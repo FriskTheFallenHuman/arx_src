@@ -3115,6 +3115,110 @@ void idPhantomObjects::Think( void ) {
 	}
 }
 
+// **************************************************************
+// **************************************************************
+// **************************************************************
+// Arx - End Of Sun
+
+/*
+===============================================================================
+	idArxFuncDistancePortal
+===============================================================================
+*/
+
+CLASS_DECLARATION( idEntity, idArxFuncDistancePortal )
+	EVENT( EV_Activate,				idArxFuncDistancePortal::Event_Activate )
+END_CLASS
+
+/*
+===============
+idArxFuncDistancePortal::idArxFuncDistancePortal
+===============
+*/
+idArxFuncDistancePortal::idArxFuncDistancePortal() {
+	portal = 0;
+	state = false;
+	levelOfDetailDistance = spawnArgs.GetFloat( "arx_lod_distance", "256" );
+	lastCheckTime = gameLocal.time;
+}
+
+/*
+===============
+idArxFuncDistancePortal::Save
+===============
+*/
+void idArxFuncDistancePortal::Save( idSaveGame *savefile ) const {
+	savefile->WriteInt( (int)portal );
+	savefile->WriteBool( state );
+	savefile->WriteFloat( levelOfDetailDistance );
+}
+
+/*
+===============
+idArxFuncDistancePortal::Restore
+===============
+*/
+void idArxFuncDistancePortal::Restore( idRestoreGame *savefile ) {
+	savefile->ReadInt( (int &)portal );
+	savefile->ReadBool( state );
+	savefile->ReadFloat( levelOfDetailDistance );
+}
+
+/*
+===============
+idArxFuncDistancePortal::Think
+===============
+*/
+void idArxFuncDistancePortal::Think( void ) {
+
+	idVec3 playerOrigin;
+
+	if ( thinkFlags & TH_THINK ) {
+		
+		if ( gameLocal.time >= lastCheckTime ) {
+
+			lastCheckTime = gameLocal.time + 100; // Try updates every 100ms
+
+			playerOrigin = gameLocal.GetLocalPlayer()->GetPhysics()->GetOrigin();
+
+			float distanceToEntity = ( GetPhysics()->GetOrigin().ToVec2() - playerOrigin.ToVec2() ).Length();
+
+			state = PS_BLOCK_NONE;
+			if ( distanceToEntity > levelOfDetailDistance ) {
+				state = PS_BLOCK_ALL;
+			}
+
+			gameLocal.SetPortalState( portal, state );
+		}
+	}
+}
+
+/*
+===============
+idArxFuncDistancePortal::Spawn
+===============
+*/
+void idArxFuncDistancePortal::Spawn( void ) {
+
+	idBounds bounds = idBounds( spawnArgs.GetVector( "origin" ) ).Expand( 32 );
+
+	portal = gameRenderWorld->FindPortal( bounds );
+
+	if ( portal == 0 ) {
+		gameLocal.Warning( "idArxFuncDistancePortal %s no portal could be found\n", name.c_str() );
+	} else {
+		BecomeActive( TH_THINK );
+	}
+}
+
+/*
+================
+idArxFuncDistancePortal::Event_Activate
+================
+*/
+void idArxFuncDistancePortal::Event_Activate( idEntity *activator ) {
+}
+
 //neuro start
 /*
 ===============================================================================

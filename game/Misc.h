@@ -710,6 +710,40 @@ private:
 	idList<idVec3>		lastTargetPos;
 };
 
+// **************************************************************
+// **************************************************************
+// **************************************************************
+// Arx - End Of Sun
+
+/*
+===============================================================================
+  idArxFuncDistancePortal
+===============================================================================
+*/
+
+class idArxFuncDistancePortal : public idEntity {
+public:
+	CLASS_PROTOTYPE( idArxFuncDistancePortal );
+			
+						idArxFuncDistancePortal();
+
+	void				Spawn( void );
+
+	void				Save( idSaveGame *savefile ) const;
+	void				Restore( idRestoreGame *savefile );
+
+	virtual void		Think( void );
+	
+private:
+
+	qhandle_t			portal;
+	bool				state;
+	float				levelOfDetailDistance;
+	int					lastCheckTime;
+
+	void				Event_Activate( idEntity *activator );
+};
+
 //neuro start
 /*
 ===============================================================================
