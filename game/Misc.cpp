@@ -3138,7 +3138,6 @@ idArxFuncDistancePortal::idArxFuncDistancePortal
 idArxFuncDistancePortal::idArxFuncDistancePortal() {
 	portal = 0;
 	state = false;
-	levelOfDetailDistance = spawnArgs.GetFloat( "arx_lod_distance", "256" );
 	lastCheckTime = gameLocal.time;
 }
 
@@ -3199,6 +3198,8 @@ idArxFuncDistancePortal::Spawn
 ===============
 */
 void idArxFuncDistancePortal::Spawn( void ) {
+
+	levelOfDetailDistance = spawnArgs.GetFloat( "arx_lod_distance", "256" );
 
 	idBounds bounds = idBounds( spawnArgs.GetVector( "origin" ) ).Expand( 32 );
 
