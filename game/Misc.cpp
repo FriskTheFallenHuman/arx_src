@@ -3148,8 +3148,8 @@ idArxFuncDistancePortal::Save
 */
 void idArxFuncDistancePortal::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( (int)portal );
-	savefile->WriteBool( state );
 	savefile->WriteFloat( levelOfDetailDistance );
+	savefile->WriteObject( portalBarrier );
 }
 
 /*
@@ -3159,8 +3159,8 @@ idArxFuncDistancePortal::Restore
 */
 void idArxFuncDistancePortal::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( (int &)portal );
-	savefile->ReadBool( state );
 	savefile->ReadFloat( levelOfDetailDistance );
+	savefile->ReadObject( reinterpret_cast<idClass *&>( portalBarrier ) );
 }
 
 /*
@@ -3169,6 +3169,8 @@ idArxFuncDistancePortal::Think
 ===============
 */
 void idArxFuncDistancePortal::Think( void ) {
+
+	// Arx - End Of Sun
 
 	idVec3 playerOrigin;
 
@@ -3182,12 +3184,22 @@ void idArxFuncDistancePortal::Think( void ) {
 
 			float distanceToEntity = ( GetPhysics()->GetOrigin().ToVec2() - playerOrigin.ToVec2() ).Length();
 
-			state = PS_BLOCK_NONE;
 			if ( distanceToEntity > levelOfDetailDistance ) {
-				state = PS_BLOCK_ALL;
-			}
 
-			gameLocal.SetPortalState( portal, state );
+				if ( portalBarrier && portalBarrier != this ) {
+					portalBarrier->Show();
+				}
+
+				gameLocal.SetPortalState( portal, PS_BLOCK_ALL );
+
+			} else {
+
+				if ( portalBarrier && portalBarrier != this ) {
+					portalBarrier->Hide();
+				}
+
+				gameLocal.SetPortalState( portal, PS_BLOCK_NONE );
+			}
 		}
 	}
 }
@@ -3198,6 +3210,8 @@ idArxFuncDistancePortal::Spawn
 ===============
 */
 void idArxFuncDistancePortal::Spawn( void ) {
+
+	portalBarrier = gameLocal.FindEntity( spawnArgs.GetString( "target", "***none***" ) );
 
 	levelOfDetailDistance = spawnArgs.GetFloat( "arx_lod_distance", "256" );
 
