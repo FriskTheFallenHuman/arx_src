@@ -3149,7 +3149,6 @@ idArxFuncDistancePortal::Save
 void idArxFuncDistancePortal::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( (int)portal );
 	savefile->WriteFloat( levelOfDetailDistance );
-	savefile->WriteObject( portalBarrier );
 }
 
 /*
@@ -3160,7 +3159,6 @@ idArxFuncDistancePortal::Restore
 void idArxFuncDistancePortal::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( (int &)portal );
 	savefile->ReadFloat( levelOfDetailDistance );
-	savefile->ReadObject( reinterpret_cast<idClass *&>( portalBarrier ) );
 }
 
 /*
@@ -3171,7 +3169,8 @@ idArxFuncDistancePortal::Think
 void idArxFuncDistancePortal::Think( void ) {
 
 	// Arx - End Of Sun
-
+	idEntity *ent;
+	int i;
 	idVec3 playerOrigin;
 
 	if ( thinkFlags & TH_THINK ) {
@@ -3186,16 +3185,24 @@ void idArxFuncDistancePortal::Think( void ) {
 
 			if ( distanceToEntity > levelOfDetailDistance ) {
 
-				if ( portalBarrier && portalBarrier != this ) {
-					portalBarrier->Show();
+				for( i = 0; i < targets.Num(); i++ ) {
+					ent = targets[ i ].GetEntity();
+					if ( !ent ) {
+						continue;
+					}
+					ent->Show();
 				}
 
 				gameLocal.SetPortalState( portal, PS_BLOCK_ALL );
 
 			} else {
 
-				if ( portalBarrier && portalBarrier != this ) {
-					portalBarrier->Hide();
+				for( i = 0; i < targets.Num(); i++ ) {
+					ent = targets[ i ].GetEntity();
+					if ( !ent ) {
+						continue;
+					}
+					ent->Hide();
 				}
 
 				gameLocal.SetPortalState( portal, PS_BLOCK_NONE );
@@ -3211,8 +3218,6 @@ idArxFuncDistancePortal::Spawn
 */
 void idArxFuncDistancePortal::Spawn( void ) {
 
-	portalBarrier = gameLocal.FindEntity( spawnArgs.GetString( "target", "***none***" ) );
-
 	levelOfDetailDistance = spawnArgs.GetFloat( "arx_lod_distance", "256" );
 
 	idBounds bounds = idBounds( spawnArgs.GetVector( "origin" ) ).Expand( 32 );
@@ -3220,7 +3225,7 @@ void idArxFuncDistancePortal::Spawn( void ) {
 	portal = gameRenderWorld->FindPortal( bounds );
 
 	if ( portal == 0 ) {
-		gameLocal.Warning( "idArxFuncDistancePortal %s no portal could be found\n", name.c_str() );
+		gameLocal.Warning( "idArxFuncDistancePortal (%s) no portal could be found. Shutting down.\n", name.c_str() );
 	} else {
 		BecomeActive( TH_THINK );
 	}

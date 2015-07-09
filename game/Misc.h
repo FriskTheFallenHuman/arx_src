@@ -736,7 +736,6 @@ public:
 	
 private:
 
-	idEntity *			portalBarrier;
 	qhandle_t			portal;
 	bool				state;
 	float				levelOfDetailDistance;

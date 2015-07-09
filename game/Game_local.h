@@ -151,7 +151,11 @@ class idEditEntities;
 class idLocationEntity;
 
 #define	MAX_CLIENTS				32
-#define	GENTITYNUM_BITS			12
+
+// Arx - End Of Sun
+//#define	GENTITYNUM_BITS			12 // 2048 entity limit original
+#define	GENTITYNUM_BITS			14 // 8192 entity limit
+
 #define	MAX_GENTITIES			(1<<GENTITYNUM_BITS)
 #define	ENTITYNUM_NONE			(MAX_GENTITIES-1)
 #define	ENTITYNUM_WORLD			(MAX_GENTITIES-2)
