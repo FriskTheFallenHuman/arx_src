@@ -15395,25 +15395,30 @@ idPlayer::ArxGetStatAsPercentage
 float idPlayer::ArxGetStatAsPercentage( int statType ) {
 
 	float returnValue = 0.0f;
-	int ammo_mana = 0;
-	int max_mana = 0;
+	int ammo_mana_index = 0;
+	int tmp_current_player_mana = 0;
+	int tmp_current_player_max_mana = 0;
 
 	switch( statType ) {
 
 		case ARX_STAT_HEALTH :
 
 			returnValue = ( (float)inventory.arx_class_health_points / 100.00f ) * (float)health;
+			break;
 
 		case ARX_STAT_MANA :
 
-			ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
-			max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+			ammo_mana_index = idWeapon::GetAmmoNumForName( "ammo_mana" );
+			tmp_current_player_mana = inventory.ammo[ ammo_mana_index ];
+			tmp_current_player_max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 
-			returnValue = ( (float)max_mana / 100.00f ) * (float)ammo_mana;
+			returnValue = ( (float)tmp_current_player_max_mana / 100.00f ) * (float)tmp_current_player_mana;
+			break;
 
 		case ARX_STAT_STAMINA :
 
 			returnValue = ( pm_stamina.GetFloat() / 100.00f ) * (float)stamina;
+			break;
 	}
 
 	return returnValue;
