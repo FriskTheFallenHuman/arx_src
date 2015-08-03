@@ -1353,9 +1353,13 @@ void idTrigger_FullScreenMenuGUI::Spawn( void ) {
 	idStr interfaceGUI = this->spawnArgs.GetString( "gui_fullScreenMenu", "" );
 	fullScreenGUIInterface = uiManager->FindGui( interfaceGUI, true, false, true );
 
+	fullScreenGUIInterfaceOpen = false;
+
+	/*
 	if ( spawnArgs.GetBool( "start_on" ) ) {
 		BecomeActive( TH_THINK );
 	}
+	*/
 }
 
 /*
@@ -1450,6 +1454,16 @@ void idTrigger_FullScreenMenuGUI::ToggleFullScreenGUIInterface( void ) {
 
 /*
 ================
+idTrigger_FullScreenMenuGUI::Trigger
+================
+*/
+void idTrigger_FullScreenMenuGUI::Trigger( void )
+{
+	Event_Trigger( this );
+}
+
+/*
+================
 idTrigger_FullScreenMenuGUI::Event_Trigger
 ================
 */
@@ -1458,8 +1472,8 @@ void idTrigger_FullScreenMenuGUI::Event_Trigger( idEntity *activator ) {
 	ToggleFullScreenGUIInterface();
 
 	if ( thinkFlags & TH_THINK ) {
-		BecomeInactive( TH_THINK );
-	} else {
 		BecomeActive( TH_THINK );
+	} else {
+		BecomeInactive( TH_THINK );
 	}
 }

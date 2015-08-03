@@ -336,7 +336,10 @@ const idEventDef AI_SetState( "setState", "s" );
 const idEventDef AI_GetState( "getState", NULL, 's' );
 const idEventDef AI_GetHead( "getHead", NULL, 'e' );
 const idEventDef AI_SpawnItem( "spawnItem" );
+
+// Arx - End Of Sun
 const idEventDef AI_SpawnItemCooked( "spawnItemCooked", "s" );
+const idEventDef AI_ArxUpdateTeam( "updateTeam", "f" );
 
 CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_EnableEyeFocus,			idActor::Event_EnableEyeFocus )
@@ -382,6 +385,7 @@ CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
 	EVENT( AI_GetHead,					idActor::Event_GetHead )
 	EVENT( AI_SpawnItem,				idActor::Event_SpawnItem )	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 	EVENT( AI_SpawnItemCooked,			idActor::Event_SpawnItemCooked )	// Solarsplace 18th July 2011 - Spawn cooked body parts a few seconds after death
+	EVENT( AI_ArxUpdateTeam,			idActor::Event_ArxUpdateTeam )		// SP - 25th July 2015
 END_CLASS
 
 /*
@@ -3481,5 +3485,14 @@ void idActor::Event_SpawnItemCooked( const char *name  ) {
 		item->GetPhysics()->SetLinearVelocity( vec3_origin );
 		item->UpdateVisuals();
 	}
+}
+
+/*
+=====================
+idActor::Event_SpawnItem
+=====================
+*/
+void idActor::Event_ArxUpdateTeam( int newTeam ) {
+	team = newTeam;
 }
 

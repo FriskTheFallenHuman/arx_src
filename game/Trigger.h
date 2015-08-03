@@ -297,11 +297,14 @@ public:
 	idUserInterface *	fullScreenGUIInterface;
 	bool				fullScreenGUIInterfaceOpen;
 
+	void				Trigger( void );
+
 private:
 	idClipModel *		clipModel;
 
 	void				UpdateGUI( void );
 	void				ToggleFullScreenGUIInterface( void );
+
 	void				Event_Trigger( idEntity *activator );
 };
 

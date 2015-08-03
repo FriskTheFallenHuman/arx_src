@@ -5793,6 +5793,15 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		if ( conversationSystemOpen ) {
 			ToggleConversationSystem();
 		}
+
+		// Solarsplace 3rd Aug 2015 - If open, then shut any full screen GUI
+		idEntity *ent = gameLocal.FindEntity( this->fullScreenMenuGUIId );
+		if ( ent ) {
+			idTrigger_FullScreenMenuGUI *gui = static_cast<idTrigger_FullScreenMenuGUI*>( ent );		
+			if ( gui->fullScreenGUIInterfaceOpen ) {
+				gui->Trigger();
+			}
+		}
 	}
 
 	if ( token.Icmp( "shutshopgui" ) == 0 ) {
@@ -6273,6 +6282,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
 
+		ArxUpdateHeroSkills();
+
 		// Give max health
 		health = inventory.maxHealth;
 
@@ -6280,8 +6291,6 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
 		int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 		inventory.ammo[ ammo_mana ] = max_mana;
-
-		ArxUpdateHeroSkills();
 
 		// Clear down the current values
 		inventory.arx_attribute_points = 0;
@@ -6423,6 +6432,12 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// End - Solarsplace - Arx End Of Sun - Blacksmith
 	// ***********************************************
 
+	// *****************************************************
+	// *** Journal
+	if ( token.Icmp( "arx_journal_show_completed_quests" ) == 0 ) {
+		// g_showCompletedQuests is toggled in .GUI too.
+		UpdatePDAInfo( true );
+	}
 
 	/*****************************************************************************************/
 	/*****************************************************************************************/
@@ -15403,7 +15418,7 @@ float idPlayer::ArxGetStatAsPercentage( int statType ) {
 
 		case ARX_STAT_HEALTH :
 
-			returnValue = ( (float)inventory.arx_class_health_points / 100.00f ) * (float)health;
+			returnValue = ( (float)health / (float)inventory.arx_class_health_points ) * 100.00f;
 			break;
 
 		case ARX_STAT_MANA :
@@ -15412,12 +15427,12 @@ float idPlayer::ArxGetStatAsPercentage( int statType ) {
 			tmp_current_player_mana = inventory.ammo[ ammo_mana_index ];
 			tmp_current_player_max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 
-			returnValue = ( (float)tmp_current_player_max_mana / 100.00f ) * (float)tmp_current_player_mana;
+			returnValue = ( (float)tmp_current_player_mana / (float)tmp_current_player_max_mana ) * 100.00f;
 			break;
 
 		case ARX_STAT_STAMINA :
 
-			returnValue = ( pm_stamina.GetFloat() / 100.00f ) * (float)stamina;
+			returnValue = ( (float)stamina / pm_stamina.GetFloat() ) * 100.00f;
 			break;
 	}
 
@@ -15742,11 +15757,11 @@ void idPlayer::CreateNewHero( void ) {
 
 	inventory.arx_player_level_up_in_progress = true;
 
-	inventory.arx_player_level = this->spawnArgs.GetFloat( "arx_player_level", "0" );
-	inventory.arx_player_x_points = this->spawnArgs.GetFloat( "arx_player_x_points", "0" );
+	inventory.arx_player_level = 0; // this->spawnArgs.GetFloat( "arx_player_level", "0" );
+	inventory.arx_player_x_points = 0; // this->spawnArgs.GetFloat( "arx_player_x_points", "0" );
 
-	inventory.arx_attribute_points = this->spawnArgs.GetFloat( "arx_attribute_points", "0" );
-	inventory.arx_skill_points = this->spawnArgs.GetFloat( "arx_skill_points", "0" );
+	inventory.arx_attribute_points = 0; // this->spawnArgs.GetFloat( "arx_attribute_points", "0" );
+	inventory.arx_skill_points = 0; // this->spawnArgs.GetFloat( "arx_skill_points", "0" );
 
 	inventory.arx_attr_strength = 0;
 	inventory.arx_attr_mental = 0;
@@ -16273,34 +16288,34 @@ int	idPlayer::GetRequiredXPForLevel( int level ) {
 			return 0;
 			break;
 		case 1:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 2:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 3:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 4:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 5:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 6:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 7:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 8:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 9:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		case 10:
-			return LEVEL_UP_AMOUNT;
+			return level * LEVEL_UP_AMOUNT;
 			break;
 		default:
 			return LONG_MAX;
@@ -16327,19 +16342,23 @@ void idPlayer::ModifyPlayerXPs( int XPs, bool showMessage )
 {
 	if ( XPs <= 0 ) { return; }
 
-	int levelUp = 0;
+	bool levelUp = false;
 
 	inventory.arx_player_x_points += XPs;				
 
 	for ( int i = 1; i < ARX_MAX_PLAYER_LEVELS; i++ )
 	{
+		if ( levelUp ) {
+			break;
+		}
+
 		if ( i > inventory.arx_player_level )
 		{
-			if ( ( inventory.arx_skill_points >= GetRequiredXPForLevel( i ) ) )
-			{ levelUp = 1; }
-
-			if ( levelUp )
-			{ ArxPlayerLevelUp(); }
+			if ( ( inventory.arx_player_x_points >= GetRequiredXPForLevel( i ) ) )
+			{
+				levelUp = true;
+				ArxPlayerLevelUp();
+			}
 		}
 	}
 
@@ -16489,10 +16508,12 @@ bool idPlayer::GetQuestState( idStr questObjectQuestName )
 	float returnValue = gameLocal.persistentLevelInfo.GetFloat( questId );
 
 	if ( returnValue == ARX_QUEST_STATE_INITIAL ) {
+
 		return false;
 	}
 
 	if ( returnValue == ARX_QUEST_STATE_COMPLETED ) {
+
 		return true;
 	}
 
@@ -16539,12 +16560,22 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 	float healthUnit = 0.0f;
 	int team = 0;
 	idStr strHealth;
+	float distance = 0.0f;
+	bool isEnemy = false;
 
 	// Start the traceline at our eyes
 	start = GetEyePosition( );
 
-	// End the traceline 768 units ahead in the direction we're viewing
-	end = start + viewAngles.ToForward( ) * 768.0f;
+	// Using player skills update distance
+	if ( inventory.arx_skill_ethereal_link == 0 ) {
+		hud->HandleNamedEvent( "noAIHealth" );
+		return;
+	} else {
+		distance = ( (float)inventory.arx_skill_ethereal_link * DIV5 ) * 128.0f;
+	}
+
+	// End the traceline 'distance' units ahead in the direction we're viewing
+	end = start + viewAngles.ToForward( ) * distance;
 
 	gameLocal.clip.TracePoint( trace, start, end, MASK_MONSTERSOLID, this );
 
@@ -16554,10 +16585,18 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 	{
 		idEntity *ent = gameLocal.GetTraceEntity( trace );
 
-		if ( ent->IsType( idActor::Type ) && ent->health > 0 ) {
+		if ( ent->IsType( idAI::Type ) && ent->health > 0 ) {
 
 			noDamage = ent->spawnArgs.GetBool( "noDamage", "0" );
 			team = ent->spawnArgs.GetInt( "team", "-1" );
+
+			idAI *focusCharacter = static_cast<idAI *>( ent );
+
+			if ( focusCharacter->GetEnemy() == this || team != 0 ) {
+				isEnemy = true;
+			} else if ( team == 0 ) {
+				isEnemy = false;
+			}
 
 			if ( noDamage ) {
 				healthCurrent = 100;
@@ -16574,7 +16613,7 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 			hud->HandleNamedEvent( "AIHealth" );
 			hud->SetStateString( "arx_ai_health_string", strHealth.c_str() );
 			hud->SetStateFloat( "arx_ai_health_unit", healthUnit );
-			hud->SetStateInt( "arx_ai_health_team", team );
+			hud->SetStateBool( "arx_ai_health_is_enemy", isEnemy );
 
 		} else {
 			hud->HandleNamedEvent( "noAIHealth" );

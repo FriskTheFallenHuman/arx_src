@@ -29,6 +29,7 @@ extern const idEventDef AI_SetBlendFrames;
 extern const idEventDef AI_GetBlendFrames;
 extern const idEventDef AI_SpawnItem;	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 extern const idEventDef AI_SpawnItemCooked;	// Solarsplace 18th July 2011 - Spawn cooked body parts a few seconds after death
+extern const idEventDef AI_ArxUpdateTeam; // SP - 25th July 2015
 
 class idDeclParticle;
 
@@ -302,6 +303,7 @@ private:
 	void					Event_GetHead( void );
 	void					Event_SpawnItem( void );	// Solarsplace 18th July 2011 - Spawn things a few seconds after death
 	void					Event_SpawnItemCooked( const char *name );	// Solarsplace 18th July 2011 - Spawn cooked body parts a few seconds after death
+	void					Event_ArxUpdateTeam( int newTeam ); // SP 27th July 2015
 };
 
 #endif /* !__GAME_ACTOR_H__ */
