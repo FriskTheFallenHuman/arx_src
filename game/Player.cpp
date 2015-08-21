@@ -10763,6 +10763,13 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			{
 				itemAttribute = arg->GetValue();
 
+				// Dispel Field
+				if ( strcmp( itemAttribute, "dispel_field" ) == 0 )
+				{
+					RadiusSpell( itemAttribute, 256 );
+					gave = true;
+				}
+
 				// Invisibility
 				if ( strcmp( itemAttribute, "add_invisibility" ) == 0 )
 				{
