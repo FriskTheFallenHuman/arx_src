@@ -1562,7 +1562,15 @@ void idTarget_Tip::Event_Activate( idEntity *activator ) {
 			PostEventSec( &EV_Activate, 5.1f, activator );
 			return;
 		}
-		player->ShowTip( spawnArgs.GetString( "text_title" ), spawnArgs.GetString( "text_tip" ), false );
+
+		// Arx End Of Sun - Support strings file. Also we don't use "text_title" in  Arx.
+		idStr message = spawnArgs.GetString( "text_tip" );
+		if ( idStr::FindText( message, "#str_" ) == 0 )
+		{
+			message = common->GetLanguageDict()->GetString( message );
+		}
+
+		player->ShowTip( spawnArgs.GetString( "text_title" ), message, false );
 		PostEventMS( &EV_GetPlayerPos, spawnArgs.GetFloat( "tip_time", "2000" ) );
 	}
 }
