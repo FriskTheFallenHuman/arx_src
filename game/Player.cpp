@@ -7129,6 +7129,14 @@ void idPlayer::TraceUsables()
 
 		if ( target->IsType( idTrigger::Type ) )
 		{
+			// Solarsplace 6th Sep 2015
+			// If the target is a trigger type but its disabled then reject it.
+			// This is so we can hide doors ( chests ) by hiding the chest model and disabling the door trigger.
+			if ( static_cast<idTrigger *>( target )->ArxIsEnabled() == false )
+			{
+				return;
+			}
+
 			// If idEntity is a trigger that does not have the bool spawn arg arx_usable_item set
 			// then we repeat the trace again with different masks so we see through the trigger
 			// this is so we can pickup up food from within a fire damage trigger for example.
@@ -7179,7 +7187,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud && searchOk )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
 			}	
 		}
@@ -7192,7 +7200,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
 			}	
 		}
@@ -7205,7 +7213,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "inv_name" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_invItem" );
 			}	
 		}
@@ -7218,7 +7226,7 @@ void idPlayer::TraceUsables()
 
 			if ( hud )
 			{
-				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.GetSafeLanguageMessage( target->spawnArgs.GetString( "arx_usable_item_helptext" ) ) );
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "arx_usable_item_helptext" ) ) );
 				hud->HandleNamedEvent( "playerLookingAt_usableItem" );
 			}
 		}
@@ -8316,26 +8324,38 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 			}
 		}
 
+		/*
 		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
-
+		*/
 			// This pda has been read already.
 
+			// Show completed quests in black
 			if ( GetQuestState( pda->GetID() ) ) { // Arx quest object string id stored in "ID" field.
-				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", pda->GetPdaName()) );
+
+				// Arx End Of Sun - Add language file support for PDAs
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
+			
 			} else {
 
+				// Show open quests in colour
 				if ( idStr::Icmp( pda->GetSecurity(), "arx_side_quest" ) == 0 ) { // Arx quest type stored in "Security" field.
-					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", pda->GetPdaName()) );
+					
+					// Arx End Of Sun - Add language file support for PDAs
+					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
 				} else {
-					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", pda->GetPdaName()) );
+
+					// Arx End Of Sun - Add language file support for PDAs
+					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
 				}
 			}
 
+		/*
 		} else {
 
 			// This pda has not been read yet
 			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GREEN "%s", pda->GetPdaName()) );
 		}
+		*/
 
 		const char *security = pda->GetSecurity();
 		if ( j == currentPDA || (currentPDA == 0 && security && *security ) ) {
@@ -8423,7 +8443,9 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 				}
 			}
 			objectiveSystem->SetStateString( "PDAEmailTitle", name );
-			objectiveSystem->SetStateString( "PDAEmailText", data );
+
+			// Arx End Of Sun - Add language file support for PDAs
+			objectiveSystem->SetStateString( "PDAEmailText", gameLocal.ArxGetSafeLanguageMessage( data ) );
 		}
 	}
 	if ( objectiveSystem->State().GetInt( "listPDA_sel_0", "-1" ) == -1 ) {
@@ -11005,6 +11027,14 @@ void idPlayer::GetEntityByViewRay( void )
 
 		if ( target->IsType( idTrigger::Type ) )
 		{
+			// Solarsplace 6th Sep 2015
+			// If the target is a trigger type but its disabled then reject it.
+			// This is so we can hide doors ( chests ) by hiding the chest model and disabling the door trigger.
+			if ( static_cast<idTrigger *>( target )->ArxIsEnabled() == false )
+			{
+				return;
+			}
+
 			// If idEntity is a trigger that does not have the bool spawn arg arx_usable_item set
 			// then we repeat the trace again with different masks so we see through the trigger
 			// this is so we can pickup up food from within a fire damage trigger for example.
@@ -11169,6 +11199,9 @@ void idPlayer::GetEntityByViewRay( void )
 
 				readableSystem = uiManager->FindGui( target->spawnArgs.GetString( "target_gui" ), true, false, true );
 				ToggleReadableSystem();
+
+				// SP - 6th Sep 2015 - Readables can trigger targets when read.
+				target->ActivateTargets( gameLocal.GetLocalPlayer() );
 			}
 		}
 		//************************************************************************************************

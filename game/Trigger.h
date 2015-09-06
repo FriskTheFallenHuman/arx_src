@@ -32,11 +32,17 @@ public:
 	virtual void		Enable( void );
 	virtual void		Disable( void );
 
+	// Solarsplace - Arx End Of Sun
+	bool				ArxIsEnabled( void );
+
 protected:
 	void				CallScript( void ) const;
 
 	void				Event_Enable( void );
 	void				Event_Disable( void );
+
+	// Solarsplace - Arx End Of Sun
+	bool				isEnabled;
 
 	const function_t *	scriptFunction;
 };

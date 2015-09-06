@@ -4592,10 +4592,10 @@ if ( loadSoundWorld ) {
 
 /*
 ================
-idGameLocal::GetSafeLanguageMessage
+idGameLocal::ArxGetSafeLanguageMessage
 ================
 */
-const char * idGameLocal::GetSafeLanguageMessage( const char *message )
+const char * idGameLocal::ArxGetSafeLanguageMessage( const char *message )
 {
 	if ( idStr::FindText( message, "#str_" ) == 0 )
 	{

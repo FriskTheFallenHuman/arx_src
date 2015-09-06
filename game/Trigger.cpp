@@ -96,6 +96,12 @@ idTrigger::Enable
 void idTrigger::Enable( void ) {
 	GetPhysics()->SetContents( CONTENTS_TRIGGER );
 	GetPhysics()->EnableClip();
+
+	// Solarsplace - Arx End Of Sun
+	isEnabled = true;
+
+	//REMOVEME
+	gameLocal.Printf( "Trigger (%s) is enabled\n", this->name.c_str() );
 }
 
 /*
@@ -107,6 +113,22 @@ void idTrigger::Disable( void ) {
 	// we may be relinked if we're bound to another object, so clear the contents as well
 	GetPhysics()->SetContents( 0 );
 	GetPhysics()->DisableClip();
+
+	// Solarsplace - Arx End Of Sun
+	isEnabled = false;
+
+	//REMOVEME
+	gameLocal.Printf( "Trigger (%s) is disabled\n", this->name.c_str() );
+}
+
+/*
+================
+idTrigger::ArxIsEnabled
+================
+*/
+bool idTrigger::ArxIsEnabled( void ) {
+	// Solarsplace - Arx End Of Sun
+	return isEnabled;
 }
 
 /*
@@ -153,6 +175,7 @@ idTrigger::Restore
 void idTrigger::Restore( idRestoreGame *savefile ) {
 	idStr funcname;
 	savefile->ReadString( funcname );
+
 	if ( funcname.Length() ) {
 		scriptFunction = gameLocal.program.FindFunction( funcname );
 		if ( scriptFunction == NULL ) {
@@ -196,6 +219,10 @@ idTrigger::Spawn
 ================
 */
 void idTrigger::Spawn( void ) {
+
+	//REMOVEME
+	gameLocal.Printf( "idTrigger::Spawn\n" );
+
 	GetPhysics()->SetContents( CONTENTS_TRIGGER );
 
 	idStr funcname = spawnArgs.GetString( "call", "" );
@@ -272,6 +299,7 @@ void idTrigger_Multi::Save( idSaveGame *savefile ) const {
 	// Solarsplace - Arx End Of Sun
 	savefile->WriteBool( triggerEnabled );
 	savefile->WriteBool( oldTriggerEnabled );
+	savefile->WriteBool( isEnabled );
 }
 
 /*
@@ -296,6 +324,7 @@ void idTrigger_Multi::Restore( idRestoreGame *savefile ) {
 	// Solarsplace - Arx End Of Sun
 	savefile->ReadBool( triggerEnabled );
 	savefile->ReadBool( oldTriggerEnabled );
+	savefile->ReadBool( isEnabled );
 }
 
 /*
@@ -355,6 +384,8 @@ void idTrigger_Multi::Spawn( void ) {
 
 	// Start -> Solarsplace - Arx End Of Sun
 	triggerEnabled = true;
+
+	isEnabled = true;
 
 	spawnArgs.GetFloat( "requirementWeight", "0.0", requirementWeight );
 	if ( requirementWeight > 0.0f ) {
@@ -874,6 +905,10 @@ Can be turned on or off by using.
 ================
 */
 void idTrigger_Timer::Spawn( void ) {
+
+	//REMOVEME
+	gameLocal.Printf( "idTrigger_Timer::Spawn\n" );
+
 	spawnArgs.GetFloat( "random", "1", random );
 	spawnArgs.GetFloat( "wait", "1", wait );
 	spawnArgs.GetBool( "start_on", "0", on );
@@ -924,6 +959,10 @@ idTrigger_Timer::Event_Timer
 */
 void idTrigger_Timer::Event_Timer( void ) {
 	ActivateTargets( this );
+
+	// Solarsplace - Arx End Of Sun
+	// Bug in id's code. The timer trigger did not call script functions.
+	CallScript();
 
 	// set time before next firing
 	if ( wait >= 0.0f ) {
