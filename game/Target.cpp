@@ -189,6 +189,11 @@ void idTarget_EndLevel::Event_Activate( idEntity *activator ) {
 		return;
 	}
 
+	// SP - 12th June 1013 - Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
+	idStr levelTransitionSpawnPoint = spawnArgs.GetString( "levelTransitionSpawnPoint", "" );
+	idStr nextMapGameLocalFormat = "maps/" + nextMap + ".map" + levelTransitionSpawnPoint;
+	gameLocal.GetLocalPlayer()->SetMapEntryPoint( nextMapGameLocalFormat );
+
 	if ( spawnArgs.GetInt( "devmap", "0" ) ) {
 		gameLocal.sessionCommand = "devmap ";	// only for special demos
 	} else {

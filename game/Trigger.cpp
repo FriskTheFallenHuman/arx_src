@@ -906,9 +906,6 @@ Can be turned on or off by using.
 */
 void idTrigger_Timer::Spawn( void ) {
 
-	//REMOVEME
-	gameLocal.Printf( "idTrigger_Timer::Spawn\n" );
-
 	spawnArgs.GetFloat( "random", "1", random );
 	spawnArgs.GetFloat( "wait", "1", wait );
 	spawnArgs.GetBool( "start_on", "0", on );
