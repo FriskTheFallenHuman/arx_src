@@ -516,6 +516,10 @@ void idAI::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( painTriggerDone );
 	savefile->WriteBool( fly_HeightLimited );
 	savefile->WriteInt( fly_MaxHeight );
+
+	savefile->WriteBool( allowDrowning );
+	savefile->WriteInt( lastAirBreathTime );
+	savefile->WriteInt( lastDrownDamageTime );
 }
 
 /*
@@ -671,6 +675,10 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( painTriggerDone );
 	savefile->ReadBool( fly_HeightLimited );
 	savefile->ReadInt( fly_MaxHeight );
+
+	savefile->ReadBool( allowDrowning );
+	savefile->ReadInt( lastAirBreathTime );
+	savefile->ReadInt( lastDrownDamageTime );
 
 	// Set the AAS if the character has the correct gravity vector
 	idVec3 gravity = spawnArgs.GetVector( "gravityDir", "0 0 -1" );
@@ -917,6 +925,7 @@ void idAI::Spawn( void ) {
 
 	// Solarsplace - Arx End Of Sun - Limit height fish can fly / swim up
 	if ( spawnArgs.GetBool( "arx_fish" ) ) {
+		allowDrowning = false;
 		fly_MaxHeight = physicsObj.GetOrigin().z;
 		fly_HeightLimited = true;
 	}
@@ -1048,6 +1057,11 @@ idAI::Think
 */
 void idAI::Think( void ) {
 
+	// Solarsplace - Get the AI water level. We use this for drown and no fire
+	waterLevel_t waterLevel;
+	waterLevel = physicsObj.GetWaterLevel();
+	DrowningCheck( waterLevel );
+
 	// Solarsplace - Arx End Of Sun - Alert AI every 1 second if pain inflicted by player.
 	if ( sendAlertSignals && ( gameLocal.time > lastAlertSignal ) )
 	{
@@ -1055,8 +1069,15 @@ void idAI::Think( void ) {
 		gameLocal.GetLocalPlayer()->AlertAI( true, 1024, spawnArgs.GetInt( "team", "0" ), spawnArgs.GetInt( "arx_alertai_team_options", "0" ) );
 	}
 
+	// No flames if mostly under water
+	if ( waterLevel >= WATERLEVEL_WAIST )
+	{
+		onFire = gameLocal.time;
+	}
+
 	// Solarsplace - Arx EOS - Thanks Hexen
 	if ( !AI_DEAD && gameLocal.time < onFire || onFire == -1 ) {
+
 		EmitFlames();
 
 		// Arx EOS : Solarsplace - Extra interval damage
@@ -3537,6 +3558,39 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 
 	// Solarsplace 12th Oct 2010 - Arx EOS - Level transition related.
 	gameLocal.GetLocalPlayer()->SaveTransitionInfoSpecific( this, false, true );
+}
+
+/*
+=====================
+idAI::Killed
+=====================
+*/
+void idAI::DrowningCheck( waterLevel_t currentWaterLevel )
+{
+	const int MAX_TIME_UNDERWATER = 10; // AI start to drown if underwater longer than this.
+	const int DROWN_DAMAGE_INTERVAL = 2;
+
+	if ( !allowDrowning )
+	{
+		return;
+	}
+
+	// If head not underwater then reset water state
+	if ( currentWaterLevel < WATERLEVEL_HEAD )
+	{
+		lastAirBreathTime = gameLocal.time;
+		return;
+	}
+
+	if ( lastAirBreathTime < ( gameLocal.time + MAX_TIME_UNDERWATER ) )
+	{
+		if ( lastDrownDamageTime < ( gameLocal.time + MAX_TIME_UNDERWATER ) )
+		{
+			lastDrownDamageTime = gameLocal.time;
+			Damage( NULL, NULL, vec3_origin, "damage_arx_monster_drown_interval", 1.0f, INVALID_JOINT );
+		}
+	}
+
 }
 
 /***********************************************************************

@@ -1096,6 +1096,7 @@ private:
 	void					Event_GetMapName( void );											// 22nd Sep 2012 - Solarsplace
 	void					Event_ModifyPlayerXPs( int XPs );
 	void					Event_GetWeaponChargeTime( float baseTime );
+	void					Event_GetWaterLevel( void );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

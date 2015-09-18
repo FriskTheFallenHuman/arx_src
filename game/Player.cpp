@@ -88,6 +88,7 @@ const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
 const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
 const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
 const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
+const idEventDef EV_FindInventoryItemCount( "GetWaterLevel", "", 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -136,6 +137,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GetMapName,						idPlayer::Event_GetMapName )
 	EVENT( EV_ModifyPlayerXPs,					idPlayer::Event_ModifyPlayerXPs )
 	EVENT( EV_GetWeaponChargeTime,              idPlayer::Event_GetWeaponChargeTime )
+	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_GetWaterLevel )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -16433,6 +16435,20 @@ void idPlayer::Event_GetWeaponChargeTime( float baseTime )
 	} else {
 		idThread::ReturnFloat( baseTimeBonus );
 	}	
+}
+
+
+/*
+================
+idPlayer::Event_GetWaterLevel
+================
+*/
+void idPlayer::Event_GetWaterLevel( void )
+{
+	waterLevel_t waterLevel;
+	waterLevel = physicsObj.GetWaterLevel();
+
+	idThread::ReturnFloat( (float)waterLevel );
 }
 
 /*

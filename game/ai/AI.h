@@ -264,6 +264,9 @@ protected:
 	bool					sendAlertSignals;
 	int						lastAlertSignal;
 	bool					painTriggerDone;
+	bool					allowDrowning;
+	int						lastAirBreathTime;
+	int						lastDrownDamageTime;
 
 	// navigation
 	idAAS *					aas;
@@ -449,6 +452,7 @@ protected:
 	// damage
 	virtual bool			Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
 	virtual void			Killed( idEntity *inflictor, idEntity *attacker, int damage, const idVec3 &dir, int location );
+	void					DrowningCheck( waterLevel_t currentWaterLevel );
 
 	// navigation
 	void					KickObstacles( const idVec3 &dir, float force, idEntity *alwaysKick );
