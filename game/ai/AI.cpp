@@ -923,9 +923,14 @@ void idAI::Spawn( void ) {
 	// set up monster chatter
 	SetChatSound();
 
+	// Arx End Of Sun
+	lastAirBreathTime = gameLocal.time;
+	lastDrownDamageTime = -1;
+	allowDrowning = true; // Arx AI can drown by default. Only fish don't drown.
+
 	// Solarsplace - Arx End Of Sun - Limit height fish can fly / swim up
 	if ( spawnArgs.GetBool( "arx_fish" ) ) {
-		allowDrowning = false;
+		allowDrowning = false; // Only fish don't drown!
 		fly_MaxHeight = physicsObj.GetOrigin().z;
 		fly_HeightLimited = true;
 	}
@@ -3562,35 +3567,44 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 
 /*
 =====================
-idAI::Killed
+idAI::DrowningCheck
 =====================
 */
 void idAI::DrowningCheck( waterLevel_t currentWaterLevel )
 {
-	const int MAX_TIME_UNDERWATER = 10; // AI start to drown if underwater longer than this.
-	const int DROWN_DAMAGE_INTERVAL = 2;
+	// Solarsplace - Arx End Of Sun
 
+	const int MAX_TIME_UNDERWATER = SEC2MS(10); // AI start to drown if underwater longer than this.
+	const int DROWN_DAMAGE_INTERVAL = SEC2MS(2);
+
+	// Don't check if dead
+	if ( AI_DEAD )
+	{ return; }
+
+	// Don't drown if a fish!
 	if ( !allowDrowning )
-	{
-		return;
-	}
+	{ return; }
 
-	// If head not underwater then reset water state
+	// The time is now!
+	int nowTime = gameLocal.time;
+
+	// If head not underwater then breathing is now
 	if ( currentWaterLevel < WATERLEVEL_HEAD )
 	{
-		lastAirBreathTime = gameLocal.time;
-		return;
+		lastAirBreathTime = nowTime;
+		lastDrownDamageTime = -1;
 	}
 
-	if ( lastAirBreathTime < ( gameLocal.time + MAX_TIME_UNDERWATER ) )
+	// Was lastAirBreathTime over MAX_TIME_UNDERWATER time ago?
+	if ( ( lastAirBreathTime + MAX_TIME_UNDERWATER ) < nowTime )
 	{
-		if ( lastDrownDamageTime < ( gameLocal.time + MAX_TIME_UNDERWATER ) )
+		// Did we drown damage too soon?
+		if ( lastDrownDamageTime < nowTime )
 		{
-			lastDrownDamageTime = gameLocal.time;
+			lastDrownDamageTime = nowTime + DROWN_DAMAGE_INTERVAL;
 			Damage( NULL, NULL, vec3_origin, "damage_arx_monster_drown_interval", 1.0f, INVALID_JOINT );
 		}
 	}
-
 }
 
 /***********************************************************************

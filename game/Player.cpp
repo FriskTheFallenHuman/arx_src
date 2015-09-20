@@ -88,7 +88,7 @@ const idEventDef EV_GiveJournal( "GiveJournal", "s", NULL );
 const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
 const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
 const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
-const idEventDef EV_FindInventoryItemCount( "GetWaterLevel", "", 'f' );
+const idEventDef EV_GetWaterLevel( "GetWaterLevel", "", 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -137,7 +137,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GetMapName,						idPlayer::Event_GetMapName )
 	EVENT( EV_ModifyPlayerXPs,					idPlayer::Event_ModifyPlayerXPs )
 	EVENT( EV_GetWeaponChargeTime,              idPlayer::Event_GetWeaponChargeTime )
-	EVENT( EV_FindInventoryItemCount,			idPlayer::Event_GetWaterLevel )
+	EVENT( EV_GetWaterLevel,					idPlayer::Event_GetWaterLevel )
 	//*****************************************************************
 	//*****************************************************************
 
