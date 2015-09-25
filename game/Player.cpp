@@ -307,6 +307,7 @@ void idInventory::Clear( void ) {
 	arx_timer_player_telekinesis	= -1;
 	arx_timer_player_levitate		= -1;
 	arx_timer_player_warmth			= -1;
+	arx_timer_player_hungry			= -1;
 
 	// ****************************************************
 	// ****************************************************
@@ -493,6 +494,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_timer_player_telekinesis", arx_timer_player_telekinesis );
 	dict.SetInt( "arx_timer_player_levitate", arx_timer_player_levitate );
 	dict.SetInt( "arx_timer_player_warmth", arx_timer_player_warmth );
+	dict.SetInt( "arx_timer_player_hungry", arx_timer_player_hungry );
 
 	// ****************************************************
 	// ****************************************************
@@ -702,6 +704,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_timer_player_telekinesis	= dict.GetInt( "arx_timer_player_telekinesis", "-1" );
 	arx_timer_player_levitate		= dict.GetInt( "arx_timer_player_levitate", "-1" );
 	arx_timer_player_warmth			= dict.GetInt( "arx_timer_player_warmth", "-1" );
+	arx_timer_player_hungry			= dict.GetInt( "arx_timer_player_hungry", "-1" );
 
 	// ****************************************************
 	// ****************************************************
@@ -872,6 +875,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_timer_player_telekinesis );
 	savefile->WriteInt( arx_timer_player_levitate );
 	savefile->WriteInt( arx_timer_player_warmth );
+	savefile->WriteInt( arx_timer_player_hungry );
 
 	// ****************************************************
 	// ****************************************************
@@ -1033,6 +1037,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_timer_player_telekinesis );
 	savefile->ReadInt( arx_timer_player_levitate );
 	savefile->ReadInt( arx_timer_player_warmth );
+	savefile->ReadInt( arx_timer_player_hungry );
 
 	// ****************************************************
 	// ****************************************************
@@ -10829,6 +10834,24 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				{
 					// Health gain handled above in original 'Give'
 					Damage( this, this, vec3_origin, "damage_arx_drunk", 1.0f, INVALID_JOINT );
+
+					// Wine counts as food. Stave off hunger for inv_health * minute
+					int playerHungryTimer = this->spawnArgs.GetInt("Arx_Player_Hungry_Interval", "60");
+					int healthAmount = item->GetInt( "inv_health", 0 );
+					if ( healthAmount > 0 ) {
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( playerHungryTimer ) );
+					}
+				}
+
+				// Drink Wine
+				if ( strcmp( itemAttribute, "add_food" ) == 0 )
+				{
+					// Stave off hunger for inv_health * minute
+					int playerHungryTimer = this->spawnArgs.GetInt("Arx_Player_Hungry_Interval", "60");
+					int healthAmount = item->GetInt( "inv_health", 0 );
+					if ( healthAmount > 0 ) {
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( playerHungryTimer ) );
+					}
 				}
 
 				// Ignight Wooden flame torch
@@ -16257,6 +16280,17 @@ void idPlayer::UpdateHeroStats( void ) {
 					}
 				}
 			}
+
+			// Hunger damage
+			const int ARX_HUNGER_MAX = SEC2MS( 60 ) * 10; // 10 minutes default.
+
+			// Initalise hunger here so player is not hungry straight away. Spose this could be done in create new hero...
+			if ( inventory.arx_timer_player_hungry == -1 ) { inventory.arx_timer_player_hungry = gameLocal.time + ARX_HUNGER_MAX; }
+
+			if ( ( inventory.arx_timer_player_hungry + ARX_HUNGER_MAX ) < gameLocal.time ) {
+
+			}
+
 		}
 	}
 
@@ -16494,6 +16528,7 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		arx_timer_player_telekinesis		= RESET_TIME;
 		arx_timer_player_levitate			= RESET_TIME;
 		arx_timer_player_warmth				= RESET_TIME;
+		arx_timer_player_hungry				= RESET_TIME;
 
 	} else {
 
@@ -16548,6 +16583,13 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 			arx_timer_player_warmth = arx_timer_player_warmth - gameLocal.time;
 		} else {
 			arx_timer_player_warmth = RESET_TIME;
+		}
+
+		// Hungry
+		if ( arx_timer_player_hungry > gameLocal.time ) {
+			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
+		} else {
+			arx_timer_player_hungry = RESET_TIME;
 		}
 	}
 }

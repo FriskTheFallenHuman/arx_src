@@ -253,6 +253,7 @@ public:
 	int						arx_timer_player_telekinesis;
 	int						arx_timer_player_levitate;
 	int						arx_timer_player_warmth;
+	int						arx_timer_player_hungry;
 
 	void					ClearDownTimedAttributes( bool clearDown );		// solarsplace 24th Nov 2013
 
