@@ -16186,6 +16186,10 @@ idPlayer::UpdateHeroStats
 */
 void idPlayer::UpdateHeroStats( void ) {
 
+	if ( gameLocal.time <= 0 ) {
+		return;
+	}
+
 	//TODO
 	const int ARX_HERO_UPDATE_RATE = 2000;
 	const int ARX_MANA_LEVITATE_RATE = 2;
@@ -16223,6 +16227,24 @@ void idPlayer::UpdateHeroStats( void ) {
 	} else {
 		nScreenFrostAlpha = 0;
 	}
+
+	// ****************************************
+	// ****************************************
+	// ****************************************
+	// Hunger damage
+
+	// Initalise hunger here so player is not hungry straight away. Spose this could be done in create new hero...
+	if ( inventory.arx_timer_player_hungry == -1 ) {
+		inventory.arx_timer_player_hungry = gameLocal.time + ARX_NEXT_HUNGRY_DEFAULT;
+	}
+
+	// Here we start to fade in the hunger icon. We fade in ARX_HUNGER_WARNING_TIME before the hunger damage starts to take effect.
+	if ( hud ) {
+		float hungerVis = (float)( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) / (float)( gameLocal.time - ( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) );
+		hungerVis = 1.0f / hungerVis;
+		hud->SetStateFloat( "player_hunger_vis", hungerVis );
+	}
+
 	// *******************************************************************************
 	// *******************************************************************************
 
@@ -16282,19 +16304,19 @@ void idPlayer::UpdateHeroStats( void ) {
 			}
 
 			// Hunger damage
-			const int ARX_HUNGER_MAX = SEC2MS( 60 ) * 10; // 10 minutes default.
-
-			// Initalise hunger here so player is not hungry straight away. Spose this could be done in create new hero...
-			if ( inventory.arx_timer_player_hungry == -1 ) { inventory.arx_timer_player_hungry = gameLocal.time + ARX_HUNGER_MAX; }
-
-			if ( ( inventory.arx_timer_player_hungry + ARX_HUNGER_MAX ) < gameLocal.time ) {
+			if ( inventory.arx_timer_player_hungry <= gameLocal.time ) {
+				if ( hud ) {
+					// Increase the damage for each minute of not eating.
+					int hungerDamage = ( gameLocal.time - inventory.arx_timer_player_hungry ) / ARX_HUNGER_DAMAGE_INC;
+					if ( hungerDamage < 0 ) { hungerDamage = 0; }
+					if ( hungerDamage > 100 ) { hungerDamage = 100; }
+					Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", hungerDamage ), 1.0f, INVALID_JOINT );
+					hud->HandleNamedEvent( "IconPulseHunger" );
+				}
 
 			}
-
 		}
 	}
-
-	
 
 	/*
 
