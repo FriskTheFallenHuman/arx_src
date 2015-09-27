@@ -14,9 +14,9 @@
 
 // <---- *** Arx ***
 
-const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 10 ); // * 10; // 10 minutes default.
-const int ARX_HUNGER_WARNING_TIME		= SEC2MS( 5 ); // * 10; // Start to warn 2 minutes before hunger damage.
-const int ARX_HUNGER_DAMAGE_INC			= SEC2MS( 20 ); // Increase hunger damage every x seconds
+const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 60 ) * 10;	// 10 minutes default.
+const int ARX_HUNGER_WARNING_TIME		= SEC2MS( 60 ) * 2;		// Start to warn 2 minutes before hunger damage.
+const int ARX_HUNGER_DAMAGE_INC			= SEC2MS( 30 );			// Increase hunger damage every x seconds
 
 const int ARX_FISTS_WEAPON				= 0;
 const int ARX_MAGIC_WEAPON				= 10;					// Id of the magic casting weapon
