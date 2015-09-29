@@ -89,6 +89,7 @@ const idEventDef EV_GetMapName( "GetMapName", NULL, 's' );
 const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
 const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
 const idEventDef EV_GetWaterLevel( "GetWaterLevel", "", 'f' );
+const idEventDef EV_ArxCheckPlayerInventoryFull( "ArxCheckPlayerInventoryFull", NULL, 'd' );
 
 //*****************************************************************
 //*****************************************************************
@@ -138,6 +139,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_ModifyPlayerXPs,					idPlayer::Event_ModifyPlayerXPs )
 	EVENT( EV_GetWeaponChargeTime,              idPlayer::Event_GetWeaponChargeTime )
 	EVENT( EV_GetWaterLevel,					idPlayer::Event_GetWaterLevel )
+	EVENT( EV_ArxCheckPlayerInventoryFull,		idPlayer::Event_ArxCheckPlayerInventoryFull )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -4164,6 +4166,10 @@ bool idPlayer::GiveInventoryItem( idDict *item ) {
 		return false;
 	}
 
+	if ( ArxCheckPlayerInventoryFull() ) {
+		return false;
+	}
+
 	// Solarsplace - 7th Dec 2012
 	// Note! - This method needs enhancing. For instance adding the drop item version to inventory rather than pickup version....
 
@@ -4201,8 +4207,6 @@ bool idPlayer::GiveInventoryItem( idDict *item ) {
 		}
 		// End <- Original code path
 	}
-
-	ArxCheckPlayerInventoryFull();
 
 	return true;
 }
@@ -9743,21 +9747,17 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 bool idPlayer::ArxCheckPlayerInventoryFull( void )
 {
-	return true;
+	// Solarsplace - Arx End Of Sun - 29th Sep 2015
 
-	const int MAX_INVENTORY_SLOTS = 24; // CHECKME
-	int i;
-	int itemGroupCount; //REMOVEME?
-	int inventorySlotsUsed;
-	idDict *invItemGroupCount;
-	idDict *invItemGroupPointer;
+	const int MAX_INVENTORY_SLOTS = 16 * 3; // Number of slots in the players inventory screen.
+	int i = 0;
+	int inventorySlotsUsed = 0;
 
+	idDict *stackedInventoryItems;
+	stackedInventoryItems = new idDict();
+	stackedInventoryItems->Clear();
 
-	inventorySlotsUsed = 0;
-	invItemGroupCount->Clear();
-	invItemGroupPointer->Clear();
-
-	for ( i = 0; i < MAX_INVENTORY_ITEMS; i++ ) {
+	for ( i = 0; i < inventory.items.Num(); i++ ) {
 
 		idDict *item = inventory.items[i];
 
@@ -9765,35 +9765,31 @@ bool idPlayer::ArxCheckPlayerInventoryFull( void )
 
 		if ( item->GetBool( "inventory_nostack", "0" ) )
 		{
+			// If this item cannot be stacked then it obviously takes up 1 slot.
 			inventorySlotsUsed ++;
-			invItemGroupPointer->SetInt( va( "inventoryitem_%i", i ), i ); //invItemGroupPointer->SetInt( iname, j );
-			invItemGroupCount->SetInt( va( "inventoryitem_%i", i ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
 		}
 		else
 		{
-			if ( !invItemGroupPointer->FindKey( iname ) )
+			// There is no limit to stacking stackable items in a single slot.
+			// So if the dict does not contain the inventory name then it must
+			// be a different new item that can be stacked and therefore a new
+			// slot is taken up.
+			if ( !stackedInventoryItems->FindKey( iname ) )
 			{
 				inventorySlotsUsed ++;
-				// Add 1 new item
-				invItemGroupPointer->SetInt( iname, i );
-				invItemGroupCount->SetInt( iname, 1 );
-			}
-			else
-			{
-				// We have this inv_name in the dictionary already. So update its quantity count.
-				itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
-				invItemGroupCount->SetInt( iname, itemGroupCount );
+				stackedInventoryItems->SetInt( iname, i );
 			}
 		}
-
-
 	}
 
 	int result = MAX_INVENTORY_SLOTS - inventorySlotsUsed;
 
-	gameLocal.Printf( "ArxCheckPlayerInventoryFull you have %i free slots\n", result );
-
-	return true;
+	if ( result > 0 ) {
+		return false;
+	} else {
+		ShowHudMessage( "#str_general_00020" ); // Your inventory is full!
+		return true;
+	}
 }
 
 void idPlayer::UpdateShoppingSystem( void )
@@ -11080,6 +11076,14 @@ void idPlayer::GetEntityByViewRay( void )
 	if ( focusCharacter && ( focusCharacter->health > 0 ) )
 	{
 		Weapon_NPC();
+		return;
+	}
+
+	if ( ArxCheckPlayerInventoryFull() ) {
+
+		// Play a sound to indicate nothing to pickup.
+		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+
 		return;
 	}
 
@@ -16563,6 +16567,18 @@ void idPlayer::Event_GetWaterLevel( void )
 	waterLevel = physicsObj.GetWaterLevel();
 
 	idThread::ReturnFloat( (float)waterLevel );
+}
+
+/*
+================
+idPlayer::Event_ArxCheckPlayerInventoryFull
+================
+*/
+void idPlayer::Event_ArxCheckPlayerInventoryFull( void )
+{
+	bool inventoryFull = ArxCheckPlayerInventoryFull();
+
+	idThread::ReturnInt( inventoryFull );
 }
 
 /*
