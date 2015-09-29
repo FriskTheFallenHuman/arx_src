@@ -1113,6 +1113,7 @@ private:
 	void					DropInventoryItem( int invItemIndex );							// solarsplace 15th Apr 2010
 	idDict					*invItemGroupCount;												// solarsplace 24th Sep 2011
 	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011
+	bool					ArxCheckPlayerInventoryFull( void );							// solarsplace 29th Sep 2015
 
 	// Skills related
 	void					CreateNewHero( void );											// solarsplace 10th Apr 2015

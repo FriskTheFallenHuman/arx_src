@@ -4202,6 +4202,8 @@ bool idPlayer::GiveInventoryItem( idDict *item ) {
 		// End <- Original code path
 	}
 
+	ArxCheckPlayerInventoryFull();
+
 	return true;
 }
 
@@ -9739,6 +9741,61 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 	}
 }
 
+bool idPlayer::ArxCheckPlayerInventoryFull( void )
+{
+	return true;
+
+	const int MAX_INVENTORY_SLOTS = 24; // CHECKME
+	int i;
+	int itemGroupCount; //REMOVEME?
+	int inventorySlotsUsed;
+	idDict *invItemGroupCount;
+	idDict *invItemGroupPointer;
+
+
+	inventorySlotsUsed = 0;
+	invItemGroupCount->Clear();
+	invItemGroupPointer->Clear();
+
+	for ( i = 0; i < MAX_INVENTORY_ITEMS; i++ ) {
+
+		idDict *item = inventory.items[i];
+
+		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+
+		if ( item->GetBool( "inventory_nostack", "0" ) )
+		{
+			inventorySlotsUsed ++;
+			invItemGroupPointer->SetInt( va( "inventoryitem_%i", i ), i ); //invItemGroupPointer->SetInt( iname, j );
+			invItemGroupCount->SetInt( va( "inventoryitem_%i", i ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
+		}
+		else
+		{
+			if ( !invItemGroupPointer->FindKey( iname ) )
+			{
+				inventorySlotsUsed ++;
+				// Add 1 new item
+				invItemGroupPointer->SetInt( iname, i );
+				invItemGroupCount->SetInt( iname, 1 );
+			}
+			else
+			{
+				// We have this inv_name in the dictionary already. So update its quantity count.
+				itemGroupCount = invItemGroupCount->GetInt( iname, "0" ) + 1;
+				invItemGroupCount->SetInt( iname, itemGroupCount );
+			}
+		}
+
+
+	}
+
+	int result = MAX_INVENTORY_SLOTS - inventorySlotsUsed;
+
+	gameLocal.Printf( "ArxCheckPlayerInventoryFull you have %i free slots\n", result );
+
+	return true;
+}
+
 void idPlayer::UpdateShoppingSystem( void )
 {
 	if ( shoppingSystem && shoppingSystemOpen )
@@ -10852,6 +10909,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					if ( healthAmount > 0 ) {
 						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( playerHungryTimer ) );
 					}
+					gave = true;
 				}
 
 				// Ignight Wooden flame torch
