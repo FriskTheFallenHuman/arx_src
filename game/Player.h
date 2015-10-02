@@ -74,7 +74,7 @@ enum {
 	ARX_SKILL_TECHNICAL,
 	ARX_SKILL_INTUITION,
 	ARX_SKILL_ETHEREAL_LINK,
-	ARX_SKILL_INTELLIGENCE,
+	arx_skill_object_knowledge,
 	ARX_SKILL_CASTING,
 	ARX_SKILL_CLOSE_COMBAT,
 	ARX_SKILL_PROJECTILE,
@@ -203,7 +203,7 @@ public:
 	int						arx_skill_defense;
 	int						arx_skill_ethereal_link;
 	int						arx_skill_intuition;
-	int						arx_skill_intelligence;
+	int						arx_skill_object_knowledge;
 	int						arx_skill_projectile;
 	int						arx_skill_stealth;
 	int						arx_skill_technical;
@@ -238,7 +238,7 @@ public:
 	int						tmp_arx_skill_defense;
 	int						tmp_arx_skill_ethereal_link;
 	int						tmp_arx_skill_intuition;
-	int						tmp_arx_skill_intelligence;
+	int						tmp_arx_skill_object_knowledge;
 	int						tmp_arx_skill_projectile;
 	int						tmp_arx_skill_stealth;
 	int						tmp_arx_skill_technical;

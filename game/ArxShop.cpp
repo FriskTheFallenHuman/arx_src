@@ -125,7 +125,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 			// Note: existingshopItemDictionaryIndex takes into account ARX_MAX_SHOP_ITEMS_GROUP in this case.
 			int existingshopItemDictionaryIndex = FindShopItem( result, true );		
 
-			if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingshopItemDictionaryIndex == -1 )
+			if ( shopItemDef->dict.GetBool( "inv_inventory_nostack", "0" ) || existingshopItemDictionaryIndex == -1 )
 			{
 				// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
 				shopSlotItem_Dict->Set( va( "shop_item_class_%i",		shopItemDictionaryIndex ), result );
@@ -238,7 +238,7 @@ bool idArxShop::AddShopItem( const char *className )
 		//REMOVEME
 		gameLocal.Printf( "AddShopItem %i = %s\n", totalUsedShopSlots, className );	
 
-		if ( shopItemDef->dict.GetBool( "inventory_nostack", "0" ) || existingShopItemIndex == ITEM_NOT_FOUND )
+		if ( shopItemDef->dict.GetBool( "inv_inventory_nostack", "0" ) || existingShopItemIndex == ITEM_NOT_FOUND )
 		{
 			// Store the non-grouped / non-stacked shop data in the shop dictionary || store a new single groupable / stackable item for the first time.
 			shopSlotItem_Dict->Set( va( "shop_item_class_%i", totalUsedShopSlots ), className );

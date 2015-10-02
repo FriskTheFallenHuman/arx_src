@@ -260,7 +260,7 @@ void idInventory::Clear( void ) {
 	arx_skill_defense				= 0;
 	arx_skill_ethereal_link			= 0;
 	arx_skill_intuition				= 0;
-	arx_skill_intelligence			= 0;
+	arx_skill_object_knowledge			= 0;
 	arx_skill_projectile			= 0;
 	arx_skill_stealth				= 0;
 	arx_skill_technical				= 0;
@@ -287,7 +287,7 @@ void idInventory::Clear( void ) {
 	tmp_arx_skill_defense			= 0;
 	tmp_arx_skill_ethereal_link		= 0;
 	tmp_arx_skill_intuition			= 0;
-	tmp_arx_skill_intelligence		= 0;
+	tmp_arx_skill_object_knowledge		= 0;
 	tmp_arx_skill_projectile		= 0;
 	tmp_arx_skill_stealth			= 0;
 	tmp_arx_skill_technical			= 0;
@@ -449,7 +449,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_skill_defense", arx_skill_defense );
 	dict.SetInt( "arx_skill_ethereal_link", arx_skill_ethereal_link );
 	dict.SetInt( "arx_skill_intuition", arx_skill_intuition );
-	dict.SetInt( "arx_skill_intelligence", arx_skill_intelligence );
+	dict.SetInt( "arx_skill_object_knowledge", arx_skill_object_knowledge );
 	dict.SetInt( "arx_skill_projectile", arx_skill_projectile );
 	dict.SetInt( "arx_skill_stealth", arx_skill_stealth );
 	dict.SetInt( "arx_skill_technical", arx_skill_technical );
@@ -476,7 +476,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "tmp_arx_skill_defense", tmp_arx_skill_defense );
 	dict.SetInt( "tmp_arx_skill_ethereal_link", tmp_arx_skill_ethereal_link );
 	dict.SetInt( "tmp_arx_skill_intuition", tmp_arx_skill_intuition );
-	dict.SetInt( "tmp_arx_skill_intelligence", tmp_arx_skill_intelligence );
+	dict.SetInt( "tmp_arx_skill_object_knowledge", tmp_arx_skill_object_knowledge );
 	dict.SetInt( "tmp_arx_skill_projectile", tmp_arx_skill_projectile );
 	dict.SetInt( "tmp_arx_skill_stealth", tmp_arx_skill_stealth );
 	dict.SetInt( "tmp_arx_skill_technical", tmp_arx_skill_technical );
@@ -657,7 +657,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_skill_defense				= dict.GetInt( "arx_skill_defense", "0" );
 	arx_skill_ethereal_link			= dict.GetInt( "arx_skill_ethereal_link", "0" );
 	arx_skill_intuition				= dict.GetInt( "arx_skill_intuition", "0" );
-	arx_skill_intelligence			= dict.GetInt( "arx_skill_intelligence", "0" );
+	arx_skill_object_knowledge			= dict.GetInt( "arx_skill_object_knowledge", "0" );
 	arx_skill_projectile			= dict.GetInt( "arx_skill_projectile", "0" );
 	arx_skill_stealth				= dict.GetInt( "arx_skill_stealth", "0" );
 	arx_skill_technical				= dict.GetInt( "arx_skill_technical", "0" );
@@ -684,7 +684,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	tmp_arx_skill_defense			= dict.GetInt( "tmp_arx_skill_defense", "0" );
 	tmp_arx_skill_ethereal_link		= dict.GetInt( "tmp_arx_skill_ethereal_link", "0" );
 	tmp_arx_skill_intuition			= dict.GetInt( "tmp_arx_skill_intuition", "0" );
-	tmp_arx_skill_intelligence		= dict.GetInt( "tmp_arx_skill_intelligence", "0" );
+	tmp_arx_skill_object_knowledge		= dict.GetInt( "tmp_arx_skill_object_knowledge", "0" );
 	tmp_arx_skill_projectile		= dict.GetInt( "tmp_arx_skill_projectile", "0" );
 	tmp_arx_skill_stealth			= dict.GetInt( "tmp_arx_skill_stealth", "0" );
 	tmp_arx_skill_technical			= dict.GetInt( "tmp_arx_skill_technical", "0" );
@@ -857,7 +857,7 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_skill_defense );
 	savefile->WriteInt( arx_skill_ethereal_link );
 	savefile->WriteInt( arx_skill_intuition );
-	savefile->WriteInt( arx_skill_intelligence );
+	savefile->WriteInt( arx_skill_object_knowledge );
 	savefile->WriteInt( arx_skill_projectile );
 	savefile->WriteInt( arx_skill_stealth );
 	savefile->WriteInt( arx_skill_technical );
@@ -1019,7 +1019,7 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_skill_defense );
 	savefile->ReadInt( arx_skill_ethereal_link );
 	savefile->ReadInt( arx_skill_intuition );
-	savefile->ReadInt( arx_skill_intelligence );
+	savefile->ReadInt( arx_skill_object_knowledge );
 	savefile->ReadInt( arx_skill_projectile );
 	savefile->ReadInt( arx_skill_stealth );
 	savefile->ReadInt( arx_skill_technical );
@@ -5948,6 +5948,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					// Now pay the player
 					inventory.money += buyFromPlayerPrice; //itemValue;
 					StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
+				} else {
+
+					ShowHudMessage( "##str_general_00021" ); // !! The shop is full !!
+                    StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
 				}
 			}
 		}
@@ -5963,6 +5967,12 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	// Solarsplace 17th Nov 2011 - Shop related
 	if ( token.Icmp( "shop_buyitem" ) == 0 ) {
+
+		if ( ArxCheckPlayerInventoryFull() ) {
+			// Play a sound to indicate nothing to pickup.
+			StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+			return false;
+		}
 
 		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
 
@@ -6148,9 +6158,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		return true;
 	}
 
-	if ( token.Icmp( "arx_skill_intelligence_dec" ) == 0 ) {
+	if ( token.Icmp( "arx_skill_object_knowledge_dec" ) == 0 ) {
 		inventory.tmp_arx_skill_points ++;
-		inventory.tmp_arx_skill_intelligence --;
+		inventory.tmp_arx_skill_object_knowledge --;
 		ArxUpdateHeroSkills();
 		return true;
 	}
@@ -6243,9 +6253,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		return true;
 	}
 
-	if ( token.Icmp( "arx_skill_intelligence_inc" ) == 0 ) {
+	if ( token.Icmp( "arx_skill_object_knowledge_inc" ) == 0 ) {
 		inventory.tmp_arx_skill_points --;
-		inventory.tmp_arx_skill_intelligence ++;
+		inventory.tmp_arx_skill_object_knowledge ++;
 		ArxUpdateHeroSkills();
 		return true;
 	}
@@ -6290,7 +6300,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.arx_skill_defense = inventory.tmp_arx_skill_defense;
 		inventory.arx_skill_ethereal_link = inventory.tmp_arx_skill_ethereal_link;
 		inventory.arx_skill_intuition = inventory.tmp_arx_skill_intuition;
-		inventory.arx_skill_intelligence = inventory.tmp_arx_skill_intelligence;
+		inventory.arx_skill_object_knowledge = inventory.tmp_arx_skill_object_knowledge;
 		inventory.arx_skill_projectile = inventory.tmp_arx_skill_projectile;
 		inventory.arx_skill_stealth = inventory.tmp_arx_skill_stealth;
 		inventory.arx_skill_technical = inventory.tmp_arx_skill_technical;
@@ -6323,7 +6333,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 		inventory.tmp_arx_skill_defense = 0;
 		inventory.tmp_arx_skill_ethereal_link = 0;
 		inventory.tmp_arx_skill_intuition = 0;
-		inventory.tmp_arx_skill_intelligence = 0;
+		inventory.tmp_arx_skill_object_knowledge = 0;
 		inventory.tmp_arx_skill_projectile = 0;
 		inventory.tmp_arx_skill_stealth = 0;
 		inventory.tmp_arx_skill_technical = 0;
@@ -7496,6 +7506,14 @@ void idPlayer::ProcessMagic()
 					// *** level 3
 
 					//Feed
+					if ( strcmp( customMagicSpell, "add_food" ) == 0 ) {
+						
+						int healthAmount = ( inventory.arx_player_level * DIV2 ) + ( inventory.arx_skill_casting * DIV2 );
+						if ( healthAmount > 0 ) {
+							inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
+						}
+
+					}
 
 					//Fireball
 						// === Handled above in projectiles
@@ -9763,7 +9781,7 @@ bool idPlayer::ArxCheckPlayerInventoryFull( void )
 
 		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 
-		if ( item->GetBool( "inventory_nostack", "0" ) )
+		if ( item->GetBool( "inv_inventory_nostack", "0" ) )
 		{
 			// If this item cannot be stacked then it obviously takes up 1 slot.
 			inventorySlotsUsed ++;
@@ -9871,7 +9889,7 @@ void idPlayer::UpdateShoppingSystem( void )
 				idStr n1 = iname;
 				idStr n2 = va( "_%i", j );
 
-				if ( item->GetBool( "inventory_nostack", "0" ) )
+				if ( item->GetBool( "inv_inventory_nostack", "0" ) )
 				{
 					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j ); //invItemGroupPointer->SetInt( iname, j );
 					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 ); // invItemGroupCount->SetInt( iname, 1 );
@@ -10165,7 +10183,7 @@ void idPlayer::UpdateInventoryGUI( void )
 
 				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 
-				if ( item->GetBool( "inventory_nostack", "0" ) ) {
+				if ( item->GetBool( "inv_inventory_nostack", "0" ) ) {
 					invItemGroupPointer->SetInt( va( "inventoryitem_%i", j ), j );
 					invItemGroupCount->SetInt( va( "inventoryitem_%i", j ), 1 );
 				}
@@ -10300,7 +10318,7 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", hasSkillPointsToSpend );
 		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", hasSkillPointsToSpend );
 		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", hasSkillPointsToSpend );
-		objectiveSystem->SetStateBool( "arx_skill_intelligence_inc_visible", hasSkillPointsToSpend );
+		objectiveSystem->SetStateBool( "arx_skill_object_knowledge_inc_visible", hasSkillPointsToSpend );
 		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", hasSkillPointsToSpend );
 		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", hasSkillPointsToSpend );
 		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", hasSkillPointsToSpend );
@@ -10335,8 +10353,8 @@ void idPlayer::UpdateJournalGUI( void )
 		allowDecrement = ( inventory.tmp_arx_skill_intuition > inventory.arx_skill_intuition );
 		objectiveSystem->SetStateBool( "arx_skill_intuition_dec_visible", allowDecrement );
 
-		allowDecrement = ( inventory.tmp_arx_skill_intelligence > inventory.arx_skill_intelligence );
-		objectiveSystem->SetStateBool( "arx_skill_intelligence_dec_visible", allowDecrement );
+		allowDecrement = ( inventory.tmp_arx_skill_object_knowledge > inventory.arx_skill_object_knowledge );
+		objectiveSystem->SetStateBool( "arx_skill_object_knowledge_dec_visible", allowDecrement );
 
 		allowDecrement = ( inventory.tmp_arx_skill_projectile > inventory.arx_skill_projectile );
 		objectiveSystem->SetStateBool( "arx_skill_projectile_dec_visible", allowDecrement );
@@ -10379,7 +10397,7 @@ void idPlayer::UpdateJournalGUI( void )
 			objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.tmp_arx_skill_close_combat ); // 11
 			objectiveSystem->SetStateInt( "arx_skill_defense", inventory.tmp_arx_skill_defense ); // 13
 			objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.tmp_arx_skill_ethereal_link ); // 8
-			objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.tmp_arx_skill_intelligence ); // 9
+			objectiveSystem->SetStateInt( "arx_skill_object_knowledge", inventory.tmp_arx_skill_object_knowledge ); // 9
 			objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.tmp_arx_skill_intuition ); // 7
 			objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.tmp_arx_skill_projectile ); // 12
 			objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.tmp_arx_skill_stealth ); // 5
@@ -10390,7 +10408,7 @@ void idPlayer::UpdateJournalGUI( void )
 			objectiveSystem->SetStateInt( "arx_skill_close_combat", inventory.arx_skill_close_combat ); // 11
 			objectiveSystem->SetStateInt( "arx_skill_defense", inventory.arx_skill_defense ); // 13
 			objectiveSystem->SetStateInt( "arx_skill_ethereal_link", inventory.arx_skill_ethereal_link ); // 8
-			objectiveSystem->SetStateInt( "arx_skill_intelligence", inventory.arx_skill_intelligence ); // 9
+			objectiveSystem->SetStateInt( "arx_skill_object_knowledge", inventory.arx_skill_object_knowledge ); // 9
 			objectiveSystem->SetStateInt( "arx_skill_intuition", inventory.arx_skill_intuition ); // 7
 			objectiveSystem->SetStateInt( "arx_skill_projectile", inventory.arx_skill_projectile ); // 12
 			objectiveSystem->SetStateInt( "arx_skill_stealth", inventory.arx_skill_stealth ); // 5
@@ -10889,10 +10907,9 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					Damage( this, this, vec3_origin, "damage_arx_drunk", 1.0f, INVALID_JOINT );
 
 					// Wine counts as food. Stave off hunger for inv_health * minute
-					int playerHungryTimer = this->spawnArgs.GetInt("Arx_Player_Hungry_Interval", "60");
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( playerHungryTimer ) );
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
 					}
 				}
 
@@ -10900,10 +10917,9 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				if ( strcmp( itemAttribute, "add_food" ) == 0 )
 				{
 					// Stave off hunger for inv_health * minute
-					int playerHungryTimer = this->spawnArgs.GetInt("Arx_Player_Hungry_Interval", "60");
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( playerHungryTimer ) );
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
 					}
 					gave = true;
 				}
@@ -11079,14 +11095,6 @@ void idPlayer::GetEntityByViewRay( void )
 		return;
 	}
 
-	if ( ArxCheckPlayerInventoryFull() ) {
-
-		// Play a sound to indicate nothing to pickup.
-		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
-
-		return;
-	}
-
 	trace_t trace;
 	idPlayer * player = gameLocal.GetLocalPlayer();
 	idEntity * target;
@@ -11139,6 +11147,20 @@ void idPlayer::GetEntityByViewRay( void )
 		// Solarsplace 2nd April 2010 - It is critical that the inv_ remains
 		if ( target->spawnArgs.GetBool( "inv_arx_inventory_item" ) && !target->IsHidden() )
 		{
+			// Solarsplace - 30th Sep 2015
+			// Bit of a bodge... if the item is one of these then skip the inventory full check...
+			bool skipInventoryFullCheck = false;
+			if ( target->spawnArgs.GetBool( "player_money_gold" ) || target->spawnArgs.GetBool( "player_persistent_rune" ) ) {
+				skipInventoryFullCheck = true;
+			}
+
+			if ( !skipInventoryFullCheck ) {
+				if ( ArxCheckPlayerInventoryFull() ) {
+					// Play a sound to indicate nothing to pickup.
+					StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+					return;
+				}
+			}
 
 			// Solarsplace 9th Oct 2011 - Does this item require another inventory item before it can be picked up?
 			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
@@ -11548,9 +11570,15 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 	idStr fixedGiveItem = target->spawnArgs.GetString( "arx_searchable_find_fixed", "" ); // Get a specified single find item
 
 	if ( fixedGiveItem.Length() ) {
-		// Give the player a specified single item
-		Event_GiveInventoryItem( fixedGiveItem );
-		gave = true;
+
+		if ( ArxCheckPlayerInventoryFull() ) {
+			gave = false;
+		} else {
+			// Give the player a specified single item
+			Event_GiveInventoryItem( fixedGiveItem );
+			gave = true;
+		}
+		
 	} else if ( target->spawnArgs.GetBool( "player_money_gold", "0" ) ) {
 
 		int fixedGold = target->spawnArgs.GetInt( "player_money_gold_amount", "0" );
@@ -11573,15 +11601,21 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 			}
 		}
 	} else {
-		// Give the player a random item from the list
-		const int MAX_CHOICE = 12;
-		int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
 
-		idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
-		if ( randomGiveItem.Length() ) {
-			// Give the player the specified single item
-			Event_GiveInventoryItem( randomGiveItem );
-			gave = true;
+		if ( ArxCheckPlayerInventoryFull() ) {
+			gave = false;
+		} else {
+
+			// Give the player a random item from the list
+			const int MAX_CHOICE = 12;
+			int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
+
+			idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
+			if ( randomGiveItem.Length() ) {
+				// Give the player the specified single item
+				Event_GiveInventoryItem( randomGiveItem );
+				gave = true;
+			}
 		}
 	}
 
@@ -15384,14 +15418,14 @@ int idPlayer::ArxCalculateOwnWeaponDamage( int baseDamageAmount, int weaponSkill
 
 		case ARX_WEAPON_TYPE_MELEE :
 
-			tmpSkillValue = ( inventory.arx_skill_intelligence
+			tmpSkillValue = ( inventory.arx_skill_object_knowledge
 				+ inventory.arx_skill_close_combat + inventory.arx_player_level );
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
 
 		case ARX_WEAPON_TYPE_PROJECTILE :
 
-			tmpSkillValue = ( baseDamageAmount, inventory.arx_skill_intelligence
+			tmpSkillValue = ( baseDamageAmount, inventory.arx_skill_object_knowledge
 				+ inventory.arx_skill_projectile + inventory.arx_player_level );
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
@@ -15598,7 +15632,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int tmp_arx_skill_defense = 0;
 	int tmp_arx_skill_ethereal_link = 0;
 	int tmp_arx_skill_intuition = 0;
-	int tmp_arx_skill_intelligence = 0;
+	int tmp_arx_skill_object_knowledge = 0;
 	int tmp_arx_skill_projectile = 0;
 	int tmp_arx_skill_stealth = 0;
 	int tmp_arx_skill_technical = 0;
@@ -15623,7 +15657,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 	int total_arx_skill_defense = 0;
 	int total_arx_skill_ethereal_link = 0;
 	int total_arx_skill_intuition = 0;
-	int total_arx_skill_intelligence = 0;
+	int total_arx_skill_object_knowledge = 0;
 	int total_arx_skill_projectile = 0;
 	int total_arx_skill_stealth = 0;
 	int total_arx_skill_technical = 0;
@@ -15738,7 +15772,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 					inventory.items[invItemIndex]->GetInt( "arx_skill_defense", "0",		tmp_arx_skill_defense );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_ethereal_link", "0",	tmp_arx_skill_ethereal_link );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_intuition", "0",		tmp_arx_skill_intuition );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_intelligence", "0",	tmp_arx_skill_intelligence );
+					inventory.items[invItemIndex]->GetInt( "arx_skill_object_knowledge", "0",	tmp_arx_skill_object_knowledge );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_projectile", "0",		tmp_arx_skill_projectile );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_stealth", "0",		tmp_arx_skill_stealth );
 					inventory.items[invItemIndex]->GetInt( "arx_skill_technical", "0",		tmp_arx_skill_technical );
@@ -15765,7 +15799,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 					total_arx_skill_defense += tmp_arx_skill_defense;
 					total_arx_skill_ethereal_link += tmp_arx_skill_ethereal_link;
 					total_arx_skill_intuition += tmp_arx_skill_intuition;
-					total_arx_skill_intelligence += tmp_arx_skill_intelligence;
+					total_arx_skill_object_knowledge += tmp_arx_skill_object_knowledge;
 					total_arx_skill_projectile += tmp_arx_skill_projectile;
 					total_arx_skill_stealth += tmp_arx_skill_stealth;
 					total_arx_skill_technical += tmp_arx_skill_technical;
@@ -15900,7 +15934,7 @@ void idPlayer::CreateNewHero( void ) {
 	inventory.arx_skill_defense = 0;
 	inventory.arx_skill_ethereal_link = 0;
 	inventory.arx_skill_intuition = 0;
-	inventory.arx_skill_intelligence = 0;
+	inventory.arx_skill_object_knowledge = 0;
 	inventory.arx_skill_projectile = 0;
 	inventory.arx_skill_stealth = 0;
 	inventory.arx_skill_technical = 0;
@@ -15937,7 +15971,7 @@ void idPlayer::LoadCurrentSkillsIntoTemp( void ) {
 	inventory.tmp_arx_skill_defense				= inventory.arx_skill_defense;
 	inventory.tmp_arx_skill_ethereal_link		= inventory.arx_skill_ethereal_link;
 	inventory.tmp_arx_skill_intuition			= inventory.arx_skill_intuition;
-	inventory.tmp_arx_skill_intelligence		= inventory.arx_skill_intelligence;
+	inventory.tmp_arx_skill_object_knowledge		= inventory.arx_skill_object_knowledge;
 	inventory.tmp_arx_skill_projectile			= inventory.arx_skill_projectile;
 	inventory.tmp_arx_skill_stealth				= inventory.arx_skill_stealth;
 	inventory.tmp_arx_skill_technical			= inventory.arx_skill_technical;
