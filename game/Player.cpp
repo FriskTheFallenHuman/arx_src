@@ -11227,11 +11227,11 @@ void idPlayer::GetEntityByViewRay( void )
 			}
 			args.Set( "inv_classname", entityClassName );
 
-			// trigger our targets
-			ActivateTargets( this );
+			// trigger our targets.
+			target->ActivateTargets( gameLocal.GetLocalPlayer() );
 
 			// clear our contents so the object isn't picked up twice
-			GetPhysics()->SetContents( 0 );
+			target->GetPhysics()->SetContents( 0 );
 
 			PlaySpecificEntitySoundShader( target, "snd_acquire" );
 
