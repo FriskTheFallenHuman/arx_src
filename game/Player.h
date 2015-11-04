@@ -1103,6 +1103,7 @@ private:
 	void					Event_GetWeaponChargeTime( float baseTime );
 	void					Event_GetWaterLevel( void );
 	void					Event_ArxCheckPlayerInventoryFull( void );
+	void					Event_HasGotJournal( const char *name );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

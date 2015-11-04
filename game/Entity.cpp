@@ -377,8 +377,10 @@ idEntity::idEntity
 */
 idEntity::idEntity() {
 
-	// Solarsplace - 18th Aug 2010
+	// Solarsplace - Arx End Of Sun
 	originalPositionsSet = false;
+	originalOrigin.Zero();
+	originalAxis.Zero();
 
 	entityNumber	= ENTITYNUM_NONE;
 	entityDefNumber = -1;
@@ -875,18 +877,17 @@ void idEntity::Think( void ) {
 	RunPhysics();
 	Present();
 
-	// Solarsplace 18th Aug 2010 - Used for saving persistent information
-	if ( IsAtRest() )
-	{
-		if ( !originalPositionsSet )
+	// Solarsplace 18th Aug 2010 - Used for saving persistent information.
+	// Solarsplace  4th Nov 2015 - A hack! - wait 10 frames for things to settle down before we save any change.
+	if ( gameLocal.GetFrameNum() > 10 ) {
+		if ( IsAtRest() )
 		{
-			//REMOVEME
-			//gameLocal.Printf ( name.c_str() );
-			//gameLocal.Printf ( " is at rest\n" );
-
-			originalPositionsSet = true;
-			originalOrigin = GetPhysics()->GetOrigin();
-			originalAxis = GetPhysics()->GetAxis();
+			if ( !originalPositionsSet )
+			{
+				originalPositionsSet = true;
+				originalOrigin = GetPhysics()->GetOrigin();
+				originalAxis = GetPhysics()->GetAxis();
+			}
 		}
 	}
 }

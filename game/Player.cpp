@@ -90,6 +90,7 @@ const idEventDef EV_ModifyPlayerXPs( "modifyPlayerXPs", "d", NULL );
 const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
 const idEventDef EV_GetWaterLevel( "GetWaterLevel", "", 'f' );
 const idEventDef EV_ArxCheckPlayerInventoryFull( "ArxCheckPlayerInventoryFull", NULL, 'd' );
+const idEventDef EV_HasGotJournal( "HasGotJournal", "s", 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -140,6 +141,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GetWeaponChargeTime,              idPlayer::Event_GetWeaponChargeTime )
 	EVENT( EV_GetWaterLevel,					idPlayer::Event_GetWaterLevel )
 	EVENT( EV_ArxCheckPlayerInventoryFull,		idPlayer::Event_ArxCheckPlayerInventoryFull )
+	EVENT( EV_HasGotJournal,					idPlayer::Event_HasGotJournal )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -9307,6 +9309,9 @@ void idPlayer::SaveTransitionInfo( void )
 	int entityHealthMax;
 	idStr entityClassName;
 
+	idVec3 zeroVec3;
+	zeroVec3.Zero();
+
 	mapName = gameLocal.GetMapName();
 
 	for ( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() )
@@ -9364,18 +9369,22 @@ void idPlayer::SaveTransitionInfo( void )
 
 			// ATM this just saves new positions and angles of things that have moved around by knocking for example
 
-			if ( ent->originalOrigin != entityOrigin )
-			{
-				//gameLocal.Printf( "Arx: Changed ENT: %s\n", ent->name.c_str() );
+			if ( ent->originalOrigin != zeroVec3 ) { // Make sure some movement has occured after 10 frames elapsed.
 
-				gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
-				gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
-				gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, entityHidden );
+				if ( ent->originalOrigin != entityOrigin )
+				{
+					//gameLocal.Printf( "Arx: Changed ENT: %s\n", ent->name.c_str() );
 
-				// SP - 21st Feb 2013 - This is actually probably not needed here at all. We don't restore this property in 'SpawnTransitionEntity' ! - Comment out for now.
-				//if ( idStr::Icmp( entityInventoryName, "" ) != 0 )
-				//{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }	
+					gameLocal.persistentLevelInfo.SetVector( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_ORIGIN + ARX_REC_SEP, entityOrigin );
+					gameLocal.persistentLevelInfo.SetMatrix( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_AXIS + ARX_REC_SEP, entityAxis );
+					gameLocal.persistentLevelInfo.SetBool( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_HIDDEN + ARX_REC_SEP, entityHidden );
+
+					// SP - 21st Feb 2013 - This is actually probably not needed here at all. We don't restore this property in 'SpawnTransitionEntity' ! - Comment out for now.
+					//if ( idStr::Icmp( entityInventoryName, "" ) != 0 )
+					//{ gameLocal.persistentLevelInfo.Set( mapName + ARX_REC_SEP + ARX_REC_CHANGED + ARX_REC_SEP + ent->name + ARX_REC_SEP + ARX_PROP_INV_NAME + ARX_REC_SEP, entityInventoryName ); }	
+				}
 			}
+
 		}
 	}
 }
@@ -16613,6 +16622,20 @@ void idPlayer::Event_ArxCheckPlayerInventoryFull( void )
 	bool inventoryFull = ArxCheckPlayerInventoryFull();
 
 	idThread::ReturnInt( inventoryFull );
+}
+
+/*
+================
+idPlayer::Event_HasGotJournal
+================
+*/
+void idPlayer::Event_HasGotJournal( const char *name )
+{
+	if ( inventory.pdas.Find( name ) ) {
+		idThread::ReturnInt( true );
+	} else {
+		idThread::ReturnInt( false );
+	}
 }
 
 /*
