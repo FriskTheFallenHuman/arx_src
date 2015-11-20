@@ -183,6 +183,7 @@ public:
 	idStr					arx_equiped_items[ ARX_MAX_EQUIPED_ITEMS ];
 
 	int						arx_snake_weapon; // The current magic weapon
+	int						arx_last_melee_weapon; // The last melee weapon the player was using
 
 	bool					arx_new_hero_created;
 
@@ -1134,13 +1135,13 @@ private:
 
 	// Magic related
 	int						GetPlayerManaAmount( void );									// Solarsplace 28th Feb 2010
-	void					FireMagicWeapon
-		( const char *projectileName, int quickSpellIndex, int manaCost );					// solarsplace 13th May 2010
+	//void					FireMagicWeapon( const char *projectileName, int quickSpellIndex, int manaCost );
 	int						magicAttackTime;												// solarsplace 15th May 2010
-	bool					magicAttackInProgress;											// solarsplace 15th May 2010
+	//bool					magicAttackInProgress;											// solarsplace 15th May 2010
 	void					ProcessMagic();													// solarsplace 22nd May 2010 
 	void					MagicUpdateJournalSpells( void );								// solarsplace 22nd Jul 2010
-	void					ArxTraceAIHealthHUD( void );										// solarsplace 24th Sep 2014
+	void					ArxTraceAIHealthHUD( void );									// solarsplace 24th Sep 2014
+	void					ArxSpawnMiscFoodItemIntoWorld( void );
 
 	// Shop related
 	idArxShop				arxShopFunctions;
@@ -1165,9 +1166,9 @@ private:
 	idStr					hudMagicHelp;
 	idStr					magicProjectileDef;
 	int						magicPreDelay;
-	bool					magicDoingPreCastSpellProjectile;
+	//bool					magicDoingPreCastSpellProjectile;
 	const char				*magicLatestProjectileDefName;
-	void					magicSaveSpell( int manaCost, const char *projectileName, const char *spellName );
+	//void					magicSaveSpell( int manaCost, const char *projectileName, const char *spellName );
 
 	// Level transition related
 	idStr					SplitStrings( idStr inputString, int requiredPart );

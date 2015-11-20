@@ -1489,8 +1489,8 @@ idPlayer::idPlayer() {
 	magicWandTrail			= NULL;					// Spell casting related
 	magicModeActive			= false;				// Spell casting related
 	lastMagicModeActive		= false;				// Spell casting related
-	magicAttackInProgress	= false;				// Spell casting related
-	magicDoingPreCastSpellProjectile	= false;	// Spell casting related			
+	//magicAttackInProgress	= false;				// Spell casting related
+	//magicDoingPreCastSpellProjectile	= false;	// Spell casting related			
 
 	invItemGroupCount			= new idDict();
 	invItemGroupPointer			= new idDict();
@@ -3418,6 +3418,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 	_hud->HandleNamedEvent( "updateAmmo" );
 
 	// Quickspells
+	/*
 	for ( i = 0; i < 3; i++ )
 	{
 		// Runes -- Not sure if this is efficient? suspect not.... Don't see the game doing it anywhere :(
@@ -3429,6 +3430,7 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 		gameLocal.persistentLevelInfo.GetString( va( "magic_aam_folgora_taar_%i", i ), "0", &result );
 		_hud->SetStateString( va( "magic_aam_folgora_taar_%i", i ), result );
 	}
+	*/
 }
 
 /*
@@ -5367,8 +5369,12 @@ void idPlayer::Weapon_Combat( void ) {
 
 			// Start - Solarsplace 15th May 2010 - Magic related - Arx EOS
 			// This condition is ESSENTIAL to prevent the the magic attack being instantly stopped because it was not called via a button or impulse.
+			
+			/*
 			if ( !magicAttackInProgress )
 			{ weapon.GetEntity()->EndAttack(); }
+			*/
+
 			// End - Solarsplace 15th May 2010 - Magic related - Arx EOS
 		}
 	}
@@ -7510,11 +7516,14 @@ void idPlayer::ProcessMagic()
 					//Feed
 					if ( strcmp( customMagicSpell, "add_food" ) == 0 ) {
 						
+						/*
 						int healthAmount = ( inventory.arx_player_level * DIV2 ) + ( inventory.arx_skill_casting * DIV2 );
 						if ( healthAmount > 0 ) {
 							inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
 						}
+						*/
 
+						ArxSpawnMiscFoodItemIntoWorld();
 					}
 
 					//Fireball
@@ -8895,7 +8904,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 	}
 
 	// Solarsplace 27th April 2010 - Disable almost everything if in magic mode. - Magic related
-	if ( !magicModeActive || magicDoingPreCastSpellProjectile)
+	if ( !magicModeActive  ) // || magicDoingPreCastSpellProjectile)
 	{
 		// Solarsplace - 14th Aug 2010 - Can no longer select weapons via impulses!
 		/*
@@ -8907,95 +8916,39 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 		switch( impulse )
 		{
-			//REMOVEME
 			case IMPULSE_13: {
-
-				/***********************************************************************/
-				/***********************************************************************/
-				/***********************************************************************/
-				gameLocal.Printf("IMPULSE_13\n");
-
-				//RadiusSpell();
-
-				/*
-				if ( inventory.arx_timer_player_invisible > gameLocal.time ) // Do not alert AI or set enemy if player invisible
-				{ break; };
-
-				int			e;
-				idEntity *	ent;
-				idEntity *	entityList[ MAX_GENTITIES ];
-				int			numListedEntities;
-				idBounds	bounds;
-				//idActor	*	actor;
-
-				bounds = idBounds( GetPhysics()->GetOrigin() ).Expand( 1024 );
-
-				const idActor *actor = static_cast<const idActor *>( this );
-
-				// get all entities touching the bounds
-				numListedEntities = gameLocal.clip.EntitiesTouchingBounds( bounds, -1, entityList, MAX_GENTITIES );
-
-				for ( e = 0; e < numListedEntities; e++ ) {
-
-					ent = entityList[ e ];
-						
-					if ( ent->IsType( idAI::Type ) ) {
-
-						gameLocal.Printf("idAI is %s\n", ent->name.c_str());
-
-						if ( static_cast<idActor *>( ent )->CanSee(this, true) )
-						{
-							gameLocal.Printf("The idAI %s can see the player\n", ent->name.c_str());
-						}
-						else
-						{
-							gameLocal.Printf("The idAI %s can NOT see the player\n", ent->name.c_str());
-						}
-
-						gameLocal.AlertAI( this );
-
-						static_cast<idAI *>( ent )->SetEnemy( static_cast<idActor *>( this ) );// TouchedByFlashlight( actor );
-						
-					}
-				}
-				*/
-				/***********************************************************************/
-				/***********************************************************************/
-				/***********************************************************************/
-
-
 				//Reload();
 				break;
 			}
 
-			// Solarsplace 14th Aug 2010 - Don't need this stuff
-			/*
 			case IMPULSE_14: {
-				NextWeapon();
+				//NextWeapon();
 				break;
 			}
-			case IMPULSE_15: {
-				PrevWeapon();
-				break;
-			}
-			*/
 
-			/* Solarsplace - Removed
+			case IMPULSE_15: {
+				//PrevWeapon();
+				break;
+			}
+
 			case IMPULSE_17: {
+				/*
 				if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 					gameLocal.mpGame.ToggleReady();
 				}
+				*/
 				break;
 			}
-			*/
+
 			case IMPULSE_18: {
-				centerView.Init(gameLocal.time, 200, viewAngles.pitch, 0);
+				//centerView.Init(gameLocal.time, 200, viewAngles.pitch, 0);
 				break;
 			}
-			/* Solarsplace - Removed
+
 			case IMPULSE_19: {
 				// when we're not in single player, IMPULSE_19 is used for showScores
 				// otherwise it opens the pda
+				/*
 				if ( !gameLocal.isMultiplayer ) {
 					if ( objectiveSystemOpen ) {
 						TogglePDA();
@@ -9003,45 +8956,52 @@ void idPlayer::PerformImpulse( int impulse ) {
 						SelectWeapon( weapon_pda, true );
 					}
 				}
+				*/
 				break;
 			}
-			*/
-			/* Solarsplace - Removed
+
 			case IMPULSE_20: {
+				/*
 				if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 					gameLocal.mpGame.ToggleTeam();
 				}
+				*/
 				break;
 			}
-			*/
-			/* Solarsplace - Removed
+
 			case IMPULSE_22: {
+				/*
 				if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 					gameLocal.mpGame.ToggleSpectate();
 				}
+				*/
 				break;
 			}
-			*/
 
-			// Solarsplace 14th Aug 2010 - Don't need this stuff
-			/*
 			case IMPULSE_28: {
+				/*
 				if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 					gameLocal.mpGame.CastVote( gameLocal.localClientNum, true );
 				}
+				*/
 				break;
 			}
+
 			case IMPULSE_29: {
+				/*
 				if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 					gameLocal.mpGame.CastVote( gameLocal.localClientNum, false );
 				}
+				*/
 				break;
 			}
+
 			case IMPULSE_40: {
+				/*
 				UseVehicle();
 				break;
+				*/
 			}
-			*/
 		}
 	}
 
@@ -9105,6 +9065,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 			break;
 		}
 		
+		/* Solarsplace - Quick spells removed.
 		case IMPULSE_22: { // Arx - Quick spell 1
 
 			if (
@@ -9161,6 +9122,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 			break;
 		}
+		*/
 
 		case IMPULSE_25: { // Arx - Weapon Empty (Magic Weapon)
 
@@ -9180,6 +9142,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 			break;
 		}
 
+		/*
 		case IMPULSE_26: { // Arx - Test - Save pinfo
 			SaveTransitionInfo();
 			break;
@@ -9189,7 +9152,7 @@ void idPlayer::PerformImpulse( int impulse ) {
 			LoadTransitionInfo();
 			break;
 		}
-
+		*/
 	}
 
 	//*** End - Arx EOS
@@ -9204,7 +9167,6 @@ void idPlayer::PerformImpulse( int impulse ) {
 *****************************************************************************************************
 *** BEGIN - Functions created by Solarsplace for the Arx End Of Sun project 
 */
-
 
 void idPlayer::SetMapEntryPoint( idStr entityName )
 {
@@ -9539,8 +9501,7 @@ void idPlayer::LoadTransitionInfo( void )
 	}
 }
 
-
-
+/*
 void idPlayer::FireMagicWeapon( const char *projectileName, int quickSpellIndex, int manaCost )
 {
 	// **************************************************************
@@ -9624,9 +9585,13 @@ void idPlayer::FireMagicWeapon( const char *projectileName, int quickSpellIndex,
 		}	
 	}
 }
+*/
 
+/*
 void::idPlayer::magicSaveSpell( int manaCost, const char *projectileName, const char *spellName )
 {
+	// Solarsplace - This is old unused code. Kept for reference for now.
+
 	int i;
 	bool savedSpell = false;
 
@@ -9660,6 +9625,7 @@ void::idPlayer::magicSaveSpell( int manaCost, const char *projectileName, const 
 	else
 	{ StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL ); }
 }
+*/
 
 void idPlayer::DropInventoryItem( int invItemIndex )
 {
@@ -12672,6 +12638,7 @@ void idPlayer::Think( void ) {
 	UpdateReadableGUI();
 
 	// This code is ONLY used for pre-cast magic projectiles.
+	/*
 	if ( magicDoingPreCastSpellProjectile )
 	{
 		// OK - Listen up!
@@ -12710,6 +12677,7 @@ void idPlayer::Think( void ) {
 			weapon.GetEntity()->EndAttack();
 		}
 	}
+	*/
 
 	// Solarsplace - 2nd July 2010 - Now magic mode is BUTTON_5 not an IMPULSE
 
@@ -16571,6 +16539,70 @@ void idPlayer::ModifyPlayerXPs( int XPs, bool showMessage )
 			ShowHudMessage( "#str_general_00009" );	// "You gained XPs"
 		}
 	}
+}
+
+/*
+================
+idPlayer::ArxSpawnMiscFoodItemIntoWorld
+================
+*/
+void idPlayer::ArxSpawnMiscFoodItemIntoWorld( void )
+{
+	// Arx End Of Sun - Solarsplace - Spawn a random food item for spell
+	// Was planning to use a .DEF for the random food, but opting for quick
+	// and simple right now.
+
+	float yaw;
+	idVec3 org;
+	idPlayer *player;
+	idDict dict;
+	idStr foodItem;
+	int randomMin = 1;
+	int randomMax = 8;
+	int randomAmount = randomMin + gameLocal.random.RandomInt( randomMax - randomMin );
+
+	switch ( randomAmount )
+	{
+		case 1:
+			foodItem = "moveable_item_arx_food_cooked_chicken_whole";
+			break;
+		case 2:
+			foodItem = "moveable_item_arx_food_ribs_cooked";
+			break;
+		case 3:
+			foodItem = "moveable_item_arx_food_fish_cooked";
+			break;
+		case 4:
+			foodItem = "moveable_item_arx_food_cheese";
+			break;
+		case 5:
+			foodItem = "moveable_item_arx_food_wine";
+			break;
+		case 6:
+			foodItem = "moveable_item_arx_food_bread";
+			break;
+		case 7:
+			foodItem = "moveable_item_arx_food_carrot";
+			break;
+		case 8:
+			foodItem = "moveable_item_arx_food_mushroom";
+			break;
+		default:
+			foodItem = "moveable_item_arx_food_cooked_chicken_whole"; // Should never hit this.
+	}
+
+	// **********
+
+	player = gameLocal.GetLocalPlayer();
+	yaw = player->viewAngles.yaw;
+
+	dict.Set( "classname", foodItem );
+	dict.Set( "angle", va( "%f", yaw + 180 ) );
+
+	org = player->GetPhysics()->GetOrigin() + idAngles( 0, yaw, 0 ).ToForward() * 80 + idVec3( 0, 0, 1 );
+	dict.Set( "origin", org.ToString() );
+
+	gameLocal.SpawnEntityDef( dict );
 }
 
 /*
