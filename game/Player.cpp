@@ -5367,15 +5367,10 @@ void idPlayer::Weapon_Combat( void ) {
 		} else if ( oldButtons & BUTTON_ATTACK ) {
 			AI_ATTACK_HELD = false;
 
-			// Start - Solarsplace 15th May 2010 - Magic related - Arx EOS
-			// This condition is ESSENTIAL to prevent the the magic attack being instantly stopped because it was not called via a button or impulse.
-			
-			/*
-			if ( !magicAttackInProgress )
-			{ weapon.GetEntity()->EndAttack(); }
-			*/
+			// Solarsplace - Arx End Of Sun - Note to self, this condition
+			// was involved in the old and shite magic weapon code.
 
-			// End - Solarsplace 15th May 2010 - Magic related - Arx EOS
+			weapon.GetEntity()->EndAttack();
 		}
 	}
 
