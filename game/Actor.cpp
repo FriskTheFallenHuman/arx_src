@@ -2184,10 +2184,15 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 					  const char *damageDefName, const float damageScale, const int location ) {
 
 	bool noCriticalDamage;
-
+#ifdef _DT
+	if ( !fl.takedamage || !damageScale ) { // no ragdoll if no damage?
+		return;
+	}
+#else
 	if ( !fl.takedamage ) {
 		return;
 	}
+#endif
 
 	if ( !inflictor ) {
 		inflictor = gameLocal.world;
@@ -2258,7 +2263,13 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 
 	//REMOVEME
+#ifdef _DT
+	if(damage){
+		gameLocal.Printf ( "idActor::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+	}
+#else
 	gameLocal.Printf ( "idActor::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+#endif
 
 	// inform the attacker that they hit someone
 	attacker->DamageFeedback( this, inflictor, damage );

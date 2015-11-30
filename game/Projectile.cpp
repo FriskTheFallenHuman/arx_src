@@ -676,12 +676,19 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	ignore = NULL;
 
 	// if the hit entity takes damage
+#ifdef _DT
+	if ( ent->fl.takedamage && damagePower ) {
+		damageScale = damagePower; // may need to call launchProjectiles() with dmgPower 0 for "trace" effect only
+									// remember to start from 1.0 in script if you use charge attack over time
+#else
 	if ( ent->fl.takedamage ) {
 		if ( damagePower ) {
 			damageScale = damagePower;
 		} else {
 			damageScale = 1.0f;
 		}
+#endif
+		
 
 		// if the projectile owner is a player
 		if ( owner.GetEntity() && owner.GetEntity()->IsType( idPlayer::Type ) ) {
