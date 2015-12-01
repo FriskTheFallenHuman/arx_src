@@ -3103,6 +3103,9 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 				gameLocal.clip.Translation( tr, start, muzzle_pos, proj->GetPhysics()->GetClipModel(), proj->GetPhysics()->GetClipModel()->GetAxis(), MASK_SHOT_RENDERMODEL, owner );
 				muzzle_pos = tr.endpos;
 			}
+#ifdef _DT
+			launchPower = owner->ArxCalculateD3GameBonuses( launchPower, ARX_MELEE_DISTANCE );
+#endif
 
 			proj->Launch( muzzle_pos, dir, pushVelocity, fuseOffset, launchPower, dmgPower );
 		}
