@@ -1105,6 +1105,9 @@ private:
 	void					Event_GetWaterLevel( void );
 	void					Event_ArxCheckPlayerInventoryFull( void );
 	void					Event_HasGotJournal( const char *name );
+#ifdef _DT
+	void					Event_GetStaminaPercentage( void );
+#endif
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010

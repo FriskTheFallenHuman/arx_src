@@ -91,6 +91,7 @@ const idEventDef EV_GetWeaponChargeTime( "GetWeaponChargeTime", "f", 'f' );
 const idEventDef EV_GetWaterLevel( "GetWaterLevel", "", 'f' );
 const idEventDef EV_ArxCheckPlayerInventoryFull( "ArxCheckPlayerInventoryFull", NULL, 'd' );
 const idEventDef EV_HasGotJournal( "HasGotJournal", "s", 'f' );
+const idEventDef EV_GetStaminaPercentage( "getStaminaPercentage", NULL, 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -142,6 +143,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_GetWaterLevel,					idPlayer::Event_GetWaterLevel )
 	EVENT( EV_ArxCheckPlayerInventoryFull,		idPlayer::Event_ArxCheckPlayerInventoryFull )
 	EVENT( EV_HasGotJournal,					idPlayer::Event_HasGotJournal )
+	EVENT( EV_GetStaminaPercentage,				idPlayer::Event_GetStaminaPercentage )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -11877,6 +11879,15 @@ void idPlayer::EvaluateControls( void ) {
 
 	oldFlags = usercmd.flags;
 
+#ifdef _DT
+	// use stamina if using special attack e.g. draw the bow string
+	if(weapon.GetEntity() && weapon.GetEntity()->IsSpecialAttack() ){
+		stamina -= MS2SEC( gameLocal.msec );
+		if ( stamina < 0 ) {
+			stamina = 0;
+		}
+	}
+#endif
 	AdjustSpeed();
 
 	// update the viewangles
@@ -11948,11 +11959,21 @@ void idPlayer::AdjustSpeed( void ) {
 		if ( ( usercmd.forwardmove == 0 ) && ( usercmd.rightmove == 0 ) && ( !physicsObj.OnLadder() || ( usercmd.upmove == 0 ) ) ) {
 			 rate *= 1.25f;
 		}
-
+#ifdef _DT
+		if( weapon.GetEntity() && weapon.GetEntity()->IsSpecialAttack() ) {
+			// do nothing
+		} else {
+			stamina += rate * MS2SEC( gameLocal.msec );
+			if ( stamina > pm_stamina.GetFloat() ) {
+				stamina = pm_stamina.GetFloat();
+			}
+		}
+#else
 		stamina += rate * MS2SEC( gameLocal.msec );
 		if ( stamina > pm_stamina.GetFloat() ) {
 			stamina = pm_stamina.GetFloat();
 		}
+#endif
 		speed = pm_walkspeed.GetFloat();
 		bobFrac = 0.0f;
 	}
@@ -16664,6 +16685,19 @@ void idPlayer::Event_HasGotJournal( const char *name )
 		idThread::ReturnInt( false );
 	}
 }
+
+#ifdef _DT
+/*
+================
+idPlayer::Event_GetStaminaPercentage
+================
+*/
+void idPlayer::Event_GetStaminaPercentage( void )
+{
+	int staminapercentage = ( int )( 100.0f * stamina / pm_stamina.GetFloat() );
+	idThread::ReturnFloat( staminapercentage );
+}
+#endif
 
 /*
 =================

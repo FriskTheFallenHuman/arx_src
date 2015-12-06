@@ -18,7 +18,12 @@ typedef enum {
 	WP_RELOAD,
 	WP_HOLSTERED,
 	WP_RISING,
+#ifndef _DT
 	WP_LOWERING
+#else
+	WP_LOWERING,
+	WP_SPECIAL
+#endif	
 } weaponStatus_t;
 
 typedef int ammo_t;
@@ -112,6 +117,7 @@ public:
 #ifdef _DT	// head anim
 	bool					HasHeadJoint( void );
 	idAngles				GetHeadAngle( void );
+	bool					IsSpecialAttack( void ) const;
 #endif
 	
 	// Ammo
@@ -363,7 +369,7 @@ private:
 #else
 	void					Event_Melee( float dmgScale );
 	void					Event_FacingEnemy( float maxDistance );
-	void					Event_GetStaminaPercentage( void );
+	void					Event_WeaponSpecial( void );
 #endif
 	void					Event_GetWorldModel( void );
 	void					Event_AllowDrop( int allow );

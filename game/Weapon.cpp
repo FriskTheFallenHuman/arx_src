@@ -38,7 +38,7 @@ const idEventDef EV_Weapon_EjectBrass( "ejectBrass" );
 #ifdef _DT
 const idEventDef EV_Weapon_Melee( "melee", "f", 'd' );
 const idEventDef EV_Weapon_FacingEnemy( "facingEnemy", "f", 'd' );
-const idEventDef EV_Weapon_GetStaminaPercentage( "getStaminaPercentage", NULL, 'f' );
+const idEventDef EV_Weapon_WeaponSpecial( "weaponSpecial" );
 #else
 const idEventDef EV_Weapon_Melee( "melee", NULL, 'd' );
 #endif
@@ -85,7 +85,7 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Weapon_Melee,						idWeapon::Event_Melee )
 #ifdef _DT
 	EVENT( EV_Weapon_FacingEnemy,				idWeapon::Event_FacingEnemy )
-	EVENT( EV_Weapon_GetStaminaPercentage,		idWeapon::Event_GetStaminaPercentage )
+	EVENT( EV_Weapon_WeaponSpecial,				idWeapon::Event_WeaponSpecial )
 #endif
 	EVENT( EV_Weapon_GetWorldModel,				idWeapon::Event_GetWorldModel )
 	EVENT( EV_Weapon_AllowDrop,					idWeapon::Event_AllowDrop )
@@ -1569,7 +1569,11 @@ idWeapon::isReady
 ================
 */
 bool idWeapon::IsReady( void ) const {
+#ifdef _DT
+	return !hide && !IsHidden() && ( ( status == WP_RELOAD ) || ( status == WP_READY ) || ( status == WP_OUTOFAMMO ) || ( status == WP_SPECIAL ) );
+#else
 	return !hide && !IsHidden() && ( ( status == WP_RELOAD ) || ( status == WP_READY ) || ( status == WP_OUTOFAMMO ) );
+#endif
 }
 
 /*
@@ -1580,6 +1584,17 @@ idWeapon::IsReloading
 bool idWeapon::IsReloading( void ) const {
 	return ( status == WP_RELOAD );
 }
+
+#ifdef _DT
+/*
+================
+idWeapon::IsSpecialAttack
+================
+*/
+bool idWeapon::IsSpecialAttack( void ) const {
+	return ( status == WP_SPECIAL );
+}
+#endif
 
 /*
 ================
@@ -2617,6 +2632,17 @@ void idWeapon::Event_WeaponLowering( void ) {
 	owner->WeaponLoweringCallback();
 }
 
+#ifdef _DT
+/*
+===============
+idWeapon::Event_WeaponSpecial
+===============
+*/
+void idWeapon::Event_WeaponSpecial( void ) {
+	status = WP_SPECIAL;	
+}
+#endif
+
 /*
 ===============
 idWeapon::Event_UseAmmo
@@ -3435,22 +3461,6 @@ void idWeapon::Event_IsInvisible( void ) {
 	}
 	idThread::ReturnFloat( owner->PowerUpActive( INVISIBILITY ) ? 1 : 0 );
 }
-
-#ifdef _DT
-/*
-===============
-idWeapon::Event_GetStaminaPercentage
-===============
-*/
-void idWeapon::Event_GetStaminaPercentage( void ) {
-	if ( !owner ) {
-		idThread::ReturnFloat( 0 );
-		return;
-	}
-	int staminapercentage = ( int )( 100.0f * owner->stamina / pm_stamina.GetFloat() );
-	idThread::ReturnFloat( staminapercentage );
-}
-#endif
 
 /*
 ===============
