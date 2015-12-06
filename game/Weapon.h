@@ -363,6 +363,7 @@ private:
 #else
 	void					Event_Melee( float dmgScale );
 	void					Event_FacingEnemy( float maxDistance );
+	void					Event_GetStaminaPercentage( void );
 #endif
 	void					Event_GetWorldModel( void );
 	void					Event_AllowDrop( int allow );

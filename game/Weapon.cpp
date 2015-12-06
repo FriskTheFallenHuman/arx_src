@@ -38,6 +38,7 @@ const idEventDef EV_Weapon_EjectBrass( "ejectBrass" );
 #ifdef _DT
 const idEventDef EV_Weapon_Melee( "melee", "f", 'd' );
 const idEventDef EV_Weapon_FacingEnemy( "facingEnemy", "f", 'd' );
+const idEventDef EV_Weapon_GetStaminaPercentage( "getStaminaPercentage", NULL, 'f' );
 #else
 const idEventDef EV_Weapon_Melee( "melee", NULL, 'd' );
 #endif
@@ -84,6 +85,7 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Weapon_Melee,						idWeapon::Event_Melee )
 #ifdef _DT
 	EVENT( EV_Weapon_FacingEnemy,				idWeapon::Event_FacingEnemy )
+	EVENT( EV_Weapon_GetStaminaPercentage,		idWeapon::Event_GetStaminaPercentage )
 #endif
 	EVENT( EV_Weapon_GetWorldModel,				idWeapon::Event_GetWorldModel )
 	EVENT( EV_Weapon_AllowDrop,					idWeapon::Event_AllowDrop )
@@ -3433,6 +3435,22 @@ void idWeapon::Event_IsInvisible( void ) {
 	}
 	idThread::ReturnFloat( owner->PowerUpActive( INVISIBILITY ) ? 1 : 0 );
 }
+
+#ifdef _DT
+/*
+===============
+idWeapon::Event_GetStaminaPercentage
+===============
+*/
+void idWeapon::Event_GetStaminaPercentage( void ) {
+	if ( !owner ) {
+		idThread::ReturnFloat( 0 );
+		return;
+	}
+	int staminapercentage = ( int )( 100.0f * owner->stamina / pm_stamina.GetFloat() );
+	idThread::ReturnFloat( staminapercentage );
+}
+#endif
 
 /*
 ===============
