@@ -710,12 +710,12 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 					gameLocal.Printf ( "idProjectile::Collide '%s'\n", damageDefName );
 
 					if ( dmgDef->dict.GetBool( "arx_magic_damage_skills" ) ) {
-						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
+						damageScale = player->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
 					}
 					
 					// Duplicated in idGameLocal::RadiusDamage
 					if ( dmgDef->dict.GetBool( "arx_projectile_damage_skills" ) ) {
-						damageScale *= player->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
+						damageScale = player->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
 					}
 				}
 				// ****************************************

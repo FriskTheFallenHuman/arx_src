@@ -3763,7 +3763,7 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 
 			// Duplicated in idProjectile::Collide
 			if ( damageDef->GetBool( "arx_projectile_damage_skills" ) ) {
-				damageScale *= gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
+				damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
 			}
 			// ****************************************
 			// ****************************************
