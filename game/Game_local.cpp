@@ -3767,10 +3767,10 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 			}
 			// ****************************************
 			// ****************************************
-
+#ifndef _DT // this print is a bit misleading, it is already called inside Damage in Actor.cpp
 			//REMOVEME
 			gameLocal.Printf ( "idGameLocal::RadiusDamage '%s' was (%i) damaged by '%s'\n", ent->name.c_str(), damage, damageDefName );
-
+#endif
 			ent->Damage( inflictor, attacker, dir, damageDefName, damageScale, INVALID_JOINT );
 		} 
 	}
