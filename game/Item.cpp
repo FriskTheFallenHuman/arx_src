@@ -38,6 +38,7 @@ idItem::idItem
 */
 idItem::idItem() {
 	spin = false;
+	arxSpin = false;
 	inView = false;
 	inViewTime = 0;
 	lastCycle = 0;
@@ -70,6 +71,7 @@ void idItem::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteVec3( orgOrigin );
 	savefile->WriteBool( spin );
+	savefile->WriteBool( arxSpin );
 	savefile->WriteBool( pulse );
 	savefile->WriteBool( canPickUp );
 
@@ -90,6 +92,7 @@ void idItem::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadVec3( orgOrigin );
 	savefile->ReadBool( spin );
+	savefile->ReadBool( arxSpin );
 	savefile->ReadBool( pulse );
 	savefile->ReadBool( canPickUp );
 
@@ -189,8 +192,11 @@ idItem::Think
 ================
 */
 void idItem::Think( void ) {
+
 	if ( thinkFlags & TH_THINK ) {
+
 		if ( spin ) {
+
 			idAngles	ang;
 			idVec3		org;
 
@@ -204,6 +210,18 @@ void idItem::Think( void ) {
 			org.z += 4.0f + cos( ( gameLocal.time + 2000 ) * scale ) * 4.0f;
 			SetOrigin( org );
 		}
+
+		if ( arxSpin ) {
+
+			// Solarsplace - Arx End Of Sun
+			// Fairly slow spin around the Z axis
+			idAngles	ang;
+			ang.pitch = ang.roll = 0.0f;
+			ang.yaw = ( gameLocal.time & 8191 ) * 360.0f / -8192.0f;
+			SetAngles( ang );
+		}
+
+
 	}
 
 	Present();
@@ -282,6 +300,12 @@ void idItem::Spawn( void ) {
 
 	if ( spawnArgs.GetBool( "spin" ) || gameLocal.isMultiplayer ) {
 		spin = true;
+		BecomeActive( TH_THINK );
+	}
+
+	// Solarsplace - Arx End Of Sun
+	if ( spawnArgs.GetBool( "arxSpin" ) ) {
+		arxSpin = true;
 		BecomeActive( TH_THINK );
 	}
 

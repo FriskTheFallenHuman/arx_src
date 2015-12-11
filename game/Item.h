@@ -47,6 +47,7 @@ public:
 private:
 	idVec3					orgOrigin;
 	bool					spin;
+	bool					arxSpin;
 	bool					pulse;
 	bool					canPickUp;
 
