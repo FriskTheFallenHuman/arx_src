@@ -16883,8 +16883,15 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 
 	// Using player skills update distance
 	if ( inventory.arx_skill_ethereal_link == 0 ) {
+		
+		// SP - 14th Dec 2015 - We decided to always enable this, but
+		// quite short range with no skill points.
+		distance = 64.0f;
+
+		/*
 		hud->HandleNamedEvent( "noAIHealth" );
 		return;
+		*/
 	} else {
 		distance = ( (float)inventory.arx_skill_ethereal_link * DIV5 ) * 128.0f;
 	}
