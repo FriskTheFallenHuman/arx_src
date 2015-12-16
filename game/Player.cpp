@@ -6389,6 +6389,24 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// *****************************************************
 	// *****************************************************
 	// *****************************************************
+	// Journal Maps
+
+	if ( token.Icmp( "arx_select_level_map" ) == 0 ) {
+		if ( objectiveSystem && objectiveSystemOpen ) {
+			objectiveSystem->SetStateBool( "arx_show_level_map", true );
+		}
+	}
+
+	if ( token.Icmp( "arx_close_level_map" ) == 0 ) {
+		if ( objectiveSystem && objectiveSystemOpen ) {
+			objectiveSystem->SetStateBool( "arx_show_level_map", false );
+		}
+	}
+
+
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// Start - Solarsplace - Arx End Of Sun - Blacksmith
 
 	int blackSmithRepairCost = 0;
@@ -8550,11 +8568,6 @@ void idPlayer::ToggleJournalSystem(void)
 	if( !journalSystemOpen )
 	{
 		journalSystem->Activate( true, gameLocal.time );
-
-		// Clear the Arx level maps
-		journalSystem->SetStateInt( "listLevelMaps_sel_0", -1 );
-		journalSystem->StateChanged( gameLocal.time, false );
-
 		journalSystemOpen = true;
 	}
 	else
@@ -8783,6 +8796,12 @@ void idPlayer::TogglePDA( void ) {
 
 		// Solarsplace - Arx End Of Sun - Load current skills into the temp variables
 		LoadCurrentSkillsIntoTemp();
+
+		// Arx End Of Sun
+		// Clear the Arx level maps
+		objectiveSystem->SetStateInt( "listLevelMaps_sel_0", -1 );
+		objectiveSystem->StateChanged( gameLocal.time, false );
+		objectiveSystem->SetStateBool( "arx_show_level_map", false );
 
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
@@ -10249,7 +10268,12 @@ void idPlayer::UpdateJournalGUI( void )
 	if ( objectiveSystem && objectiveSystemOpen )
 	{
 
+		// Clear out the maps list
 		int j = 0;
+		for ( j = 0; j < 255; j++ ) {
+			objectiveSystem->SetStateString( va( "listLevelMaps_item_%i", j ), "" );
+		}
+
 		for ( j = 0; j < inventory.arxLevelMaps.Num(); j++ ) {
 
 			idStr mapFileSystemName = inventory.arxLevelMaps[j].mapFileSystemName;
@@ -10257,8 +10281,17 @@ void idPlayer::UpdateJournalGUI( void )
 			idStr mapDescription = inventory.arxLevelMaps[j].mapDescription;
 			idStr mapImageFile = inventory.arxLevelMaps[j].mapImageFile;
 			idStr displayMapText;
-			sprintf( displayMapText, "%s (%s)", mapName, mapDescription );
-			conversationSystem->SetStateString( va( "listLevelMaps_item_%i", j ), displayMapText );
+			sprintf( displayMapText, "%s (%s)", mapName.c_str(), mapDescription.c_str() );
+
+			//REMOVEME
+			//gameLocal.Printf( "Shag = %s \n", gameLocal.GetMapName() );
+
+			// Show maps for the current level in colour
+			if ( idStr::Icmp( gameLocal.GetMapName(), mapFileSystemName ) == 0 ) { // Arx quest type stored in "Security" field.		
+				objectiveSystem->SetStateString( va( "listLevelMaps_item_%i", j ), va(S_COLOR_GREEN "%s", displayMapText.c_str() ) );
+			} else {
+				objectiveSystem->SetStateString( va( "listLevelMaps_item_%i", j ), va(S_COLOR_BLACK "%s", displayMapText.c_str() ) );
+			}
 		}
 
 		// *****************************************************************
@@ -10716,6 +10749,8 @@ void idPlayer::UpdateJournalGUI( void )
 		 *****************************************************************************
 		 *****************************************************************************/
 
+		// !!! Critical - MUST DO THIS !!!
+		objectiveSystem->StateChanged( gameLocal.time );
 	}
 }
 
@@ -11329,7 +11364,8 @@ void idPlayer::GetEntityByViewRay( void )
 					const idDeclEntityDef *journalDef = gameLocal.FindEntityDef( journalDefTarget, false );
 					journalArgs = journalDef->dict;
 					const char *str = journalDef->dict.GetString( "pda_name" );
-					player->GivePDA( str, &journalArgs );
+					//player->GivePDA( str, &journalArgs );
+					GivePDA( str, NULL );
 				}
 
 				lastReadableEntity = target;
@@ -11507,7 +11543,8 @@ void idPlayer::GetEntityByViewRay( void )
 
 			const char *str = target->spawnArgs.GetString( "pda_name" );
 			idDict &journalArgs = target->spawnArgs;
-			player->GivePDA( str, &journalArgs );
+			//player->GivePDA( str, &journalArgs );
+			GivePDA( str, NULL );
 
 		}
 		//************************************************************************************************
@@ -11636,14 +11673,18 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 		} else {
 
 			// Give the player a random item from the list
-			const int MAX_CHOICE = 12;
-			int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
+			int MAX_CHOICE = target->spawnArgs.GetInt( "arx_searchable_find_max", 0 );
+			if ( MAX_CHOICE > 0 ) {
+				int randomItemNumber = gameLocal.random.RandomInt( MAX_CHOICE );
 
-			idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
-			if ( randomGiveItem.Length() ) {
-				// Give the player the specified single item
-				Event_GiveInventoryItem( randomGiveItem );
-				gave = true;
+				idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
+				if ( randomGiveItem.Length() ) {
+					// Give the player the specified single item
+					Event_GiveInventoryItem( randomGiveItem );
+					gave = true;
+				}
+			} else {
+				gameLocal.Warning( "No 'arx_searchable_find_max' on '%s'\n", target->name.c_str() );
 			}
 		}
 	}
