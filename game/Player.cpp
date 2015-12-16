@@ -8794,14 +8794,23 @@ void idPlayer::TogglePDA( void ) {
 		UpdatePDAInfo( false );
 		UpdateObjectiveInfo();
 
-		// Solarsplace - Arx End Of Sun - Load current skills into the temp variables
-		LoadCurrentSkillsIntoTemp();
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
+		// Solarsplace - Arx End Of Sun
 
-		// Arx End Of Sun
-		// Clear the Arx level maps
+		LoadCurrentSkillsIntoTemp();
+		
+		// Clear the arx level maps list def and hide any shown map. Not 100% sure if required.
 		objectiveSystem->SetStateInt( "listLevelMaps_sel_0", -1 );
 		objectiveSystem->StateChanged( gameLocal.time, false );
 		objectiveSystem->SetStateBool( "arx_show_level_map", false );
+
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
 
 		objectiveSystem->Activate( true, gameLocal.time );
 		hud->HandleNamedEvent( "pdaPickupHide" );
