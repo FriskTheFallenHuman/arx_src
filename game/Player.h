@@ -89,6 +89,13 @@ enum {
 	ARX_MELEE_DISTANCE
 };
 
+struct _arxLevelMaps {
+	idStr mapFileSystemName;
+	idStr mapName;
+	idStr mapDescription;
+	idStr mapImageFile;
+};
+
 // ----> *** Arx ***
 
 extern const idEventDef EV_Player_GetButtons;
@@ -259,6 +266,8 @@ public:
 	int						arx_timer_player_levitate;
 	int						arx_timer_player_warmth;
 	int						arx_timer_player_hungry;
+
+	idList<_arxLevelMaps>	arxLevelMaps;
 
 	void					ClearDownTimedAttributes( bool clearDown );		// solarsplace 24th Nov 2013
 
@@ -1145,6 +1154,7 @@ private:
 	void					MagicUpdateJournalSpells( void );								// solarsplace 22nd Jul 2010
 	void					ArxTraceAIHealthHUD( void );									// solarsplace 24th Sep 2014
 	void					ArxSpawnMiscFoodItemIntoWorld( void );
+	void					ArxGiveNewLevelMap( const char *mapFileSystemName, const char *mapName, const char *mapDescription, const char *mapImageFile );
 
 	// Shop related
 	idArxShop				arxShopFunctions;

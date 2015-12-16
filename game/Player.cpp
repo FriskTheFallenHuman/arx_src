@@ -315,6 +315,8 @@ void idInventory::Clear( void ) {
 	arx_timer_player_warmth			= -1;
 	arx_timer_player_hungry			= -1;
 
+	arxLevelMaps.Clear();
+
 	// ****************************************************
 	// ****************************************************
 	// ****************************************************
@@ -883,6 +885,14 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_timer_player_warmth );
 	savefile->WriteInt( arx_timer_player_hungry );
 
+	savefile->WriteInt( arxLevelMaps.Num() );
+	for( i = 0; i < arxLevelMaps.Num(); i++ ) {
+		savefile->WriteString( arxLevelMaps[i].mapFileSystemName );
+		savefile->WriteString( arxLevelMaps[i].mapName );
+		savefile->WriteString( arxLevelMaps[i].mapDescription );
+		savefile->WriteString( arxLevelMaps[i].mapImageFile );
+	}
+
 	// ****************************************************
 	// ****************************************************
 	// ****************************************************
@@ -1044,6 +1054,18 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_timer_player_levitate );
 	savefile->ReadInt( arx_timer_player_warmth );
 	savefile->ReadInt( arx_timer_player_hungry );
+
+	savefile->ReadInt( num );
+	for( i = 0; i < num; i++ ) {
+		_arxLevelMaps obj;
+
+		savefile->ReadString( obj.mapFileSystemName );
+		savefile->ReadString( obj.mapName );
+		savefile->ReadString( obj.mapDescription );
+		savefile->ReadString( obj.mapImageFile );
+
+		arxLevelMaps.Append( obj );
+	}
 
 	// ****************************************************
 	// ****************************************************
@@ -8528,6 +8550,11 @@ void idPlayer::ToggleJournalSystem(void)
 	if( !journalSystemOpen )
 	{
 		journalSystem->Activate( true, gameLocal.time );
+
+		// Clear the Arx level maps
+		journalSystem->SetStateInt( "listLevelMaps_sel_0", -1 );
+		journalSystem->StateChanged( gameLocal.time, false );
+
 		journalSystemOpen = true;
 	}
 	else
@@ -10221,6 +10248,19 @@ void idPlayer::UpdateJournalGUI( void )
 
 	if ( objectiveSystem && objectiveSystemOpen )
 	{
+
+		int j = 0;
+		for ( j = 0; j < inventory.arxLevelMaps.Num(); j++ ) {
+
+			idStr mapFileSystemName = inventory.arxLevelMaps[j].mapFileSystemName;
+			idStr mapName = inventory.arxLevelMaps[j].mapName;
+			idStr mapDescription = inventory.arxLevelMaps[j].mapDescription;
+			idStr mapImageFile = inventory.arxLevelMaps[j].mapImageFile;
+			idStr displayMapText;
+			sprintf( displayMapText, "%s (%s)", mapName, mapDescription );
+			conversationSystem->SetStateString( va( "listLevelMaps_item_%i", j ), displayMapText );
+		}
+
 		// *****************************************************************
 		// *****************************************************************
 		// *****************************************************************
@@ -11209,6 +11249,21 @@ void idPlayer::GetEntityByViewRay( void )
 
 			PlaySpecificEntitySoundShader( target, "snd_acquire" );
 
+			//************************************************************************************************
+			//************************************************************************************************
+			//************************************************************************************************
+			if ( target->spawnArgs.GetBool( "arx_level_map" ) )
+			{
+					idStr mapFileSystemName =	target->spawnArgs.GetString( "mapFileSystemName", "404" );
+					idStr mapName =				target->spawnArgs.GetString( "mapName", "404" );
+					idStr mapDescription =		target->spawnArgs.GetString( "mapDescription", "404" );
+					idStr mapImageFile =		target->spawnArgs.GetString( "mapImageFile", "404" );
+
+					ArxGiveNewLevelMap( mapFileSystemName, mapName, mapDescription, mapImageFile );
+
+				// Need to tell the HUD we picked up an item
+				if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+			}
 			//************************************************************************************************
 			//************************************************************************************************
 			//************************************************************************************************
@@ -16621,6 +16676,21 @@ void idPlayer::ArxSpawnMiscFoodItemIntoWorld( void )
 	dict.Set( "origin", org.ToString() );
 
 	gameLocal.SpawnEntityDef( dict );
+}
+
+/*
+===============
+idPlayer::ArxGiveNewMap
+===============
+*/
+void idPlayer::ArxGiveNewLevelMap( const char *mapFileSystemName, const char *mapName, const char *mapDescription, const char *mapImageFile ) {
+
+	_arxLevelMaps info;
+	info.mapFileSystemName = mapFileSystemName;
+	info.mapName = mapName;
+	info.mapDescription = mapDescription;
+	info.mapImageFile = mapImageFile;
+	inventory.arxLevelMaps.Append( info );
 }
 
 /*
