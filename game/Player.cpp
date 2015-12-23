@@ -7586,6 +7586,17 @@ void idPlayer::ProcessMagic()
 						// === Handled below in "Script calls"
 
 					//Protection from cold
+					if ( strcmp( customMagicSpell, "add_protection_cold" ) == 0 ) {
+						
+						bool enableColdWorld = gameLocal.world->spawnArgs.GetBool( "arx_cold_world", "0" );
+						if ( enableColdWorld ) {
+	
+							// Add cold resistance default 60 plus another 60 seconds for each 10 points casting
+							inventory.arx_timer_player_warmth = gameLocal.time
+								+ SEC2MS( 60 ) + 
+								( ( inventory.arx_skill_casting * DIV10 ) * SEC2MS( 60 ) );
+						}
+					}
 
 					//Protection from fire
 
@@ -16436,7 +16447,11 @@ void idPlayer::UpdateHeroStats( void ) {
 
 	// Here we start to fade in the hunger icon. We fade in ARX_HUNGER_WARNING_TIME before the hunger damage starts to take effect.
 	if ( hud ) {
-		float hungerVis = (float)( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) / (float)( gameLocal.time - ( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) );
+		float hungerVis = 
+			(float)( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) / 
+			(float)( gameLocal.time - ( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) );
+		
+		
 		hungerVis = 1.0f / hungerVis;
 		hud->SetStateFloat( "player_hunger_vis", hungerVis );
 	}

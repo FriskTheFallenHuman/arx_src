@@ -248,6 +248,11 @@ Give items to a client
 ==================
 */
 void Cmd_Give_f( const idCmdArgs &args ) {
+
+	// Arx End Of Sun - Give is not supported.
+	gameLocal.Warning( "The 'Give' command is not supported in Arx - End Of Sun. Please 'spawn' the item and pick it up.\n" );
+	return;
+
 	const char *name;
 	int			i;
 	bool		give_all;
