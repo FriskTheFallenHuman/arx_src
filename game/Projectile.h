@@ -51,7 +51,11 @@ public :
 	// Solarsplace - Arx EOS
 	void					DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
 
+#ifdef _DT // decal angle
+	static void				DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity, float angle = 0 );
+#else
 	static void				DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity );
+#endif
 	static bool				ClientPredictionCollide( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity, bool addDamageEffect );
 	virtual void			ClientPredictionThink( void );
 	virtual void			WriteToSnapshot( idBitMsgDelta &msg ) const;
@@ -115,7 +119,11 @@ protected:
 private:
 	bool					netSyncPhysics;
 
+#ifdef _DT // decal angle
+	void					AddDefaultDamageEffect( const trace_t &collision, const idVec3 &velocity, float angle = 0 );
+#else
 	void					AddDefaultDamageEffect( const trace_t &collision, const idVec3 &velocity );
+#endif
 
 	void					Event_Explode( void );
 	void					Event_Fizzle( void );

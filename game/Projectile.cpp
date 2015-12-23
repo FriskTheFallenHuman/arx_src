@@ -746,12 +746,44 @@ void idProjectile::DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &
 
 	// if the projectile causes a damage effect
 	if ( spawnArgs.GetBool( "impact_damage_effect" ) ) {
+
+#ifdef _DT // decal angle
+
+		float decalAngle = 0;
+
+		if ( owner.GetEntity() && owner.GetEntity()->IsType( idPlayer::Type ) ) {
+			idPlayer *player = static_cast<idPlayer *>( owner.GetEntity() );
+			if( player->weapon.GetEntity() ){
+				idAngles ang;
+				if( player->weapon.GetEntity()->GetBarrelAngle(ang) ){
+					// Keep in mind that collision must be almost immediate after attacking,
+					// to read the barrel angles in the excact time.
+					// This allows us to set the decal angle with blade weapons
+					// ( blade weapons use projectiles for melee ),
+					// since we take into account the angle of the blade when we hit a surface.
+					// Weapon md5 viewmodel must have bone "barrel". 
+					// This bone should be "attached" to the blade, 
+					// and it should point to fowrard.
+					decalAngle = DEG2RAD(ang[2]); // ang[2] --> forward
+					// gameLocal.Printf( "barrel local angle: %s \n", ang.ToString() );
+				}
+			}
+		}
+		// if the hit entity has a special damage effect
+		if ( collisionEnt->spawnArgs.GetBool( "bleed" ) ) {
+			collisionEnt->AddDamageEffect( collision, velocity, damageDefName );
+		} else {
+			AddDefaultDamageEffect( collision, velocity, decalAngle );
+		}
+#else
 		// if the hit entity has a special damage effect
 		if ( collisionEnt->spawnArgs.GetBool( "bleed" ) ) {
 			collisionEnt->AddDamageEffect( collision, velocity, damageDefName );
 		} else {
 			AddDefaultDamageEffect( collision, velocity );
 		}
+#endif
+		
 	}
 }
 
@@ -760,7 +792,11 @@ void idProjectile::DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &
 idProjectile::DefaultDamageEffect
 =================
 */
+#ifdef _DT // decal angle
+void idProjectile::DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity, float angle ) {
+#else
 void idProjectile::DefaultDamageEffect( idEntity *soundEnt, const idDict &projectileDef, const trace_t &collision, const idVec3 &velocity ) {
+#endif
 	const char *decal, *sound, *typeName;
 	surfTypes_t materialType;
 
@@ -792,7 +828,11 @@ void idProjectile::DefaultDamageEffect( idEntity *soundEnt, const idDict &projec
 		decal = projectileDef.GetString( "mtr_detonate" );
 	}
 	if ( *decal != '\0' ) {
+#ifdef _DT // decal angle
+		gameLocal.ProjectDecal( collision.c.point, velocity, 8.0f, true, projectileDef.GetFloat( "decal_size", "6.0" ), decal, angle );
+#else
 		gameLocal.ProjectDecal( collision.c.point, -collision.c.normal, 8.0f, true, projectileDef.GetFloat( "decal_size", "6.0" ), decal );
+#endif
 	}
 }
 
@@ -801,9 +841,14 @@ void idProjectile::DefaultDamageEffect( idEntity *soundEnt, const idDict &projec
 idProjectile::AddDefaultDamageEffect
 =================
 */
+#ifdef _DT // decal angle
+void idProjectile::AddDefaultDamageEffect( const trace_t &collision, const idVec3 &velocity, float angle ) {
+		DefaultDamageEffect( this, spawnArgs, collision, velocity, angle );
+#else
 void idProjectile::AddDefaultDamageEffect( const trace_t &collision, const idVec3 &velocity ) {
+		DefaultDamageEffect( this, spawnArgs, collision, velocity );
+#endif
 
-	DefaultDamageEffect( this, spawnArgs, collision, velocity );
 
 	if ( gameLocal.isServer && fl.networkSync ) {
 		idBitMsg	msg;

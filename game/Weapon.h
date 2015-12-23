@@ -67,6 +67,9 @@ public:
 
 	virtual void			SetModel( const char *modelname );
 	bool					GetGlobalJointTransform( bool viewModel, const jointHandle_t jointHandle, idVec3 &offset, idMat3 &axis );
+#ifdef _DT // decal angle
+	bool					GetBarrelAngle( idAngles &ang );
+#endif
 	void					SetPushVelocity( const idVec3 &pushVelocity );
 	bool					UpdateSkin( void );
 

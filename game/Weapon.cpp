@@ -1276,6 +1276,25 @@ idAngles idWeapon::GetHeadAngle( void ) {
 	idAngles ang = axis.ToAngles();
 	return ang;
 }
+/* decal angle
+================
+idWeapon::GetBarrelAngle
+
+returns the orientation of the joint in local space, if present
+================
+*/
+bool idWeapon::GetBarrelAngle( idAngles &ang ) {
+	idVec3 offset;
+	idMat3 axis;
+
+	if ( !animator.GetJointTransform( barrelJointView, gameLocal.time, offset, axis ) ) {
+		gameLocal.Warning( "Joint # %d out of range on entity '%s'",  barrelJointView, name.c_str() );
+		return false;
+	}
+
+	ang = axis.ToAngles();
+	return true;
+}
 #endif
 
 /*
