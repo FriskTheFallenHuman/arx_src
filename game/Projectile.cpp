@@ -771,7 +771,7 @@ void idProjectile::DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &
 		}
 		// if the hit entity has a special damage effect
 		if ( collisionEnt->spawnArgs.GetBool( "bleed" ) ) {
-			collisionEnt->AddDamageEffect( collision, velocity, damageDefName );
+			collisionEnt->AddDamageEffect( collision, velocity, damageDefName, decalAngle );
 		} else {
 			AddDefaultDamageEffect( collision, velocity, decalAngle );
 		}

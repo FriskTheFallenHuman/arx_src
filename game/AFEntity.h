@@ -95,7 +95,11 @@ public:
 	virtual void			AddForce( idEntity *ent, int id, const idVec3 &point, const idVec3 &force );
 
 	virtual	void			Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location );
+#ifdef _DT // decal angle
+	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle = 0 );
+#else
 	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
+#endif
 
 	void					SetCombatModel( void );
 	idClipModel *			GetCombatModel( void ) const;
@@ -271,7 +275,11 @@ public:
 
 	virtual void			Hide( void );
 	virtual void			Show( void );
+#ifdef _DT // decal angle
+	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle = 0 );
+#else
 	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material );
+#endif
 
 	virtual void			LinkCombat( void );
 	virtual void			UnlinkCombat( void );

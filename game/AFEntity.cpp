@@ -359,11 +359,19 @@ void idAFAttachment::Damage( idEntity *inflictor, idEntity *attacker, const idVe
 idAFAttachment::AddDamageEffect
 ================
 */
+#ifdef _DT // decal angle
+void idAFAttachment::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle ) {
+#else
 void idAFAttachment::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName ) {
+#endif
 	if ( body ) {
 		trace_t c = collision;
 		c.c.id = JOINT_HANDLE_TO_CLIPMODEL_ID( attachJoint );
+#ifdef _DT // decal angle
+		body->AddDamageEffect( c, velocity, damageDefName, angle );
+#else
 		body->AddDamageEffect( c, velocity, damageDefName );
+#endif
 	}
 }
 
@@ -1485,12 +1493,23 @@ void idAFEntity_WithAttachedHead::Show( void ) {
 idAFEntity_WithAttachedHead::ProjectOverlay
 ================
 */
+#ifdef _DT // decal angle
+void idAFEntity_WithAttachedHead::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle ) {
+	
+	idEntity::ProjectOverlay( origin, dir, size, material, angle );
+#else
 void idAFEntity_WithAttachedHead::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material ) {
-
+	
 	idEntity::ProjectOverlay( origin, dir, size, material );
+#endif
+
 
 	if ( head.GetEntity() ) {
+#ifdef _DT // decal angle
+		head.GetEntity()->ProjectOverlay( origin, dir, size, material, angle );
+#else
 		head.GetEntity()->ProjectOverlay( origin, dir, size, material );
+#endif
 	}
 }
 

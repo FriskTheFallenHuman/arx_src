@@ -1056,17 +1056,29 @@ int	idActor::GetDefaultSurfaceType( void ) const {
 idActor::ProjectOverlay
 ================
 */
+#ifdef _DT // decal angle
+void idActor::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle ) {
+#else
 void idActor::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material ) {
+#endif
 	idEntity *ent;
 	idEntity *next;
 
+#ifdef _DT // decal angle
+	idEntity::ProjectOverlay( origin, dir, size, material, angle );
+#else
 	idEntity::ProjectOverlay( origin, dir, size, material );
+#endif
 
 	for( ent = GetNextTeamEntity(); ent != NULL; ent = next ) {
 		next = ent->GetNextTeamEntity();
 		if ( ent->GetBindMaster() == this ) {
 			if ( ent->fl.takedamage && ent->spawnArgs.GetBool( "bleed" ) ) {
+#ifdef _DT // decal angle
+				ent->ProjectOverlay( origin, dir, size, material, angle );
+#else
 				ent->ProjectOverlay( origin, dir, size, material );
+#endif
 			}
 		}
 	}

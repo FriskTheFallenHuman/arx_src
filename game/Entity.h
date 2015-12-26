@@ -190,7 +190,11 @@ public:
 	void					UpdateVisuals( void );
 	void					UpdateModel( void );
 	void					UpdateModelTransform( void );
+#ifdef _DT // decal angle
+	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle = 0 );
+#else
 	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material );
+#endif
 	int						GetNumPVSAreas( void );
 	const int *				GetPVSAreas( void );
 	void					ClearPVSAreas( void );
@@ -284,8 +288,14 @@ public:
 	virtual bool			CanDamage( const idVec3 &origin, idVec3 &damagePoint ) const;
 							// applies damage to this entity
 	virtual	void			Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location );
+#ifdef _DT // decal angle
+							// adds a damage effect like overlays, blood, sparks, debris etc.
+	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle = 0 );
+#else
 							// adds a damage effect like overlays, blood, sparks, debris etc.
 	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
+#endif
+							
 							// callback function for when another entity received damage from this entity.  damage can be adjusted and returned to the caller.
 	virtual void			DamageFeedback( idEntity *victim, idEntity *inflictor, int &damage );
 							// notifies this entity that it is in pain
@@ -501,8 +511,13 @@ public:
 	bool					GetJointTransformForAnim( jointHandle_t jointHandle, int animNum, int currentTime, idVec3 &offset, idMat3 &axis ) const;
 
 	virtual int				GetDefaultSurfaceType( void ) const;
+#ifdef _DT // decal angle
+	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle = 0 );
+	void					AddLocalDamageEffect( jointHandle_t jointNum, const idVec3 &localPoint, const idVec3 &localNormal, const idVec3 &localDir, const idDeclEntityDef *def, const idMaterial *collisionMaterial, float angle = 0 );
+#else
 	virtual void			AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName );
 	void					AddLocalDamageEffect( jointHandle_t jointNum, const idVec3 &localPoint, const idVec3 &localNormal, const idVec3 &localDir, const idDeclEntityDef *def, const idMaterial *collisionMaterial );
+#endif
 	void					UpdateDamageEffects( void );
 
 	// Solarsplace - Arx EOS - Thanks Hexen

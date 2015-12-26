@@ -1411,7 +1411,11 @@ bool idEntity::PhysicsTeamInPVS( pvsHandle_t pvsHandle ) {
 idEntity::ProjectOverlay
 ==============
 */
+#ifdef _DT // decal angle
+void idEntity::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle ) {
+#else
 void idEntity::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material ) {
+#endif
 	float s, c;
 	idMat3 axis, axistemp;
 	idVec3 localOrigin, localAxis[2];
@@ -1426,10 +1430,14 @@ void idEntity::ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float si
 	if ( renderEntity.hModel->IsDynamicModel() != DM_CACHED ) {
 		return;
 	}
-
+#ifdef _DT // decal angle
+	idMath::SinCos16( ( angle ) ? angle : gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
+	axis[2] = dir;
+#else
 	idMath::SinCos16( gameLocal.random.RandomFloat() * idMath::TWO_PI, s, c );
-
 	axis[2] = -dir;
+#endif
+
 	axis[2].NormalVectors( axistemp[0], axistemp[1] );
 	axis[0] = axistemp[ 0 ] * c + axistemp[ 1 ] * -s;
 	axis[1] = axistemp[ 0 ] * -s + axistemp[ 1 ] * -c;
@@ -3137,7 +3145,11 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 idEntity::AddDamageEffect
 ================
 */
+#ifdef _DT // decal angle
+void idEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle ) {
+#else
 void idEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName ) {
+#endif
 	const char *sound, *decal, *key;
 
 	const idDeclEntityDef *def = gameLocal.FindEntityDef( damageDefName, false );
@@ -3167,7 +3179,11 @@ void idEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity
 		if ( *decal != '\0' ) {
 			idVec3 dir = velocity;
 			dir.Normalize();
+#ifdef _DT // decal angle
+			ProjectOverlay( collision.c.point, dir, 20.0f, decal, angle );
+#else
 			ProjectOverlay( collision.c.point, dir, 20.0f, decal );
+#endif
 		}
 	}
 }
@@ -5299,7 +5315,11 @@ idAnimatedEntity::AddDamageEffect
   Dammage effects track the animating impact position, spitting out particles.
 ==============
 */
+#ifdef _DT // decal angle
+void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName, float angle ) {
+#else
 void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity, const char *damageDefName ) {
+#endif
 
 	jointHandle_t jointNum;
 	idVec3 origin, dir, localDir, localOrigin, localNormal;
@@ -5331,7 +5351,11 @@ void idAnimatedEntity::AddDamageEffect( const trace_t &collision, const idVec3 &
 	localNormal = collision.c.normal * axis.Transpose();
 	localDir = dir * axis.Transpose();
 
+#ifdef _DT // decal angle
+	AddLocalDamageEffect( jointNum, localOrigin, localNormal, localDir, def, collision.c.material, angle );
+#else
 	AddLocalDamageEffect( jointNum, localOrigin, localNormal, localDir, def, collision.c.material );
+#endif
 
 	if ( gameLocal.isServer ) {
 		idBitMsg	msg;
@@ -5365,7 +5389,11 @@ int	idAnimatedEntity::GetDefaultSurfaceType( void ) const {
 idAnimatedEntity::AddLocalDamageEffect
 ==============
 */
+#ifdef _DT // decal angle
+void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec3 &localOrigin, const idVec3 &localNormal, const idVec3 &localDir, const idDeclEntityDef *def, const idMaterial *collisionMaterial, float angle ) {
+#else
 void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec3 &localOrigin, const idVec3 &localNormal, const idVec3 &localDir, const idDeclEntityDef *def, const idMaterial *collisionMaterial ) {
+#endif
 	const char *sound, *splat, *decal, *bleed, *key;
 	damageEffect_t	*de;
 	idVec3 origin, dir;
@@ -5415,7 +5443,11 @@ void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec
 			decal = def->dict.RandomPrefix( key, gameLocal.random );
 		}
 		if ( *decal != '\0' ) {
+#ifdef _DT // decal angle
+			ProjectOverlay( origin, dir, 20.0f, decal, angle );
+#else
 			ProjectOverlay( origin, dir, 20.0f, decal );
+#endif
 		}
 	}
 

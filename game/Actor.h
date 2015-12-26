@@ -106,7 +106,11 @@ public:
 	virtual void			Hide( void );
 	virtual void			Show( void );
 	virtual int				GetDefaultSurfaceType( void ) const;
+#ifdef _DT // decal angle
+	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material, float angle = 0 );
+#else
 	virtual void			ProjectOverlay( const idVec3 &origin, const idVec3 &dir, float size, const char *material );
+#endif
 
 	virtual bool			LoadAF( void );
 	void					SetupBody( void );
