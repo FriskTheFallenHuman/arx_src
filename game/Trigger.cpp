@@ -473,6 +473,7 @@ void idTrigger_Multi::TriggerAction( idEntity *activator ) {
 		if ( activator == player ) {
 			bool secretArea = spawnArgs.GetBool( "arx_secret_area", "0" );
 			if ( secretArea ) {
+				// Increment the player secrets found total
 				player->inventory.arx_stat_secrets_found ++;
 				const idSoundShader *shader = declManager->FindSound( spawnArgs.GetString( "snd_arx_secret_area" ) );
 				player->StartSoundShader( shader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );

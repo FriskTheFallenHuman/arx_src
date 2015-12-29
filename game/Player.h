@@ -232,6 +232,9 @@ public:
 	int						arx_class_damage_points_base;
 
 	int						arx_stat_secrets_found;
+	int						arx_stat_ai_kills_total;
+	int						arx_stat_flowers_mana_found;
+	int						arx_stat_flowers_health_found;
 
 	int						tmp_arx_attribute_points;
 	int						tmp_arx_skill_points;

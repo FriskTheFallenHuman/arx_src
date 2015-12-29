@@ -3467,6 +3467,9 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		if ( xps > 0 ) {
 			player->ModifyPlayerXPs( xps, true );
 		}
+
+		// Increment the player AI kills total
+		player->inventory.arx_stat_ai_kills_total += 1;
 	}
 
 	// Arx End Of Sun - Solarsplace - 28th Oct 2014 - Drop blood decal

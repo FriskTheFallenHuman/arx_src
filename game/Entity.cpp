@@ -3218,6 +3218,9 @@ void idEntity::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 		if ( xps > 0 ) {
 			player->ModifyPlayerXPs( xps, true );
 		}
+
+		// Increment the player AI kills total
+		player->inventory.arx_stat_ai_kills_total += 1;
 	}
 }
 

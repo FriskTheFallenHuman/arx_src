@@ -276,6 +276,9 @@ void idInventory::Clear( void ) {
 	arx_class_resistance_to_poison	= 0;
 	arx_class_damage_points			= 0;
 	arx_stat_secrets_found			= 0;
+	arx_stat_ai_kills_total			= 0;
+	arx_stat_flowers_mana_found		= 0;
+	arx_stat_flowers_health_found	= 0;
 
 	// **********
 	tmp_arx_attribute_points		= 0;
@@ -467,6 +470,9 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "arx_class_resistance_to_poison", arx_class_resistance_to_poison );
 	dict.SetInt( "arx_class_damage_points", arx_class_damage_points );
     dict.SetInt( "arx_stat_secrets_found", arx_stat_secrets_found );
+	dict.SetInt( "arx_stat_ai_kills_total", arx_stat_ai_kills_total );
+	dict.SetInt( "arx_stat_flowers_mana_found", arx_stat_flowers_mana_found );
+	dict.SetInt( "arx_stat_flowers_health_found", arx_stat_flowers_health_found );
 
 	// **********
 	dict.SetInt( "tmp_arx_attribute_points", tmp_arx_attribute_points );
@@ -675,6 +681,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	arx_class_resistance_to_poison	= dict.GetInt( "arx_class_resistance_to_poison", "0" );
 	arx_class_damage_points			= dict.GetInt( "arx_class_damage_points", "0" );
 	arx_stat_secrets_found			= dict.GetInt( "arx_stat_secrets_found", "0" );
+	arx_stat_ai_kills_total			= dict.GetInt( "arx_stat_ai_kills_total", "0" );
+	arx_stat_flowers_mana_found		= dict.GetInt( "arx_stat_flowers_mana_found", "0" );
+	arx_stat_flowers_health_found	= dict.GetInt( "arx_stat_flowers_health_found", "0" );
 
 	// **********
 	tmp_arx_attribute_points		= dict.GetInt( "tmp_arx_attribute_points", "0" );
@@ -875,6 +884,9 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( arx_class_resistance_to_poison );
 	savefile->WriteInt( arx_class_damage_points );
 	savefile->WriteInt( arx_stat_secrets_found );
+	savefile->WriteInt( arx_stat_ai_kills_total );
+	savefile->WriteInt( arx_stat_flowers_mana_found );
+	savefile->WriteInt( arx_stat_flowers_health_found );
 
 	savefile->WriteInt( arx_timer_player_stats_update );
 	savefile->WriteInt( arx_timer_player_poison );
@@ -1045,6 +1057,9 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( arx_class_resistance_to_poison );
 	savefile->ReadInt( arx_class_damage_points );
 	savefile->ReadInt( arx_stat_secrets_found );
+	savefile->ReadInt( arx_stat_ai_kills_total );
+	savefile->ReadInt( arx_stat_flowers_mana_found );
+	savefile->ReadInt( arx_stat_flowers_health_found );
 
 	savefile->ReadInt( arx_timer_player_stats_update );
 	savefile->ReadInt( arx_timer_player_poison );
@@ -6393,6 +6408,15 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	if ( token.Icmp( "arx_select_level_map" ) == 0 ) {
 		if ( objectiveSystem && objectiveSystemOpen ) {
+
+			int selectedMapIndex = -1;
+			selectedMapIndex = objectiveSystem->State().GetInt( "listLevelMaps_sel_0", "0" );
+			if ( selectedMapIndex == -1 ) {
+				return true; // Nothing selected in list def
+			}
+
+			//gameLocal.Printf( "The selected map name is '%s'\n", inventory.arxLevelMaps[selectedMapIndex].mapImageFile.c_str() );
+			objectiveSystem->SetStateString( "arx_level_map_image", inventory.arxLevelMaps[selectedMapIndex].mapImageFile.c_str() );
 			objectiveSystem->SetStateBool( "arx_show_level_map", true );
 		}
 	}
@@ -10287,6 +10311,13 @@ void idPlayer::UpdateJournalGUI( void )
 
 	if ( objectiveSystem && objectiveSystemOpen )
 	{
+		// Get the maps friendly name if possible!
+		const idDeclEntityDef *friendlyMapDef = gameLocal.FindEntityDef( "arx_friendly_map_names", false );
+
+		idStr friendlyMapName = friendlyMapDef->dict.GetString( gameLocal.GetMapName(), gameLocal.GetMapName() );
+		friendlyMapName = gameLocal.ArxGetSafeLanguageMessage( friendlyMapName ) ; // Pass it through the language file!
+
+		objectiveSystem->SetStateString( "arx_current_location_friendly_name", friendlyMapName.c_str() );
 
 		// Clear out the maps list
 		int j = 0;
@@ -10302,9 +10333,6 @@ void idPlayer::UpdateJournalGUI( void )
 			idStr mapImageFile = inventory.arxLevelMaps[j].mapImageFile;
 			idStr displayMapText;
 			sprintf( displayMapText, "%s (%s)", mapName.c_str(), mapDescription.c_str() );
-
-			//REMOVEME
-			//gameLocal.Printf( "Shag = %s \n", gameLocal.GetMapName() );
 
 			// Show maps for the current level in colour
 			if ( idStr::Icmp( gameLocal.GetMapName(), mapFileSystemName ) == 0 ) { // Arx quest type stored in "Security" field.		
@@ -10524,8 +10552,20 @@ void idPlayer::UpdateJournalGUI( void )
 		// *****************************************************************
 		// *****************************************************************
 
-		// Secrets found
-		objectiveSystem->SetStateInt( "arx_stat_secrets_found", inventory.arx_stat_secrets_found );
+		// Secrets found etc...
+
+		objectiveSystem->SetStateInt( "arx_stat_ai_kills_total", inventory.arx_stat_ai_kills_total );
+
+		idStr statsMoreText;
+
+		sprintf( statsMoreText, va("%i / %i", inventory.arx_stat_secrets_found, gameLocal.GetLocalPlayer()->spawnArgs.GetInt( "arx_stat_secrets_found_total", "0" ) ) );
+		objectiveSystem->SetStateString( "arx_stat_secrets_found", statsMoreText );
+
+		sprintf( statsMoreText, va("%i / %i", inventory.arx_stat_flowers_mana_found, gameLocal.GetLocalPlayer()->spawnArgs.GetInt( "arx_stat_flowers_mana_found_total", "0" ) ) );
+		objectiveSystem->SetStateString( "arx_stat_flowers_mana_found", statsMoreText );
+		
+		sprintf( statsMoreText, va("%i / %i", inventory.arx_stat_flowers_health_found, gameLocal.GetLocalPlayer()->spawnArgs.GetInt( "arx_stat_flowers_health_found_total", "0" ) ) );
+		objectiveSystem->SetStateString( "arx_stat_flowers_health_found", statsMoreText );
 
 		// *****************************************************************
 		// *****************************************************************
@@ -11219,7 +11259,8 @@ void idPlayer::GetEntityByViewRay( void )
 			// Solarsplace - 30th Sep 2015
 			// Bit of a bodge... if the item is one of these then skip the inventory full check...
 			bool skipInventoryFullCheck = false;
-			if ( target->spawnArgs.GetBool( "player_money_gold" ) || target->spawnArgs.GetBool( "player_persistent_rune" ) ) {
+			if ( target->spawnArgs.GetBool( "player_money_gold" ) || target->spawnArgs.GetBool( "player_persistent_rune" ) 
+				|| target->spawnArgs.GetBool( "arx_level_map" ) ) {
 				skipInventoryFullCheck = true;
 			}
 
@@ -11304,6 +11345,28 @@ void idPlayer::GetEntityByViewRay( void )
 
 			PlaySpecificEntitySoundShader( target, "snd_acquire" );
 
+			//================================================================================================
+			//************************************************************************************************
+			//================================================================================================
+			// Do something special for this item and also continue and process the rest of the code
+			if ( target->spawnArgs.GetBool( "arx_harvest_mana" ) )
+			{
+				// Very simple just update the journal with the number of items harvested.
+				inventory.arx_stat_flowers_mana_found += 1;
+			}
+			//================================================================================================
+			//************************************************************************************************
+			//================================================================================================
+			// Do something special for this item and also continue and process the rest of the code
+			if ( target->spawnArgs.GetBool( "arx_harvest_health" ) )
+			{
+				// Very simple just update the journal with the number of items harvested.
+				inventory.arx_stat_flowers_health_found += 1;
+			}
+			//================================================================================================
+			//************************************************************************************************
+			//================================================================================================
+
 			//************************************************************************************************
 			//************************************************************************************************
 			//************************************************************************************************
@@ -11322,7 +11385,7 @@ void idPlayer::GetEntityByViewRay( void )
 			//************************************************************************************************
 			//************************************************************************************************
 			//************************************************************************************************
-			if ( target->spawnArgs.GetBool( "player_persistent_rune" ) )
+			else if ( target->spawnArgs.GetBool( "player_persistent_rune" ) )
 			{
 				gameLocal.persistentLevelInfo.SetBool( target->spawnArgs.GetString( "persistent_rune_name" ), true );
 
