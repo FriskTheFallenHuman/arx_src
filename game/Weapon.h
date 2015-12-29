@@ -366,6 +366,10 @@ private:
 	void					Event_SetLightParms( float parm0, float parm1, float parm2, float parm3 );
 	void					Event_LaunchProjectiles( int num_projectiles, float spread, float fuseOffset, float launchPower, float dmgPower );
 	void					Event_CreateProjectile( void );
+#ifdef _DT // projectiles spawn arg
+	void					Event_SetPrjSpawnArg( const char *key, const char *value );
+	void					Event_SetPrjSize( const char *mins, const char *maxs );
+#endif
 	void					Event_EjectBrass( void );
 #ifndef _DT
 	void					Event_Melee( void );

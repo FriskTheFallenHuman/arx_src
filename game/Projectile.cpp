@@ -755,7 +755,7 @@ void idProjectile::DamageEffectsWrapper( idEntity *collisionEnt, const trace_t &
 			idPlayer *player = static_cast<idPlayer *>( owner.GetEntity() );
 			if( player->weapon.GetEntity() ){
 				idAngles ang;
-				if( player->weapon.GetEntity()->GetBarrelAngle(ang) ){
+				if( spawnArgs.GetBool( "decalAngleFromBarrel" ) && player->weapon.GetEntity()->GetBarrelAngle(ang) ){
 					// Keep in mind that collision must be almost immediate after attacking,
 					// to read the barrel angles in the excact time.
 					// This allows us to set the decal angle with blade weapons

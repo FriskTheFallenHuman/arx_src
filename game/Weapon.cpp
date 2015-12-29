@@ -34,6 +34,11 @@ const idEventDef EV_Weapon_WeaponLowering( "weaponLowering" );
 const idEventDef EV_Weapon_Flashlight( "flashlight", "d" );
 const idEventDef EV_Weapon_LaunchProjectiles( "launchProjectiles", "dffff" );
 const idEventDef EV_Weapon_CreateProjectile( "createProjectile", NULL, 'e' );
+#ifdef _DT // projectiles spawn arg
+const idEventDef EV_Weapon_SetPrjSpawnArg( "setPrjSpawnArg", "ss" );
+const idEventDef EV_Weapon_SetPrjSize( "setPrjSize", "ss" );
+#endif
+
 const idEventDef EV_Weapon_EjectBrass( "ejectBrass" );
 #ifdef _DT
 const idEventDef EV_Weapon_Melee( "melee", "f", 'd' );
@@ -81,6 +86,10 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Light_SetLightParms,				idWeapon::Event_SetLightParms )
 	EVENT( EV_Weapon_LaunchProjectiles,			idWeapon::Event_LaunchProjectiles )
 	EVENT( EV_Weapon_CreateProjectile,			idWeapon::Event_CreateProjectile )
+#ifdef _DT // projectiles spawn arg
+	EVENT( EV_Weapon_SetPrjSpawnArg,			idWeapon::Event_SetPrjSpawnArg )
+	EVENT( EV_Weapon_SetPrjSize,				idWeapon::Event_SetPrjSize )
+#endif
 	EVENT( EV_Weapon_EjectBrass,				idWeapon::Event_EjectBrass )
 	EVENT( EV_Weapon_Melee,						idWeapon::Event_Melee )
 #ifdef _DT
@@ -2972,6 +2981,27 @@ void idWeapon::Event_SetLightParms( float parm0, float parm1, float parm2, float
 
 	UpdateVisuals();
 }
+
+#ifdef _DT // projectiles spawn arg
+/*
+================
+idWeapon::Event_SetPrjSpawnArg
+================
+*/
+void idWeapon::Event_SetPrjSpawnArg( const char *key, const char *value ) {
+	projectileDict.Set( key, value );
+}
+
+/*
+================
+idWeapon::Event_SetPrjSize
+================
+*/
+void idWeapon::Event_SetPrjSize( const char *mins, const char *maxs ) {
+	projectileDict.Set( "mins", mins );
+	projectileDict.Set( "maxs", maxs );
+}
+#endif
 
 /*
 ================
