@@ -304,7 +304,12 @@ void idGameLocal::Init( void ) {
 
 	gamestate = GAMESTATE_NOMAP;
 
-	// Solarsplace Arx End Of Sun - Thanks HEXEN EOC
+	// Solarsplace Arx End Of Sun
+
+	// ############
+	// ### 4:3 ###
+	// ############
+
 	r_vmodes[0].ratio=0;
 	r_vmodes[0].width=800;
 	r_vmodes[0].height=600;
@@ -321,14 +326,21 @@ void idGameLocal::Init( void ) {
 	r_vmodes[3].width=1400;
 	r_vmodes[3].height=1050;
 
+	// ############
+	// ### 16:9 ###
+	// ############
+
+	// https://en.wikipedia.org/wiki/16:9
+
 	r_vmodes[4].ratio=1;
-	r_vmodes[4].width=856;
+	r_vmodes[4].width=854;
 	r_vmodes[4].height=480;
 
 	r_vmodes[5].ratio=1;
 	r_vmodes[5].width=1024;
 	r_vmodes[5].height=576;
 
+	// 720p HD
 	r_vmodes[6].ratio=1;
 	r_vmodes[6].width=1280;
 	r_vmodes[6].height=720;
@@ -337,30 +349,51 @@ void idGameLocal::Init( void ) {
 	r_vmodes[7].width=1366;
 	r_vmodes[7].height=768;
 
+	// HD+
 	r_vmodes[8].ratio=1;
 	r_vmodes[8].width=1600;
 	r_vmodes[8].height=900;
 
+	// Full HD
 	r_vmodes[9].ratio=1;
 	r_vmodes[9].width=1920;
 	r_vmodes[9].height=1080;
 
+	// #############
+	// ### 16:10 ###
+	// #############
+
+	// https://en.wikipedia.org/wiki/16:10
+
+	// WXGA - 13–15 in (33–38 cm)
 	r_vmodes[10].ratio=2;
 	r_vmodes[10].width=1280;
 	r_vmodes[10].height=800;
 
+	// WXGA+ - 13–19 in (33–48 cm)
+	// 19" monitor
 	r_vmodes[11].ratio=2;
 	r_vmodes[11].width=1440;
 	r_vmodes[11].height=900;
 
+	// WSXGA+ - 15–22 in (38–56 cm)
+	// 22" monitor
 	r_vmodes[12].ratio=2;
 	r_vmodes[12].width=1680;
 	r_vmodes[12].height=1050;
 
+	// WUXGA - 15–28 in (38–71 cm)
+	// 24" monitor
 	r_vmodes[13].ratio=2;
 	r_vmodes[13].width=1920;
 	r_vmodes[13].height=1200;
 
+	// Zombie
+	r_vmodes[13].ratio=2;
+	r_vmodes[13].width=1920;
+	r_vmodes[13].height=1080;
+
+	// WQXGA - 27–30 in (69–76 cm)
 	r_vmodes[14].ratio=2;
 	r_vmodes[14].width=2560;
 	r_vmodes[14].height=1600;
@@ -3765,6 +3798,12 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 			if ( damageDef->GetBool( "arx_projectile_damage_skills" ) ) {
 				damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
 			}
+
+			// Duplicated in idProjectile::Collide
+			if ( damageDef->GetBool( "arx_magic_damage_skills" ) ) {
+				damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
+			}
+
 			// ****************************************
 			// ****************************************
 #ifndef _DT // this print is a bit misleading, it is already called inside Damage in Actor.cpp

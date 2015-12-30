@@ -2293,18 +2293,12 @@ void Cmd_TestId_f( const idCmdArgs &args ) {
 	gameLocal.mpGame.AddChatLine( common->GetLanguageDict()->GetString( id ), "<nothing>", "<nothing>", "<nothing>" );	
 }
 
-// Solarsplace - Arx End Of Sun 
-
-// Thanks Hexen EOC
-// Determine which parts of the settings GUI should be visible and display the proper settings on it
+// Solarsplace - Arx End Of Sun - Determine which parts of the settings GUI should be visible and display the proper settings on it
 void Cmd_guiUpdateSettings_f( const idCmdArgs &args ) {
 
 	int i;
 	int ratio = cvarSystem->GetCVarInteger( "r_aspectRatio" );
 
-	idUserInterface *mainMenuGui = uiManager->FindGui( "guis/mainmenu.gui", true, false, true );
-
-	// HEXEN : Zeroth. determine what mode we're in
 	for ( i = 0; i < ARX_NUM_VMODES; i++ ) {
 		if (
 			gameLocal.r_vmodes[i].width == cvarSystem->GetCVarInteger( "r_customWidth" ) && 
@@ -2316,64 +2310,8 @@ void Cmd_guiUpdateSettings_f( const idCmdArgs &args ) {
 		}
 	}
 
-	if ( i == ARX_NUM_VMODES ) {
-
-		r_vmode.SetInteger( -1 );
-		mainMenuGui->SetStateBool( "modeCustom", true );
-		mainMenuGui->SetStateBool( "modeSetCustom", true);
-
-	} else {
-
-		mainMenuGui->SetStateBool( "modeCustom", false);
-		mainMenuGui->SetStateBool( "modeSetCustom", false);
-
-		if ( ratio == 0 ) {
-			mainMenuGui->SetStateBool( "modeSet0", true );
-			mainMenuGui->SetStateBool( "modeChoices0", true );
-		} else {
-			mainMenuGui->SetStateBool( "modeSet0", false );
-			mainMenuGui->SetStateBool( "modeChoices0", false );
-		}
-
-		if ( ratio == 1 ) {
-			mainMenuGui->SetStateBool( "modeSet1", true );
-			mainMenuGui->SetStateBool( "modeChoices1", true );
-		} else {
-			mainMenuGui->SetStateBool( "modeSet1", false );
-			mainMenuGui->SetStateBool( "modeChoices1", false );
-		}
-
-		if ( ratio == 2 ) {
-			mainMenuGui->SetStateBool( "modeSet2", true );
-			mainMenuGui->SetStateBool( "modeChoices2", true );
-		} else {
-			mainMenuGui->SetStateBool( "modeSet2", false );
-			mainMenuGui->SetStateBool( "modeChoices2", false );
-		}
-	}
-	
-	mainMenuGui->SetStateInt( "r_aspectRatio", ratio );
-	mainMenuGui->SetStateInt( "r_customWidth", cvarSystem->GetCVarInteger( "r_customWidth" ) );
-	mainMenuGui->SetStateInt( "r_customHeight", cvarSystem->GetCVarInteger( "r_customHeight" ) );
-
-	switch ( ratio ) {
-		case 0: mainMenuGui->SetStateString( "r_aspectRatioString", "3:4" ); break;
-		case 1: mainMenuGui->SetStateString( "r_aspectRatioString", "16:9" ); break;
-		case 2: mainMenuGui->SetStateString( "r_aspectRatioString", "16:10" ); break;
-	}
-
-	// Setup font color for video graphics options on settings menu (so much easier than doing it in gui)
-	idStr str;
-	char key[50];
-	for ( int n  =0; n  <4; n++ ) {
-		if ( cvarSystem->GetCVarInteger( "com_machineSpec" ) == n ) {
-			str = "1, 0.66, 0.15, 1";
-		} else {
-			str = "1, 0.8, 0.5, 1";
-		}
-		sprintf( key, "video_%i_fcolor", n );
-		mainMenuGui->SetStateString( key, str );
-	}
+	// No custom option via GUI
+	// r_vmode.SetInteger( -1 );
 }
 
 void Cmd_VidRestart_f( const idCmdArgs &args ) {
@@ -2383,18 +2321,16 @@ void Cmd_VidRestart_f( const idCmdArgs &args ) {
 	int width;
 	int height;
 
-	int eoc_cvarmode = r_vmode.GetInteger();
-
-	idPlayer *localplayer = gameLocal.GetLocalPlayer();
+	int arx_cvarmode = r_vmode.GetInteger();
 
 	// Figure out what resolution to use
-	if ( eoc_cvarmode >= 0 && eoc_cvarmode < ARX_NUM_VMODES ) { // preset resolution/ratio
+	if ( arx_cvarmode >= 0 && arx_cvarmode < ARX_NUM_VMODES ) { // preset resolution/ratio
 
-		height = gameLocal.r_vmodes[eoc_cvarmode].height;
-		width = gameLocal.r_vmodes[eoc_cvarmode].width;
-		ratio = gameLocal.r_vmodes[eoc_cvarmode].ratio;
+		height = gameLocal.r_vmodes[arx_cvarmode].height;
+		width = gameLocal.r_vmodes[arx_cvarmode].width;
+		ratio = gameLocal.r_vmodes[arx_cvarmode].ratio;
 
-	} else if ( eoc_cvarmode == -1 ) { // custom resoultion/ratio
+	} else if ( arx_cvarmode == -1 ) { // custom resoultion/ratio
 
 		height = cvarSystem->GetCVarInteger( "r_customHeight");
 		width = cvarSystem->GetCVarInteger( "r_customWidth");
