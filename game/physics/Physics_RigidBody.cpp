@@ -320,12 +320,46 @@ bool idPhysics_RigidBody::CheckForCollisions( const float deltaTime, rigidBodyPS
 
 	// if there was a collision
 	if ( collided || gameLocal.clip.Motion( collision, current.i.position, next.i.position, rotation, clipModel, current.i.orientation, clipMask, self ) ) {
+#ifdef _DT
+		// "fleshCollisionOnly"		"1"
+		// When hit by player's projectile, ignore collision and keep projectile flying if surface is not flesh, e.g. goblin torch.
+		// Be aware that very fast projectiles ( >2000 ) may miss the "double check" of collision on the same entity.
+		// This has been implemented to improve the visual effect of the damage without revolutionize the actual stuff. 
+		// It often happens that if you're aiming to the head of a goblin  that holds a torch, when you attack the goblin with a blade weapon 
+		// you will hit the torch. The enemy is damaged but you won't see what you expect - bleeding and wound, which is not good.
+		// Add this key in enemy def and projectile def.
+		collided = true;
+		if ( self->IsType( idProjectile::Type ) ) {
+			idProjectile *prj = static_cast<idProjectile *>(self);
+			if(prj->GetOwner()->IsType( idPlayer::Type ) ){
+				idEntity *ent = gameLocal.entities[collision.c.entityNum];
+				if( ent->IsType( idAI::Type ) && ent->spawnArgs.GetBool("fleshCollisionOnly") && prj->spawnArgs.GetBool("fleshCollisionOnly") ){
+					surfTypes_t materialType;
+					if ( collision.c.material != NULL ) {
+						materialType = collision.c.material->GetSurfaceType();
+						if(materialType != SURFTYPE_FLESH){
+							collided = false;
+							// gameLocal.Printf("ignore collision...\n");
+						}
+					}
+				}
+			}			
+		} 
+		if( collided ) {
+			// set the next state to the state at the moment of impact
+			next.i.position = collision.endpos;
+			next.i.orientation = collision.endAxis;
+			next.i.linearMomentum = current.i.linearMomentum;
+			next.i.angularMomentum = current.i.angularMomentum;
+		}
+#else
 		// set the next state to the state at the moment of impact
 		next.i.position = collision.endpos;
 		next.i.orientation = collision.endAxis;
 		next.i.linearMomentum = current.i.linearMomentum;
 		next.i.angularMomentum = current.i.angularMomentum;
 		collided = true;
+#endif		
 	}
 
 	// Check for water collision
