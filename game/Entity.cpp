@@ -3172,6 +3172,17 @@ void idEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity
 	if ( g_decals.GetBool() ) {
 		// place a wound overlay on the model
 		key = va( "mtr_wound_%s", materialType );
+#ifdef _DT // decal angle
+		decal = def->dict.RandomPrefix( key, gameLocal.random ); // higher priority to decal in prj def
+		if ( *decal == '\0' ) {
+			decal = spawnArgs.RandomPrefix( key, gameLocal.random );
+		}
+		if ( *decal != '\0' ) {
+			idVec3 dir = velocity;
+			dir.Normalize();
+			ProjectOverlay( collision.c.point, dir, 20.0f, decal, angle );
+		}
+#else
 		decal = spawnArgs.RandomPrefix( key, gameLocal.random );
 		if ( *decal == '\0' ) {
 			decal = def->dict.RandomPrefix( key, gameLocal.random );
@@ -3179,12 +3190,9 @@ void idEntity::AddDamageEffect( const trace_t &collision, const idVec3 &velocity
 		if ( *decal != '\0' ) {
 			idVec3 dir = velocity;
 			dir.Normalize();
-#ifdef _DT // decal angle
-			ProjectOverlay( collision.c.point, dir, 20.0f, decal, angle );
-#else
 			ProjectOverlay( collision.c.point, dir, 20.0f, decal );
-#endif
 		}
+#endif
 	}
 }
 
@@ -5441,17 +5449,23 @@ void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec
 	if ( !( IsType( idPlayer::Type ) && !gameLocal.isMultiplayer ) ) {
 		// place a wound overlay on the model
 		key = va( "mtr_wound_%s", materialType );
+#ifdef _DT // decal angle
+		decal = def->dict.RandomPrefix( key, gameLocal.random ); // higher priority to decal in prj def
+		if ( *decal == '\0' ) {
+			decal = spawnArgs.RandomPrefix( key, gameLocal.random );
+		}
+		if ( *decal != '\0' ) {
+			ProjectOverlay( origin, dir, 20.0f, decal, angle );
+		}
+#else
 		decal = spawnArgs.RandomPrefix( key, gameLocal.random );
 		if ( *decal == '\0' ) {
 			decal = def->dict.RandomPrefix( key, gameLocal.random );
 		}
 		if ( *decal != '\0' ) {
-#ifdef _DT // decal angle
-			ProjectOverlay( origin, dir, 20.0f, decal, angle );
-#else
 			ProjectOverlay( origin, dir, 20.0f, decal );
-#endif
 		}
+#endif
 	}
 
 	// a blood spurting wound is added
