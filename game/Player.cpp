@@ -501,7 +501,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "tmp_arx_class_damage_points", tmp_arx_class_damage_points );
 	// **********
 
-	// dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update ); // _DT commented out - we shouldn't need this...
+	dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update );
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
 	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
@@ -712,7 +712,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	tmp_arx_class_damage_points			= dict.GetInt( "tmp_arx_class_damage_points", "0" );
 	// **********
 
-	// arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" ); // _DT commented out - we shouldn't need this...
+	arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" );
 
 	// Init to non 0 to prevent being equal to gameLocal time at start.
 	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "-1" );
@@ -3185,6 +3185,8 @@ void idPlayer::SavePersistantInfo( void ) {
 	idDict &playerInfo = gameLocal.persistentPlayerInfo[entityNumber];
 
 	playerInfo.Clear();
+
+	inventory.ClearDownTimedAttributes( false ); // _DT
 
 	inventory.GetPersistantData( playerInfo );
 
@@ -11573,7 +11575,7 @@ void idPlayer::GetEntityByViewRay( void )
 			if ( changeLevelOK ) {
 
 				// Carry over timed attributes such as magic and damages.
-				inventory.ClearDownTimedAttributes( false );
+				// inventory.ClearDownTimedAttributes( false ); // _DT : moved to SavePersistantInfo()
 
 				// Active any targets of the change level entity.
 				target->ActivateTargets( this );
@@ -16957,12 +16959,11 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// cannot cheat by changing levels back and forth.
 
 		// Update time
-// _DT commented out - we shouldn't need this...
-//		if ( arx_timer_player_stats_update > gameLocal.time ) {
-//			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
-//		} else {
-//			arx_timer_player_stats_update = RESET_TIME;
-//		}
+		if ( arx_timer_player_stats_update > gameLocal.time ) {
+			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
+		} else {
+			arx_timer_player_stats_update = RESET_TIME;
+		}
 
 		// Poisoned
 		if ( arx_timer_player_poison > gameLocal.time ) {
@@ -17008,7 +17009,6 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 
 		// Hungry
 		arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time; // _DT
-// _DT commented out - why reset time?
 //		if ( arx_timer_player_hungry > gameLocal.time ) {
 //			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
 //		} else {
