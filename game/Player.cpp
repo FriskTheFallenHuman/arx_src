@@ -501,7 +501,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "tmp_arx_class_damage_points", tmp_arx_class_damage_points );
 	// **********
 
-	dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update );
+	// dict.SetInt( "arx_timer_player_stats_update", arx_timer_player_stats_update ); // _DT commented out - we shouldn't need this...
 	dict.SetInt( "arx_timer_player_poison", arx_timer_player_poison );
 	dict.SetInt( "arx_timer_player_invisible", arx_timer_player_invisible );
 	dict.SetInt( "arx_timer_player_onfire", arx_timer_player_onfire );
@@ -712,7 +712,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	tmp_arx_class_damage_points			= dict.GetInt( "tmp_arx_class_damage_points", "0" );
 	// **********
 
-	arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" );
+	// arx_timer_player_stats_update	= dict.GetInt( "arx_timer_player_stats_update", "0" ); // _DT commented out - we shouldn't need this...
 
 	// Init to non 0 to prevent being equal to gameLocal time at start.
 	arx_timer_player_poison			= dict.GetInt( "arx_timer_player_poison", "-1" );
@@ -16510,14 +16510,19 @@ void idPlayer::UpdateHeroStats( void ) {
 
 	// Here we start to fade in the hunger icon. We fade in ARX_HUNGER_WARNING_TIME before the hunger damage starts to take effect.
 	if ( hud ) {
+		// *** old code, fixed below ***
+		// float hungerVis = 
+		//	(float)( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) / 
+		//	(float)( gameLocal.time - ( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) );
+		// hungerVis = 1.0f / hungerVis;
+// _DT -->
 		float hungerVis = 
-			(float)( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) / 
-			(float)( gameLocal.time - ( inventory.arx_timer_player_hungry - ARX_HUNGER_WARNING_TIME ) );
-		
-		
-		hungerVis = 1.0f / hungerVis;
+			(float)( (ARX_NEXT_HUNGRY_DEFAULT - inventory.arx_timer_player_hungry + gameLocal.time) - (ARX_NEXT_HUNGRY_DEFAULT - ARX_HUNGER_WARNING_TIME) ) / 
+			(float)( ARX_HUNGER_WARNING_TIME );
+
 		hud->SetStateFloat( "player_hunger_vis", hungerVis );
-	}
+// <-- _DT
+	}		
 
 	// *******************************************************************************
 	// *******************************************************************************
@@ -16952,11 +16957,12 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// cannot cheat by changing levels back and forth.
 
 		// Update time
-		if ( arx_timer_player_stats_update > gameLocal.time ) {
-			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
-		} else {
-			arx_timer_player_stats_update = RESET_TIME;
-		}
+// _DT commented out - we shouldn't need this...
+//		if ( arx_timer_player_stats_update > gameLocal.time ) {
+//			arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
+//		} else {
+//			arx_timer_player_stats_update = RESET_TIME;
+//		}
 
 		// Poisoned
 		if ( arx_timer_player_poison > gameLocal.time ) {
@@ -17001,11 +17007,13 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		}
 
 		// Hungry
-		if ( arx_timer_player_hungry > gameLocal.time ) {
-			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
-		} else {
-			arx_timer_player_hungry = RESET_TIME;
-		}
+		arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time; // _DT
+// _DT commented out - why reset time?
+//		if ( arx_timer_player_hungry > gameLocal.time ) {
+//			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
+//		} else {
+//		 	arx_timer_player_hungry = RESET_TIME;
+//		}
 	}
 }
 
