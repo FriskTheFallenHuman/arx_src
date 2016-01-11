@@ -5961,7 +5961,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 				int tempHealthMax = inventory.items[invItemIndex]->GetInt( "inv_health_max", "100" );
 				if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
 
-				float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax ) * 100;
+				// float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax ) * 100; // _DT money - commented out
+				float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax ); // _DT money
 
 				//TODO - Abort sale if item too broken?
 
@@ -6031,8 +6032,10 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 				int itemPrice = atoi( arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", atoi( token2 ) ), "") );
 
 				//gameLocal.Printf( "itemPrice = %i\n", itemPrice );
+				int sellToPlayerPrice = ShopGetSellToPlayerPrice( itemPrice, 100.0f, arxShopFunctions.ratioSellToPlayer ); // _DT money
 
-				if ( inventory.money - itemPrice >= 0 )
+				// if ( inventory.money - itemPrice >= 0 ) // _DT money - commented out
+				if ( inventory.money - sellToPlayerPrice >= 0 )  // _DT money - we need to check sell ratio too, to avoid money going negative
 				{
 					// !!! Must do the steps in this order !!!
 
@@ -6058,7 +6061,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					GiveInventoryItem( &args );
 
 					// Spend money and remove the item from the shop
-					int sellToPlayerPrice = ShopGetSellToPlayerPrice( itemPrice, 100.0f, arxShopFunctions.ratioSellToPlayer );
+					// int sellToPlayerPrice = ShopGetSellToPlayerPrice( itemPrice, 100.0f, arxShopFunctions.ratioSellToPlayer ); // _DT money - commented out, moved up.
 
 					inventory.money -= sellToPlayerPrice; //itemPrice;
 					arxShopFunctions.RemoveShopItem( atoi( token2 )  );
@@ -9990,12 +9993,32 @@ void idPlayer::UpdateShoppingSystem( void )
 			const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 			const char *iicon = item->GetString( "inv_icon" );
 			//const char *itext = item->GetString( "inv_text" );
-			const char *ivalue = item->GetString( "inv_shop_item_value" );
+			// const char *ivalue = item->GetString( "inv_shop_item_value" ); // _DT money - commented out
+			
+		// _DT money -->
+			int ivalue;
+
+			if ( item->GetBool( "gui_val_based_on_health", "0" ) ) {
+				float ivalueDef = item->GetFloat( "inv_shop_item_value", "0" ); 
+
+				// Get the health of the item we are selling
+				int tempHealth = item->GetInt( "inv_health", "100" );
+				int tempHealthMax = item->GetInt( "inv_health_max", "100" );
+				if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
+				float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax );
+				
+				ivalue = ShopGetBuyFromPlayerPrice( ivalueDef, durabilityRatio, arxShopFunctions.ratioBuyFromPlayer );
+			} else {
+				ivalue = item->GetFloat( "inv_shop_item_value", "0" );
+			}
+
+		// _DT money <--
 
 			shoppingSystem->SetStateString( va( "inv_name_%i", j ), iname );
 			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), iicon );
 			//shoppingSystem->SetStateString( va( "inv_text_%i", j ), itext );
-			shoppingSystem->SetStateString( va( "inv_value_%i", j ), ivalue );
+			// shoppingSystem->SetStateString( va( "inv_value_%i", j ), ivalue ); // _DT money - commented out
+			shoppingSystem->SetStateInt( va( "inv_value_%i", j ), ivalue ); // _DT money
 
 			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
 		}
@@ -10011,7 +10034,8 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			shoppingSystem->SetStateString( va( "shop_inv_icon_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "shop_inv_name_%i", j ), "" );
-			shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), "" );
+			// shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), "" ); // _DT money - commented out
+			shoppingSystem->SetStateInt( va( "shop_inv_value_%i", j ), 0 ); // _DT money
 			shoppingSystem->SetStateString( va( "shop_inv_group_count_%i", j ), "0" ); // Note: Named different from dictionary shop_item_count_
 		}
 
@@ -10019,14 +10043,19 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			const char *sicon = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_icon_%i", j ), "");
 			const char *sname = common->GetLanguageDict()->GetString( arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_name_%i", j ), "") );
-			const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", j ), "");
+			// const char *svalue = arxShopFunctions.shopSlotItem_Dict->GetString( va( "inv_shop_item_value_%i", j ), ""); // _DT money - commented out
+		// _DT money -->
+			int svalue = arxShopFunctions.shopSlotItem_Dict->GetInt( va( "inv_shop_item_value_%i", j ), "0");
+			svalue *= arxShopFunctions.ratioSellToPlayer;
+		// _DT money <--
 			const char *scount = arxShopFunctions.shopSlotItem_Dict->GetString( va( "shop_item_count_%i", j ), "0");
 
 			if ( atoi(scount) > 0 ) {
 
 				shoppingSystem->SetStateString( va( "shop_inv_icon_%i", j ), sicon );
 				shoppingSystem->SetStateString( va( "shop_inv_name_%i", j ), sname );
-				shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), svalue );
+				// shoppingSystem->SetStateString( va( "shop_inv_value_%i", j ), svalue ); // _DT money - commented out
+				shoppingSystem->SetStateInt( va( "shop_inv_value_%i", j ), svalue ); // _DT money
 				shoppingSystem->SetStateString( va( "shop_inv_group_count_%i", j ), scount );
 			}
 		}
