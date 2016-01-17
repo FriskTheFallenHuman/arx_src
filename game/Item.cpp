@@ -309,10 +309,15 @@ void idItem::Spawn( void ) {
 		BecomeActive( TH_THINK );
 	}
 
+	// Solarsplace - Arx End Of Sun
+	// I want the ability to bring spawned spinners up off the floor by an amount...
+	idVec3 arx_spin_offset;
+	arx_spin_offset = spawnArgs.GetVector( "arx_spin_offset" );
+
 	//pulse = !spawnArgs.GetBool( "nopulse" );
 	//temp hack for tim
 	pulse = false;
-	orgOrigin = GetPhysics()->GetOrigin();
+	orgOrigin = GetPhysics()->GetOrigin() + arx_spin_offset;
 
 	canPickUp = !( spawnArgs.GetBool( "triggerFirst" ) || spawnArgs.GetBool( "no_touch" ) );
 
