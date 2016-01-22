@@ -1209,6 +1209,7 @@ private:
 	// Misc
 	void					ArxProcessTimedEvents( void );
 	int						ArxNextProcessEvent;
+	int						arxPlayingFreezing;
 
 	/*
 	*** END - Solarsplace - Arx EOS - Private

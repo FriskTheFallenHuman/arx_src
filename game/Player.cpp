@@ -201,6 +201,8 @@ const int ARX_QUEST_STATE_COMPLETED = 999;
 
 const float ARX_MAX_ITEM_PICKUP_DISTANCE = 92.0f;		// Solarsplace 7th June 2010 - The max trace distance for a pickup item.
 
+const float ARX_DEFAULT_SPELL_RADIUS = 256; // Units
+
 //*****************************************************************
 //*****************************************************************
 
@@ -1541,6 +1543,8 @@ idPlayer::idPlayer() {
 
 	ArxNextProcessEvent			= gameLocal.time;
 
+	arxPlayingFreezing			= 0;
+
 	// *********************************************************************************
 	// *********************************************************************************
 	// *********************************************************************************
@@ -2587,6 +2591,8 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	// SmartAI
 	friendsCommonEnemy.Save( savefile );
 
+	savefile->WriteInt( arxPlayingFreezing );
+
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************
 	//*****************************************************************************
@@ -2910,6 +2916,8 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	// SmartAI
 	friendsCommonEnemy.Restore( savefile );
+
+	savefile->ReadInt( arxPlayingFreezing );
 
 	// End - Solarsplace - Arx End Of Sun
 	//*****************************************************************************
@@ -7752,7 +7760,7 @@ void idPlayer::ProcessMagic()
 					// ***********************************************************
 					// Script calls
 					if ( !strcmp( customMagicScriptActionWorld, "" ) == 0 ) {
-						magicSpellCombo->dict.GetFloat( "spell_radius", "256", alertRadius );
+						magicSpellCombo->dict.GetFloat( "spell_radius", idStr( ARX_DEFAULT_SPELL_RADIUS ), alertRadius );
 						inventory.UseAmmo( ARX_MANA_TYPE, spellManaCost );
 						RadiusSpell( customMagicScriptActionWorld, alertRadius );
 					}
@@ -11003,10 +11011,17 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			{
 				itemAttribute = arg->GetValue();
 
+				// Ignite
+				if ( strcmp( itemAttribute, "ignite" ) == 0 )
+				{
+					RadiusSpell( itemAttribute, ARX_DEFAULT_SPELL_RADIUS );
+					gave = true;
+				}
+
 				// Dispel Field
 				if ( strcmp( itemAttribute, "dispel_field" ) == 0 )
 				{
-					RadiusSpell( itemAttribute, 256 );
+					RadiusSpell( itemAttribute, ARX_DEFAULT_SPELL_RADIUS );
 					gave = true;
 				}
 
@@ -16498,6 +16513,10 @@ void idPlayer::UpdateHeroStats( void ) {
 	const int ARX_COLD_DAMAGE_BASE = 3;
 	const int ARX_COLD_DAMAGE_START_RATE = 20; // Start to take damage after 20 seconds of cold exposure.
 	
+	const int ARX_FREEZE_NONE = 0;
+	const int ARX_FREEZE_BUILD_UP = 1;
+	const int ARX_FREEZE_SHIVER = 2;
+
 	int now = gameLocal.time;
 	int ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
 	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
@@ -16525,8 +16544,55 @@ void idPlayer::UpdateHeroStats( void ) {
 				nScreenFrostAlpha = ( nScreenFrostAlpha < 0 ) ? 0 : nScreenFrostAlpha;
 			}
 		}
+
+		// ********************************************************************************
+		// ********************************************************************************
+		// ********************************************************************************
+
+		if ( nScreenFrostAlpha > 0 ) {
+
+			float n = (float)g_screenFrostTime.GetInteger() * 60.0f;
+			if ( n > 0 ) {
+				n = n * 0.4f; // Start playing shiver sounds after 40% if full frost time
+			}
+
+			if ( (float)nScreenFrostAlpha > n ) {
+
+				if ( arxPlayingFreezing == ARX_FREEZE_BUILD_UP ) {
+					arxPlayingFreezing = ARX_FREEZE_SHIVER; // Set new freeze level
+					StartSound( "snd_arx_player_ice_shiver", SND_CHANNEL_RADIO, 0, false, NULL ); // Start new freeze level sound
+				}
+
+			} else {
+
+				if ( arxPlayingFreezing != ARX_FREEZE_BUILD_UP ) {
+					arxPlayingFreezing = ARX_FREEZE_BUILD_UP; // Set new freeze level
+					StartSound( "snd_arx_player_ice_build_up", SND_CHANNEL_RADIO, 0, false, NULL ); // Start new freeze level sound
+				}
+			}
+
+		} else {
+
+			// Stop all freezing sounds
+			if ( arxPlayingFreezing > ARX_FREEZE_NONE ) {
+				arxPlayingFreezing = 0;
+				StopSound( SND_CHANNEL_RADIO, false );
+			}
+
+		}
+
+		// ********************************************************************************
+		// ********************************************************************************
+		// ********************************************************************************
+
 	} else {
 		nScreenFrostAlpha = 0;
+
+		// Just in case someone used a target set key val on the world and cold world was enabled.
+		if ( arxPlayingFreezing > ARX_FREEZE_NONE ) {
+			arxPlayingFreezing = false;
+			StopSound( SND_CHANNEL_RADIO, false );
+		}
 	}
 
 	// ****************************************
