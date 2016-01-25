@@ -100,8 +100,8 @@ void idTrigger::Enable( void ) {
 	// Solarsplace - Arx End Of Sun
 	isEnabled = true;
 
-	//REMOVEME
-	gameLocal.Printf( "Trigger (%s) is enabled\n", this->name.c_str() );
+	//REMOVEDx
+	//gameLocal.Printf( "Trigger (%s) is enabled\n", this->name.c_str() );
 }
 
 /*
@@ -117,8 +117,8 @@ void idTrigger::Disable( void ) {
 	// Solarsplace - Arx End Of Sun
 	isEnabled = false;
 
-	//REMOVEME
-	gameLocal.Printf( "Trigger (%s) is disabled\n", this->name.c_str() );
+	//REMOVEDx
+	//gameLocal.Printf( "Trigger (%s) is disabled\n", this->name.c_str() );
 }
 
 /*
@@ -220,8 +220,8 @@ idTrigger::Spawn
 */
 void idTrigger::Spawn( void ) {
 
-	//REMOVEME
-	gameLocal.Printf( "idTrigger::Spawn\n" );
+	//REMOVEDx
+	//gameLocal.Printf( "idTrigger::Spawn\n" );
 
 	GetPhysics()->SetContents( CONTENTS_TRIGGER );
 
@@ -1469,7 +1469,7 @@ void idTrigger_FullScreenMenuGUI::ToggleFullScreenGUIInterface( void ) {
 
 	if( !fullScreenGUIInterfaceOpen )
 	{
-		gameLocal.Printf("ToggleFullScreenGUIInterface = opening\n" ); //REMOVEME
+		//gameLocal.Printf("ToggleFullScreenGUIInterface = opening\n" );
 
 		fullScreenGUIInterface->Activate( true, gameLocal.time );
 		fullScreenGUIInterfaceOpen = true;
@@ -1479,7 +1479,7 @@ void idTrigger_FullScreenMenuGUI::ToggleFullScreenGUIInterface( void ) {
 	}
 	else
 	{
-		gameLocal.Printf("ToggleFullScreenGUIInterface = closing\n" ); //REMOVEME
+		//gameLocal.Printf("ToggleFullScreenGUIInterface = closing\n" );
 
 		fullScreenGUIInterface->Activate( false, gameLocal.time );
 		fullScreenGUIInterfaceOpen = false;

@@ -3694,6 +3694,21 @@ idGameLocal::RadiusDamage
 ============
 */
 void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEntity *attacker, idEntity *ignoreDamage, idEntity *ignorePush, const char *damageDefName, float dmgPower ) {
+	
+	// Arx End Of Sun
+	/*
+	this:		Entity that is being damaged
+	inflictor:	Entity that is causing the damage
+	attacker:	Entity that caused the inflictor to damage targ
+	example:	this = entities in bounds below, inflictor = rocket, attacker = player
+	*/
+
+	//gameLocal.Printf( "RadiusDamage inflictor = %s\n", inflictor->name.c_str() );
+	//gameLocal.Printf( "RadiusDamage attacker = %s\n", attacker->name.c_str() );
+	bool arxAlwaysDamagePlayer = false;
+	bool arxDisableDamageFallOff = false;
+	// Arx End Of Sun
+
 	float		dist, damageScale, attackerDamageScale, attackerPushScale;
 	idEntity *	ent;
 	idEntity *	entityList[ MAX_GENTITIES ];
@@ -3713,6 +3728,13 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 	damageDef->GetInt( "push", va( "%d", damage * 100 ), push );
 	damageDef->GetFloat( "attackerDamageScale", "0.5", attackerDamageScale );
 	damageDef->GetFloat( "attackerPushScale", "0", attackerPushScale );
+
+	// Arx End Of Sun - Solarsplace
+	// It seems that if an 'idExplodable' is triggered in any way either by script sys.trigger or via a map trigger
+	// then 'inflictor' and 'attacker' is always set to 'player1' meaning the player always escapes any damage.
+	// Here we add another flag / bodge to allow for the player to be damaged by certain damage def's
+	damageDef->GetBool( "arxAlwaysDamagePlayer", "0", arxAlwaysDamagePlayer );
+	damageDef->GetBool( "arxDisableDamageFallOff", "0", arxDisableDamageFallOff );
 
 	if ( radius < 1 ) {
 		radius = 1;
@@ -3750,7 +3772,11 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 		}
 
 		if ( ent == inflictor || ( ent->IsType( idAFAttachment::Type ) && static_cast<idAFAttachment*>(ent)->GetBody() == inflictor ) ) {
-			continue;
+
+			// Arx End Of Sun - Solarsplace
+			if ( !arxAlwaysDamagePlayer ) {
+				continue;
+			}
 		}
 
 		if ( ent == ignoreDamage || ( ent->IsType( idAFAttachment::Type ) && static_cast<idAFAttachment*>(ent)->GetBody() == ignoreDamage ) ) {
@@ -3784,8 +3810,15 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 			dir = ent->GetPhysics()->GetOrigin() - origin;
 			dir[ 2 ] += 24;
 
-			// get the damage scale
-			damageScale = dmgPower * ( 1.0f - dist / radius );
+			// Arx End Of Sun - Option to disable damage radius falloff.
+			if ( arxDisableDamageFallOff ) {
+				damageScale = 1.0f;
+			} else {
+				// get the damage scale
+				damageScale = dmgPower * ( 1.0f - dist / radius );		
+			}
+
+			// Original Doom3 code:
 			if ( ent == attacker || ( ent->IsType( idAFAttachment::Type ) && static_cast<idAFAttachment*>(ent)->GetBody() == attacker ) ) {
 				damageScale *= attackerDamageScale;
 			}
@@ -3794,14 +3827,18 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 			// ****************************************
 			// Arx End Of Sun
 
-			// Duplicated in idProjectile::Collide
-			if ( damageDef->GetBool( "arx_projectile_damage_skills" ) ) {
-				damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
-			}
+			// Only apply the players skills if it is the player that is doing the attacking
+			if ( attacker == GetLocalPlayer() ) {
 
-			// Duplicated in idProjectile::Collide
-			if ( damageDef->GetBool( "arx_magic_damage_skills" ) ) {
-				damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
+				// Duplicated in idProjectile::Collide
+				if ( damageDef->GetBool( "arx_projectile_damage_skills" ) ) {
+					damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
+				}
+
+				// Duplicated in idProjectile::Collide
+				if ( damageDef->GetBool( "arx_magic_damage_skills" ) ) {
+					damageScale = gameLocal.GetLocalPlayer()->ArxCalculateD3GameBonuses( damageScale, ARX_MAGIC_PROJECTILE_DAMAGE );
+				}
 			}
 
 			// ****************************************
