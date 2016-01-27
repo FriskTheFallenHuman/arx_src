@@ -7573,13 +7573,6 @@ void idPlayer::ProcessMagic()
 					//Detect trap
 
 					//Harm
-					if ( strcmp( customMagicSpell, "add_harm" ) == 0 ) {
-						idVec3 org;
-						org = physicsObj.GetOrigin();
-
-						// Do damage of 50 with a 128 unit radius - TODO - Increase with skills
-						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_harm_base" );
-					}
 
 					//Heal
 
@@ -7744,17 +7737,36 @@ void idPlayer::ProcessMagic()
 					//Control demon
 
 					//Mass incinerate
-					if ( strcmp( customMagicSpell, "add_mass_incinerate" ) == 0 ) {
-						idVec3 org;
-						org = physicsObj.GetOrigin();
-
-						// Do damage of 60 with a 256 unit radius - TODO - Increase with skills
-						gameLocal.RadiusDamage( org, this, this, this, this, "damage_arx_mass_incinerate_base" );
-					}
 
 					//Mass lightning projection
 
 					//Slow time
+
+					// Fire Trap
+					if ( strcmp( customMagicSpell, "add_fire_trap" ) == 0 ) {
+						
+						// Spawn the entity
+						idDict argsSpell;
+						idEntity *spawnedSpell;
+						argsSpell.Set( "classname", "arx_func_incineration_bomb_spell" );
+						gameLocal.SpawnEntityDef( argsSpell, &spawnedSpell );
+
+						// Move the entity origin
+						spawnedSpell->GetPhysics()->SetOrigin( playerOrigin + ( forward * 80.0f ) );
+					}
+
+					// Lightning Trap
+					if ( strcmp( customMagicSpell, "add_lightning_trap" ) == 0 ) {
+						
+						// Spawn the entity
+						idDict argsSpell;
+						idEntity *spawnedSpell;
+						argsSpell.Set( "classname", "arx_func_lightning_bomb_spell" );
+						gameLocal.SpawnEntityDef( argsSpell, &spawnedSpell );
+
+						// Move the entity origin
+						spawnedSpell->GetPhysics()->SetOrigin( playerOrigin + ( forward * 80.0f ) );
+					}
 
 					// ***********************************************************
 					// ***********************************************************
