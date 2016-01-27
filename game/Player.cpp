@@ -7416,6 +7416,11 @@ void idPlayer::ProcessMagic()
 	if (magicCompassSequence == "")
 	{ return; }
 
+	// Positioning for spawn items
+	float yaw;
+	idVec3 org;
+	idPlayer *player;
+
 	idVec3 forward, up, playerOrigin;
 
 	const idDeclEntityDef *def = NULL;
@@ -7477,6 +7482,11 @@ void idPlayer::ProcessMagic()
 				// Some spells spawn things. Get the players position etc.
 				playerOrigin = GetPhysics()->GetOrigin();
 				viewAngles.ToVectors( &forward, NULL, &up );
+
+				// Get current player origin and angles.
+				// Need to do it this way for fire and lightning bombs
+				player = gameLocal.GetLocalPlayer();
+				yaw = player->viewAngles.yaw;
 
 				// ****************************************************************************************
 				// Do we have enough mana to cast the spell? if not then leave
@@ -7745,27 +7755,27 @@ void idPlayer::ProcessMagic()
 					// Fire Trap
 					if ( strcmp( customMagicSpell, "add_fire_trap" ) == 0 ) {
 						
-						// Spawn the entity
 						idDict argsSpell;
-						idEntity *spawnedSpell;
-						argsSpell.Set( "classname", "arx_func_incineration_bomb_spell" );
-						gameLocal.SpawnEntityDef( argsSpell, &spawnedSpell );
+						org = player->GetPhysics()->GetOrigin() + idAngles( 0, yaw, 0 ).ToForward() * 80 + idVec3( 0, 0, 1 );
 
-						// Move the entity origin
-						spawnedSpell->GetPhysics()->SetOrigin( playerOrigin + ( forward * 80.0f ) );
+						argsSpell.Set( "classname", "arx_func_incineration_bomb_spell" );
+						argsSpell.Set( "angle", va( "%f", yaw + 180 ) );
+						argsSpell.Set( "origin", org.ToString() );
+
+						gameLocal.SpawnEntityDef( argsSpell );
 					}
 
 					// Lightning Trap
 					if ( strcmp( customMagicSpell, "add_lightning_trap" ) == 0 ) {
 						
-						// Spawn the entity
 						idDict argsSpell;
-						idEntity *spawnedSpell;
-						argsSpell.Set( "classname", "arx_func_lightning_bomb_spell" );
-						gameLocal.SpawnEntityDef( argsSpell, &spawnedSpell );
+						org = player->GetPhysics()->GetOrigin() + idAngles( 0, yaw, 0 ).ToForward() * 80 + idVec3( 0, 0, 1 );
 
-						// Move the entity origin
-						spawnedSpell->GetPhysics()->SetOrigin( playerOrigin + ( forward * 80.0f ) );
+						argsSpell.Set( "classname", "arx_func_lightning_bomb_spell" );
+						argsSpell.Set( "angle", va( "%f", yaw + 180 ) );
+						argsSpell.Set( "origin", org.ToString() );
+
+						gameLocal.SpawnEntityDef( argsSpell );
 					}
 
 					// ***********************************************************
@@ -10854,6 +10864,14 @@ void idPlayer::UpdateJournalGUI( void )
 
 		gameLocal.persistentLevelInfo.GetString( "spell_mega_aam_mega_yok", "0", &result );
 		objectiveSystem->SetStateString( "spell_mega_aam_mega_yok", result );
+
+		// Arx End Of Sun - Custom Spells:
+
+		gameLocal.persistentLevelInfo.GetString( "spell_aam_folgora_morte_cosum", "0", &result );
+		objectiveSystem->SetStateString( "spell_aam_folgora_morte_cosum", result );
+
+		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_morte_cosum", "0", &result );
+		objectiveSystem->SetStateString( "spell_aam_yok_morte_cosum", result );
 
 		/*****************************************************************************
 		 *****************************************************************************
