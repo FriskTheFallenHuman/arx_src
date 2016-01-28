@@ -7496,7 +7496,7 @@ void idPlayer::ProcessMagic()
 
 				if ( playerCurrentMana < ( spellManaCost ) )
 				{
-					StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
+					StartSoundShader( declManager->FindSound( "arx_magic_drawing_failed" ), SND_CHANNEL_ANY, 0, false, NULL );
 					return;
 				}
 				// ****************************************************************************************
@@ -12978,7 +12978,7 @@ void idPlayer::Think( void ) {
 					hasSnakeCompass = true;
 				} else {
 					ShowHudMessage( "#str_general_00016" ); // "You cannot yet speak the words of power"
-					//StartSoundShader( declManager->FindSound( "arx_magic_drawing_fizzle" ), SND_CHANNEL_ANY, 0, false, NULL );
+					StartSoundShader( declManager->FindSound( "arx_magic_drawing_failed" ), SND_CHANNEL_ANY, 0, false, NULL );
 				}
 
 				if ( hasSnakeCompass ) {

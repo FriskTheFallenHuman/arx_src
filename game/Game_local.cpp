@@ -1794,7 +1794,9 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 		if ( kv->GetValue().Length() ) {
 			if ( !idStr::Icmp( kv->GetKey(), "gui_noninteractive" )
 				|| !idStr::Icmpn( kv->GetKey(), "gui_parm", 8 )	
-				|| !idStr::Icmp( kv->GetKey(), "gui_inventory" ) ) {
+				|| !idStr::Icmp( kv->GetKey(), "gui_inventory" )
+				|| !idStr::Icmp( kv->GetKey(), "gui_val_based_on_health" ) // Arx End Of Sun
+				) {
 				// unfortunate flag names, they aren't actually a gui
 			} else {
 				declManager->MediaPrint( "Precaching gui %s\n", kv->GetValue().c_str() );
