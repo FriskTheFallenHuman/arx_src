@@ -718,6 +718,12 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 					if ( dmgDef->dict.GetBool( "arx_projectile_damage_skills" ) ) {
 						damageScale = player->ArxCalculateD3GameBonuses( damageScale, ARX_NORMAL_PROJECTILE_DAMAGE );
 					}
+
+					// _DT - melee bonus
+					// melee weapons use dummy projectiles to damage things so we need to calculate the bonus here
+					if ( dmgDef->dict.GetBool( "arx_melee_prj_damage_skills" ) ) {
+						damageScale = player->ArxCalculateD3GameBonuses( damageScale, ARX_MELEE_DAMAGE );
+					}
 				}
 				// ****************************************
 				// ****************************************

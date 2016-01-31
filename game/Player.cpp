@@ -15737,8 +15737,11 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 		
 		// This is recreating the code in idPlayer::PowerUpModifier
 		tmpSkillValue = (float)inventory.arx_skill_close_combat + ( (float)inventory.arx_player_level * 2.0f );
+		/* _DT commented out
 		tmpSkillValue = tmpSkillValue * DIV100;
 		returnValue = tmpSkillValue + 1.0f;
+		*/
+		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue ); // _DT
 
 		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
