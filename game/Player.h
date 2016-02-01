@@ -29,7 +29,7 @@ const int ARX_MAX_EQUIPED_ITEMS = 4;
 const int ARX_MAX_PLAYER_LEVELS = 11; // Level 0 to 10
 const int ARX_MAX_SKILLS = 9;
 const int ARX_MAX_ATTRIBUTES = 4;
-const int ARX_SKILL_BASE_VALUE = 10;
+// const int ARX_SKILL_BASE_VALUE = 10; // _DT commented out
 
 enum {
 	ARX_WEAPON_TYPE_MELEE = 0,

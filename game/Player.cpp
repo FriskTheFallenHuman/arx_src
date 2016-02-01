@@ -16771,8 +16771,15 @@ void idPlayer::UpdateHeroStats( void ) {
 float idPlayer::ArxSkillGetAlertDistance( float defaultDistance ) {
 
 	float returnValue = 0.0f;
-	int skillValue = ( ARX_SKILL_BASE_VALUE - inventory.arx_skill_stealth ) * 128;
+	// int skillValue = ( ARX_SKILL_BASE_VALUE - inventory.arx_skill_stealth ) * 128; // REMOVEME
+// _DT stealth skill -->
+	int skillValue = inventory.arx_skill_stealth * (int)AI_MIN_HEARING_RANGE;
 	returnValue = defaultDistance - (float)skillValue;
+	if (returnValue < AI_MIN_HEARING_RANGE ) {
+		returnValue = AI_MIN_HEARING_RANGE;
+	}	
+// _DT stealth skill <--
+	// returnValue = defaultDistance - (float)skillValue; // REMOVEME
 
 	//REMOVEME
 	//gameLocal.Printf( "ArxSkillGetAlertDistance = %f\n", returnValue );
