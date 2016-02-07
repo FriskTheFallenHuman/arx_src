@@ -92,6 +92,7 @@ const idEventDef EV_GetWaterLevel( "GetWaterLevel", "", 'f' );
 const idEventDef EV_ArxCheckPlayerInventoryFull( "ArxCheckPlayerInventoryFull", NULL, 'd' );
 const idEventDef EV_HasGotJournal( "HasGotJournal", "s", 'f' );
 const idEventDef EV_GetStaminaPercentage( "getStaminaPercentage", NULL, 'f' );
+const idEventDef EV_GiveLevelMap( "GiveLevelMap", "s", NULL );
 
 //*****************************************************************
 //*****************************************************************
@@ -144,6 +145,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_ArxCheckPlayerInventoryFull,		idPlayer::Event_ArxCheckPlayerInventoryFull )
 	EVENT( EV_HasGotJournal,					idPlayer::Event_HasGotJournal )
 	EVENT( EV_GetStaminaPercentage,				idPlayer::Event_GetStaminaPercentage )
+	EVENT( EV_GiveLevelMap,						idPlayer::Event_GiveLevelMap )
 	//*****************************************************************
 	//*****************************************************************
 
@@ -11446,6 +11448,8 @@ void idPlayer::GetEntityByViewRay( void )
 			//************************************************************************************************
 			//************************************************************************************************
 			//************************************************************************************************
+
+			// Note: This is duplicated in Event_GiveLevelMap
 			if ( target->spawnArgs.GetBool( "arx_level_map" ) )
 			{
 					idStr mapFileSystemName =	target->spawnArgs.GetString( "mapFileSystemName", "404" );
@@ -17040,6 +17044,35 @@ void idPlayer::Event_GetStaminaPercentage( void )
 	idThread::ReturnFloat( staminapercentage );
 }
 #endif
+
+/*
+================
+idPlayer::Event_GiveLevelMap
+================
+*/
+void idPlayer::Event_GiveLevelMap( const char *name )
+{
+	const idDeclEntityDef *mapItemDef = NULL;
+	idDict args;
+
+	mapItemDef = gameLocal.FindEntityDef( name, false );
+	args = mapItemDef->dict;
+
+	// Note: This is duplicated in GetEntityByViewRay()
+
+	if ( args.GetBool( "arx_level_map" ) )
+	{
+			idStr mapFileSystemName =	args.GetString( "mapFileSystemName", "404" );
+			idStr mapName =				args.GetString( "mapName", "404" );
+			idStr mapDescription =		args.GetString( "mapDescription", "404" );
+			idStr mapImageFile =		args.GetString( "mapImageFile", "404" );
+
+			ArxGiveNewLevelMap( mapFileSystemName, mapName, mapDescription, mapImageFile );
+
+			// Need to tell the HUD we picked up an item
+			if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
+	}
+}
 
 /*
 =================

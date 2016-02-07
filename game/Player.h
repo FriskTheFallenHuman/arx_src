@@ -1120,6 +1120,7 @@ private:
 #ifdef _DT
 	void					Event_GetStaminaPercentage( void );
 #endif
+	void					Event_GiveLevelMap( const char *name );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
