@@ -93,6 +93,9 @@ const idEventDef EV_ArxCheckPlayerInventoryFull( "ArxCheckPlayerInventoryFull", 
 const idEventDef EV_HasGotJournal( "HasGotJournal", "s", 'f' );
 const idEventDef EV_GetStaminaPercentage( "getStaminaPercentage", NULL, 'f' );
 const idEventDef EV_GiveLevelMap( "GiveLevelMap", "s", NULL );
+const idEventDef EV_GetEyePos( "GetEyePos", NULL, 'v' );
+const idEventDef EV_GetSpellTelekinesisEndTime( "GetSpellTelekinesisEndTime", NULL, 'f' );
+const idEventDef EV_GetSpellTelekinesisDistance( "GetSpellTelekinesisDistance", NULL, 'f' );
 
 //*****************************************************************
 //*****************************************************************
@@ -146,6 +149,11 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_HasGotJournal,					idPlayer::Event_HasGotJournal )
 	EVENT( EV_GetStaminaPercentage,				idPlayer::Event_GetStaminaPercentage )
 	EVENT( EV_GiveLevelMap,						idPlayer::Event_GiveLevelMap )
+	EVENT( EV_GetEyePos,						idPlayer::Event_GetEyePos )
+	EVENT( EV_GetSpellTelekinesisEndTime,		idPlayer::Event_GetSpellTelekinesisEndTime )
+	EVENT( EV_GetSpellTelekinesisDistance,		idPlayer::Event_GetSpellTelekinesisDistance )
+
+
 	//*****************************************************************
 	//*****************************************************************
 
@@ -7212,7 +7220,7 @@ void idPlayer::TraceUsables()
 	float pickupDistance;
 
 	if ( inventory.arx_timer_player_telekinesis > gameLocal.GetTime() ) {
-		pickupDistance = GetSpellBonus( ARX_SPELL_TELEKENESIS_DISTANCE );;
+		pickupDistance = GetSpellBonus( ARX_SPELL_TELEKENESIS_DISTANCE );
 	} else {
 		pickupDistance = ARX_MAX_ITEM_PICKUP_DISTANCE;
 	}
@@ -17072,6 +17080,34 @@ void idPlayer::Event_GiveLevelMap( const char *name )
 			// Need to tell the HUD we picked up an item
 			if ( hud ) { hud->HandleNamedEvent( "invPickup" ); }
 	}
+}
+
+/*
+================
+idPlayer::Event_GetEyePos
+================
+*/
+void idPlayer::Event_GetEyePos( void ) {
+
+	idThread::ReturnVector( GetEyePosition() );
+}
+
+/*
+================
+idPlayer::Event_GetSpellTelekinesisEndTime
+================
+*/
+void idPlayer::Event_GetSpellTelekinesisEndTime( void ) {
+	idThread::ReturnFloat( inventory.arx_timer_player_telekinesis );
+}
+
+/*
+================
+idPlayer::Event_GetSpellTelekinesisDistance
+================
+*/
+void idPlayer::Event_GetSpellTelekinesisDistance( void ) {
+	idThread::ReturnFloat( GetSpellBonus( ARX_SPELL_TELEKENESIS_DISTANCE ) );
 }
 
 /*

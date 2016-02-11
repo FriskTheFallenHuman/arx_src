@@ -1121,6 +1121,9 @@ private:
 	void					Event_GetStaminaPercentage( void );
 #endif
 	void					Event_GiveLevelMap( const char *name );
+	void					Event_GetEyePos( void );
+	void					Event_GetSpellTelekinesisEndTime( void );
+	void					Event_GetSpellTelekinesisDistance( void );
 
 	// Inventory related
 	void					TraceUsables( void );											// solarsplace 7th June 2010
