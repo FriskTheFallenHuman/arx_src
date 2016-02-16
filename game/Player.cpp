@@ -8431,17 +8431,31 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 
 	assert( hud );
 
-	int currentPDA = objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
+	// Solarsplace - Arx End Of Sun
+
+	// The visible selection which is 1,2,3,4 ... 12,13,14 etc a sequention number
+	int visibleSelectionIndex = objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
+
+	// Using the visible selection above, programmatically select the hidden list box to find the
+	// real index as hidden journals will not be shown and will break the linear sequence above
+	objectiveSystem->SetStateInt( "listPDA_Hidden_sel_0", visibleSelectionIndex );
+
+	// Use the value of the selected item in the hidden list to get the real PDA number.
+	int actualPDANumber = objectiveSystem->State().GetInt( va( "listPDA_Hidden_item_%i", visibleSelectionIndex ), "-1" );
+
+	int currentPDA = actualPDANumber; //objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
 	if ( currentPDA == -1 ) {
 		currentPDA = 0;
 	}
 
 	if ( updatePDASel ) {
+		// Clear any selections
 		objectiveSystem->SetStateInt( "listPDAVideo_sel_0", 0 );
 		objectiveSystem->SetStateInt( "listPDAEmail_sel_0", 0 );
 		objectiveSystem->SetStateInt( "listPDAAudio_sel_0", 0 );
 	}
 
+	// Invert the selection
 	if ( currentPDA > 0 ) {
 		currentPDA = inventory.pdas.Num() - currentPDA;
 	}
@@ -8455,15 +8469,24 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 	pdaVideo = "";
 	pdaVideoWave = "";
 	idStr name, data, preview, info, wave;
+
+	// Clear the list of PDAs
 	for ( j = 0; j < MAX_PDAS; j++ ) {
 		objectiveSystem->SetStateString( va( "listPDA_item_%i", j ), "" );
+
+		// Arx EOS
+		objectiveSystem->SetStateString( va( "listPDA_Hidden_item_%i", j ), "" );
 	}
+
+	// Clear the list of emails etc.
 	for ( j = 0; j < MAX_PDA_ITEMS; j++ ) {
 		objectiveSystem->SetStateString( va( "listPDAVideo_item_%i", j ), "" );
 		objectiveSystem->SetStateString( va( "listPDAAudio_item_%i", j ), "" );
 		objectiveSystem->SetStateString( va( "listPDAEmail_item_%i", j ), "" );
 		objectiveSystem->SetStateString( va( "listPDASecurity_item_%i", j ), "" );
 	}
+
+	int itemCounter = -1;
 	for ( j = 0; j < inventory.pdas.Num(); j++ ) {
 
 		const idDeclPDA *pda = static_cast< const idDeclPDA* >( declManager->FindType( DECL_PDA, inventory.pdas[j], false ) );
@@ -8485,49 +8508,34 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 			}
 		}
 
-		/*
-		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
-		*/
-			// This pda has been read already.
+		itemCounter ++;
 
-			// Show completed quests in black
-			if ( GetQuestState( pda->GetID() ) ) { // Arx quest object string id stored in "ID" field.
+		// Add the hidden index
+		objectiveSystem->SetStateInt( va( "listPDA_Hidden_item_%i", itemCounter), index );
 
-				// Arx End Of Sun - Add language file support for PDAs
-				objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLACK "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
+		// Show completed quests in black
+		if ( GetQuestState( pda->GetID() ) ) { // Arx quest object string id stored in "ID" field.
+
+			// Arx End Of Sun - Add language file support for PDAs
+			objectiveSystem->SetStateString( va( "listPDA_item_%i", itemCounter), va(S_COLOR_BLACK "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
 			
-			} else {
-
-				// Show open quests in colour
-				if ( idStr::Icmp( pda->GetSecurity(), "arx_side_quest" ) == 0 ) { // Arx quest type stored in "Security" field.
-					
-					// Arx End Of Sun - Add language file support for PDAs
-					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_CYAN "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
-				} else {
-
-					// Arx End Of Sun - Add language file support for PDAs
-					objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_BLUE "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
-				}
-			}
-
-		/*
 		} else {
 
-			// This pda has not been read yet
-			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GREEN "%s", pda->GetPdaName()) );
-		}
-		*/
+			// Show open quests in colour
+			if ( idStr::Icmp( pda->GetSecurity(), "arx_side_quest" ) == 0 ) { // Arx quest type stored in "Security" field.
+					
+				// Arx End Of Sun - Add language file support for PDAs
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", itemCounter), va(S_COLOR_CYAN "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
+			} else {
 
-		const char *security = pda->GetSecurity();
-		if ( j == currentPDA || (currentPDA == 0 && security && *security ) ) {
-			if ( *security == NULL ) {
-				security = common->GetLanguageDict()->GetString( "#str_00066" );
+				// Arx End Of Sun - Add language file support for PDAs
+				objectiveSystem->SetStateString( va( "listPDA_item_%i", itemCounter), va(S_COLOR_BLUE "%s", gameLocal.ArxGetSafeLanguageMessage( pda->GetPdaName() ) ) );
 			}
-			objectiveSystem->SetStateString( "PDASecurityClearance", security );
 		}
 
 		if ( j == currentPDA ) {
 
+			/*
 			objectiveSystem->SetStateString( "pda_icon", pda->GetIcon() );
 			objectiveSystem->SetStateString( "pda_id", pda->GetID() );
 			objectiveSystem->SetStateString( "pda_title", pda->GetTitle() );
@@ -8590,28 +8598,36 @@ void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
 					objectiveSystem->SetStateString( "PDAAudioInfo", "" );
 				}
 			}
+			*/
+
 			// add emails
 			name = "";
 			data = "";
 			int numEmails = pda->GetNumEmails();
+
 			if ( numEmails > 0 ) {
+
 				AddGuiPDAData( DECL_EMAIL, "listPDAEmail", pda, objectiveSystem );
+
 				sel = objectiveSystem->State().GetInt( "listPDAEmail_sel_0", "-1" );
+
 				if ( sel >= 0 && sel < numEmails ) {
 					const idDeclEmail *email = pda->GetEmailByIndex( sel );
 					name = email->GetSubject();
 					data = email->GetBody();
 				}
 			}
-			objectiveSystem->SetStateString( "PDAEmailTitle", name );
+			//objectiveSystem->SetStateString( "PDAEmailTitle", name );
 
 			// Arx End Of Sun - Add language file support for PDAs
 			objectiveSystem->SetStateString( "PDAEmailText", gameLocal.ArxGetSafeLanguageMessage( data ) );
 		}
 	}
+
 	if ( objectiveSystem->State().GetInt( "listPDA_sel_0", "-1" ) == -1 ) {
 		objectiveSystem->SetStateInt( "listPDA_sel_0", 0 );
 	}
+
 	objectiveSystem->StateChanged( gameLocal.time );
 }
 
@@ -9992,7 +10008,7 @@ void idPlayer::UpdateShoppingSystem( void )
 				}
 
 				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
-				const char *iicon = item->GetString( "inv_icon" );
+				//const char *iicon = item->GetString( "inv_icon" );
 				//const char *itext = item->GetString( "inv_text" );
 
 				idStr n1 = iname;
@@ -10030,34 +10046,36 @@ void idPlayer::UpdateShoppingSystem( void )
 
 			idDict *item = inventory.items[ atoi( argPointer->GetValue() ) ];
 
-			const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
-			const char *iicon = item->GetString( "inv_icon" );
-			//const char *itext = item->GetString( "inv_text" );
-			// const char *ivalue = item->GetString( "inv_shop_item_value" ); // _DT money - commented out
+			// Get the health of the item we are selling
+			int tempHealth = item->GetInt( "inv_health", "100" );
+			int tempHealthMax = item->GetInt( "inv_health_max", "100" );
+			if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
 			
-		// _DT money -->
+			//const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+			const char *iname;
+			idStr tempInvName;
+			sprintf( tempInvName, "%s (%d/%d)", common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) ), tempHealth, tempHealthMax );
+			iname = tempInvName.c_str();
+			
+			//const char *iicon = item->GetString( "inv_icon" );
+			const char *iicon = GetInventoryItemHealthIcon( tempHealth, tempHealthMax, *item );
+			
+			//const char *itext = item->GetString( "inv_text" );
+			//const char *ivalue = item->GetString( "inv_shop_item_value" ); // _DT money - commented out
+			
 			int ivalue;
-
 			if ( item->GetBool( "gui_val_based_on_health", "0" ) ) {
 				float ivalueDef = item->GetFloat( "inv_shop_item_value", "0" ); 
-
-				// Get the health of the item we are selling
-				int tempHealth = item->GetInt( "inv_health", "100" );
-				int tempHealthMax = item->GetInt( "inv_health_max", "100" );
-				if ( tempHealthMax == 0 ) { tempHealthMax = 100; } // Safety just in case it somehow gets set 0 to avoid divide by zero errors...
 				float durabilityRatio = ( (float)tempHealth / (float)tempHealthMax );
-				
 				ivalue = ShopGetBuyFromPlayerPrice( ivalueDef, durabilityRatio, arxShopFunctions.ratioBuyFromPlayer );
 			} else {
 				ivalue = item->GetFloat( "inv_shop_item_value", "0" );
 			}
 
-		// _DT money <--
-
 			shoppingSystem->SetStateString( va( "inv_name_%i", j ), iname );
 			shoppingSystem->SetStateString( va( "inv_icon_%i", j ), iicon );
 			//shoppingSystem->SetStateString( va( "inv_text_%i", j ), itext );
-			// shoppingSystem->SetStateString( va( "inv_value_%i", j ), ivalue ); // _DT money - commented out
+			//shoppingSystem->SetStateString( va( "inv_value_%i", j ), ivalue ); // _DT money - commented out
 			shoppingSystem->SetStateInt( va( "inv_value_%i", j ), ivalue ); // _DT money
 
 			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
