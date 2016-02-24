@@ -29,6 +29,8 @@ const int ARX_MAX_EQUIPED_ITEMS = 4;
 const int ARX_MAX_PLAYER_LEVELS = 11; // Level 0 to 10
 const int ARX_MAX_SKILLS = 9;
 const int ARX_MAX_ATTRIBUTES = 4;
+const int ARX_MAX_ATTRIBUTE_POINTS = 20; // _DT - max points for each attribute.
+const int ARX_MAX_SKILL_POINTS = 100; // _DT - max points for each skill.
 // const int ARX_SKILL_BASE_VALUE = 10; // _DT commented out
 
 enum {

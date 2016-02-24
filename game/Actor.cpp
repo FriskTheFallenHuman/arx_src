@@ -2230,7 +2230,20 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 	}
 	//ivan end
 
-	int	damage = damageDef->GetInt( "damage" ) * damageScale;
+	// _DT --> // Take into account class damage too
+	
+	int class_damage = 0;
+	if ( attacker->IsType( idPlayer::Type ) ) 
+	{
+		class_damage = ( ( idPlayer * )attacker )->inventory.arx_class_damage_points;
+	}
+
+	int	damage = ( damageDef->GetInt( "damage" ) + class_damage ) * damageScale;
+
+	// _DT <-- 
+
+	// int	damage = damageDef->GetInt( "damage" ) * damageScale; // _DT - commented out
+
 	damage = GetDamageForLocation( damage, location );
 
 	// Solarsplace 20th Dec 2011 - Arx - End Of Sun - On Fire Damage effects
