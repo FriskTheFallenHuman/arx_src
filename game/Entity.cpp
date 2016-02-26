@@ -3102,12 +3102,15 @@ void idEntity::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	// _DT --> // Take into account class damage too
 	
 	int class_damage = 0;
+	int base_damage = damageDef->GetInt( "damage" );
+	int	damage = base_damage;
+
 	if ( attacker->IsType( idPlayer::Type ) ) 
 	{
 		class_damage = ( ( idPlayer * )attacker )->inventory.arx_class_damage_points;
+		damage = base_damage + ( ( idPlayer * )attacker )->GetPercentageBonus( base_damage, class_damage);
 	}
-
-	int	damage = ( damageDef->GetInt( "damage" ) + class_damage ) * damageScale;
+	damage *= damageScale;
 
 	// _DT <-- 
 

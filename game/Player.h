@@ -1146,7 +1146,9 @@ private:
 	float					ArxGetAttributeSkillMatrix( int ArxAttribute, int ArxSkill );	// solarsplace 24th Apr 2015
 	bool					ArxHasUnspentPoints( void );									// solarsplace 1st May 2015
 	int						GetSpellBonus( int spell );										// solarsplace 24th Apr 2015
+public: // _DT - need to access GetPercentageBonus outside player
 	float					GetPercentageBonus( float BaseValue, float BonusPercentage );	// solarsplace 24th Apr 2015
+private:	
 	void					ArxUpdateHeroSkills( void );										// solarsplace 10th Apr 2015
 	void					UpdateHeroStats( void );										// solarsplace 15th Mar 2013
 	void					UpdateEquipedItems( void );										// solarsplace 08th Oct 2014

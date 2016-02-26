@@ -10498,15 +10498,15 @@ void idPlayer::UpdateJournalGUI( void )
 		objectiveSystem->SetStateBool( "arx_attr_constitution_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_attr_constitution < ARX_MAX_ATTRIBUTE_POINTS );
 
 
-		objectiveSystem->SetStateBool( "arx_skill_casting_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_casting < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_close_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_close_combat < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_defense < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_ethereal_link < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_intuition < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_object_knowledge_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_object_knowledge < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_projectile < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_stealth < ARX_MAX_SKILL_POINTS );
-		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", hasAttributePointsToSpend && inventory.tmp_arx_skill_technical < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_casting_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_casting < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_close_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_close_combat < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_defense_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_defense < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_ethereal_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_ethereal_link < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_intuition_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_intuition < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_object_knowledge_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_object_knowledge < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_projectile_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_projectile < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_stealth_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_stealth < ARX_MAX_SKILL_POINTS );
+		objectiveSystem->SetStateBool( "arx_skill_technical_inc_visible", hasSkillPointsToSpend && inventory.tmp_arx_skill_technical < ARX_MAX_SKILL_POINTS );
 
 		// *** End - Only show increment button if their are appropriate points to spend
 
