@@ -10418,10 +10418,11 @@ void idPlayer::UpdateJournalGUI( void )
 
 			idStr mapFileSystemName = inventory.arxLevelMaps[j].mapFileSystemName;
 			idStr mapName = inventory.arxLevelMaps[j].mapName;
-			idStr mapDescription = inventory.arxLevelMaps[j].mapDescription;
+			//idStr mapDescription = inventory.arxLevelMaps[j].mapDescription;
 			idStr mapImageFile = inventory.arxLevelMaps[j].mapImageFile;
 			idStr displayMapText;
-			sprintf( displayMapText, "%s (%s)", mapName.c_str(), mapDescription.c_str() );
+			//sprintf( displayMapText, "%s (%s)", mapName.c_str(), mapDescription.c_str() );
+			sprintf( displayMapText, "%s", mapName.c_str() );
 
 			// Show maps for the current level in colour
 			if ( idStr::Icmp( gameLocal.GetMapName(), mapFileSystemName ) == 0 ) { // Arx quest type stored in "Security" field.		

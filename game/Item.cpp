@@ -39,6 +39,7 @@ idItem::idItem
 idItem::idItem() {
 	spin = false;
 	arxSpin = false;
+	spinDiversity = 0;
 	inView = false;
 	inViewTime = 0;
 	lastCycle = 0;
@@ -72,6 +73,7 @@ void idItem::Save( idSaveGame *savefile ) const {
 	savefile->WriteVec3( orgOrigin );
 	savefile->WriteBool( spin );
 	savefile->WriteBool( arxSpin );
+	savefile->WriteInt( spinDiversity );
 	savefile->WriteBool( pulse );
 	savefile->WriteBool( canPickUp );
 
@@ -93,6 +95,7 @@ void idItem::Restore( idRestoreGame *savefile ) {
 	savefile->ReadVec3( orgOrigin );
 	savefile->ReadBool( spin );
 	savefile->ReadBool( arxSpin );
+	savefile->ReadInt( spinDiversity );
 	savefile->ReadBool( pulse );
 	savefile->ReadBool( canPickUp );
 
@@ -199,29 +202,29 @@ void idItem::Think( void ) {
 
 			idAngles	ang;
 			idVec3		org;
+			float		scale;
 
 			ang.pitch = ang.roll = 0.0f;
 			ang.yaw = ( gameLocal.time & 4095 ) * 360.0f / -4096.0f;
 			SetAngles( ang );
 
-			float scale = 0.005f + entityNumber * 0.00001f;
-			
+			// Solarsplace - Arx End Of Sun
+			if ( arxSpin ) {
+
+				scale = 0.005f + spinDiversity * 0.00001f;
+
+			} else {
+
+				// Solarsplace - This D3 code cannot have been tested?
+				// Entities with an entity number of 1000 for example
+				// Zoom up and down and look really bad!
+				scale = 0.005f + entityNumber * 0.00001f;
+			}
+
 			org = orgOrigin;
 			org.z += 4.0f + cos( ( gameLocal.time + 2000 ) * scale ) * 4.0f;
 			SetOrigin( org );
 		}
-
-		if ( arxSpin ) {
-
-			// Solarsplace - Arx End Of Sun
-			// Fairly slow spin around the Z axis
-			idAngles	ang;
-			ang.pitch = ang.roll = 0.0f;
-			ang.yaw = ( gameLocal.time & 8191 ) * 360.0f / -8192.0f;
-			SetAngles( ang );
-		}
-
-
 	}
 
 	Present();
@@ -306,6 +309,11 @@ void idItem::Spawn( void ) {
 	// Solarsplace - Arx End Of Sun
 	if ( spawnArgs.GetBool( "arxSpin" ) ) {
 		arxSpin = true;
+
+		int minDiversity = 10.0f;
+		int maxDiversity = 80.0f;
+		spinDiversity = minDiversity + gameLocal.random.RandomInt( maxDiversity - minDiversity );
+
 		BecomeActive( TH_THINK );
 	}
 

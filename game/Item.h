@@ -48,6 +48,7 @@ private:
 	idVec3					orgOrigin;
 	bool					spin;
 	bool					arxSpin;
+	int						spinDiversity;
 	bool					pulse;
 	bool					canPickUp;
 
