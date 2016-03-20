@@ -7652,7 +7652,7 @@ void idPlayer::ProcessMagic()
 
 					//Telekinesis
 					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
-						inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );;
+						inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );
 					}
 
 					// *************************
