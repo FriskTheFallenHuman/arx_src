@@ -1673,6 +1673,10 @@ idPlayer::idPlayer() {
 	fxFov					= false;
 #ifdef _DT
 	isRunning				= false;
+	// gasp bubble particle -->
+	smokeGasp				= NULL;
+	smokeGaspTime			= 0;
+	// gasp bubble particle <--
 #endif
 
 	influenceFov			= 0;
@@ -1896,6 +1900,9 @@ void idPlayer::Init( void ) {
 	fxFov					= false;
 #ifdef _DT
 	isRunning				= false;
+	// gasp bubble particle -->
+	smokeGaspTime			= 0;
+	// gasp bubble particle <--
 #endif
 
 	influenceFov			= 0;
@@ -2043,6 +2050,15 @@ void idPlayer::Init( void ) {
 		SetSkin( skin );
 		renderEntity.shaderParms[6] = 0.0f;
 	}
+
+#ifdef _DT // gasp bubble particle
+	const char *smokeName = spawnArgs.GetString( "smoke_gasp" );
+	if ( *smokeName != '\0' ) {
+		smokeGasp = static_cast<const idDeclParticle *>( declManager->FindType( DECL_PARTICLE, smokeName ) );		
+	} else {
+		smokeGasp = NULL;
+	}
+#endif
 
 	value = spawnArgs.GetString( "bone_hips", "" );
 	hipJoint = animator.GetJointHandle( value );
@@ -2533,6 +2549,10 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( fxFov );
 #ifdef _DT
 	savefile->WriteBool( isRunning );
+	// gasp bubble particle -->
+	savefile->WriteParticle( smokeGasp );
+	savefile->WriteInt( smokeGaspTime );
+	// gasp bubble particle <--
 #endif
 
 	savefile->WriteFloat( influenceFov );
@@ -2849,6 +2869,10 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( fxFov );
 #ifdef _DT
 	savefile->ReadBool( isRunning );
+	// gasp bubble particle -->
+	savefile->ReadParticle( smokeGasp );
+	savefile->ReadInt( smokeGaspTime );
+	// gasp bubble particle <--
 #endif
 
 	savefile->ReadFloat( influenceFov );
@@ -13100,7 +13124,13 @@ void idPlayer::Think( void ) {
 		}
 		gameLocal.Printf( "%d: enemies\n", num );
 	}
-
+#ifdef _DT // gasp bubble particle
+	if ( smokeGasp && smokeGaspTime ) {
+		if ( !gameLocal.smokeParticles->EmitSmoke( smokeGasp, smokeGaspTime, gameLocal.random.CRandomFloat(),firstPersonViewOrigin, firstPersonViewAxis ) ) {
+			smokeGaspTime = 0;
+		}
+	}
+#endif
 	//neuro start    
 	// determine if portal sky is in pvs
 	gameLocal.portalSkyActive = gameLocal.pvs.CheckAreasForPortalSky( gameLocal.GetPlayerPVS(), GetPhysics()->GetOrigin() );
@@ -13534,6 +13564,13 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	} else if ( damageDef->dict.GetBool( "no_air" ) ) {
 		if ( !armorSave && health > 0 ) {
 			StartSound( "snd_airGasp", SND_CHANNEL_ITEM, 0, false, NULL );
+
+#ifdef _DT // gasp bubble particle
+			if ( smokeGasp ) {
+				smokeGaspTime = gameLocal.time;
+				gameLocal.smokeParticles->EmitSmoke( smokeGasp, smokeGaspTime, gameLocal.random.CRandomFloat(), firstPersonViewOrigin, firstPersonViewAxis );
+			}
+#endif
 		}
 	}
 

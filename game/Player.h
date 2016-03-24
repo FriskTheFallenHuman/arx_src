@@ -964,6 +964,10 @@ private:
 	bool					fxFov;
 #ifdef _DT
 	bool					isRunning;
+	// gasp bubble particle -->
+	const idDeclParticle *	smokeGasp;
+	int						smokeGaspTime;
+	// gasp bubble particle <--
 #endif
 
 	float					influenceFov;
