@@ -439,13 +439,11 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	dict.SetInt( "money", money );
 	dict.Set( "weaponUniqueName", weaponUniqueName );
 
-	/*
-	for ( i = 0; i < arx_equipt_items.Num(); i++ ) {
-		sprintf( key, "arx_equipt_items_%i", i );
-		dict.Set( key, arx_equipt_items[ i ] );
+	// Arx EOS equipped items.
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+		sprintf( key, "arx_equiped_items_%i", i );
+		dict.Set( key, arx_equiped_items[ i ] );
 	}
-	dict.SetInt( "arx_equipt_items_num", arx_equipt_items.Num() );
-	*/
 
 	dict.SetInt( "arx_snake_weapon", arx_snake_weapon );
 
@@ -649,14 +647,11 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	money							= dict.GetInt( "money", "0" );
 	weaponUniqueName				= dict.GetString( "weaponUniqueName", "" );
 
-	/*
-	num = dict.GetInt( "arx_equipt_items_num" );
-	arx_equipt_items.SetNum( num );
-	for ( i = 0; i < num; i++ ) {
-		sprintf( itemname, "arx_equipt_items_%i", i );
-		arx_equipt_items[i] = dict.GetString( itemname, "" );
+	// Arx EOS equipped items.
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+		sprintf( itemname, "arx_equiped_items_%i", i );
+		arx_equiped_items[i] = dict.GetString( itemname, "" );
 	}
-	*/
 
 	arx_snake_weapon				= dict.GetInt( "arx_snake_weapon", idStr( ARX_MAGIC_WEAPON ) );
 
@@ -853,13 +848,10 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( money );
 	savefile->WriteString( weaponUniqueName );
 
-	/*
-	savefile->WriteInt( arx_equipt_items.Num() );
-	for( i = 0; i < arx_equipt_items.Num(); i++ ) {
-		savefile->WriteString( arx_equipt_items[ i ].unique_name );
-		savefile->WriteInt( arx_equipt_items[ i ].equipment_position );
+	// Arx EOS equipped items.
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+		savefile->WriteString( arx_equiped_items[i] );
 	}
-	*/
 
 	savefile->WriteInt( arx_snake_weapon );
 
@@ -1025,14 +1017,10 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( money );
 	savefile->ReadString( weaponUniqueName );
 
-	/*
-	savefile->ReadInt( num );
-	for( i = 0; i < num; i++ ) {
-		idStr equipedItem;
-		savefile->ReadString( equipedItem );
-		arx_equipt_items.Append( equipedItem );
+	// Arx EOS equipped items.
+	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+		savefile->ReadString( arx_equiped_items[i] );
 	}
-	*/
 
 	savefile->ReadInt( arx_snake_weapon );
 
@@ -7677,6 +7665,7 @@ void idPlayer::ProcessMagic()
 					//Telekinesis
 					if ( strcmp( customMagicSpell, "add_telekinesis" ) == 0 ) {
 						inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );
+						ArxTelekinesisEffect();
 					}
 
 					// *************************
@@ -11123,6 +11112,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 				{
 					inventory.arx_timer_player_telekinesis = gameLocal.time + GetSpellBonus( ARX_SPELL_TELEKENESIS_DURATION );;
 					gave = true;
+					ArxTelekinesisEffect();
 				}
 
 				// Levitate
@@ -16031,9 +16021,9 @@ void idPlayer::UpdateEquipedItems( void ) {
 					// ****************************************************
 					// Get item attributes into temp variables
 
-					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", items_arx_power_health );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0", items_arx_power_mana );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0", items_arx_power_armour );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_health", "0", items_arx_power_health );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_mana", "0", items_arx_power_mana );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_armour", "0", items_arx_power_armour );
 
 					// Process health
 					if ( items_arx_power_health < 0 ) {
@@ -16079,9 +16069,9 @@ void idPlayer::UpdateEquipedItems( void ) {
 					// ****************************************************
 					// Get item attributes into temp variables
 
-					inventory.items[invItemIndex]->GetInt( "arx_attr_health", "0", items_arx_power_health );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_mana", "0", items_arx_power_mana );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_armour", "0", items_arx_power_armour );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_health", "0", items_arx_power_health );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_mana", "0", items_arx_power_mana );
+					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_armour", "0", items_arx_power_armour );
 
 					// SP - Not implementing ATM too much work.]
 					/*
@@ -17031,6 +17021,27 @@ void idPlayer::ArxGiveNewLevelMap( const char *mapFileSystemName, const char *ma
 	info.mapDescription = mapDescription;
 	info.mapImageFile = mapImageFile;
 	inventory.arxLevelMaps.Append( info );
+}
+
+/*
+===============
+idPlayer::ArxTelekinesisEffect
+===============
+*/
+void idPlayer::ArxTelekinesisEffect( void ) {
+
+	idDict args;
+	idStr telekinesisEntityName = "arx_telekinesis_effect_" + idStr( this->entityNumber );
+
+	// Delete any existing instance of the telekenesis effect
+	idEntity *ent = gameLocal.FindEntity( telekinesisEntityName );
+	if ( ent ) {
+		delete ent;
+	}
+
+	args.Set( "classname", "arx_telekinesis_effect" );
+	args.Set( "name", telekinesisEntityName );	// Effect name
+	gameLocal.SpawnEntityDef( args, &ent );
 }
 
 /*

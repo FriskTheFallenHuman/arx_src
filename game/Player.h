@@ -14,7 +14,7 @@
 
 // <---- *** Arx ***
 
-const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 60 ) * 10;	// 10 minutes default.
+const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 60 ) * 15;	// 15 minutes default.
 const int ARX_HUNGER_WARNING_TIME		= SEC2MS( 60 ) * 2;		// Start to warn 2 minutes before hunger damage.
 const int ARX_HUNGER_DAMAGE_INC			= SEC2MS( 30 );			// Increase hunger damage every x seconds
 
@@ -1170,6 +1170,7 @@ private:
 	void					ArxTraceAIHealthHUD( void );									// solarsplace 24th Sep 2014
 	void					ArxSpawnMiscFoodItemIntoWorld( void );
 	void					ArxGiveNewLevelMap( const char *mapFileSystemName, const char *mapName, const char *mapDescription, const char *mapImageFile );
+	void					ArxTelekinesisEffect( void );
 
 	// Shop related
 	idArxShop				arxShopFunctions;
@@ -1177,8 +1178,8 @@ private:
 	int						ShopGetBuyFromPlayerPrice( float baseValue, float durabilityRatio, float shopRatio );	// solarsplace 14nd Jun 2014
 
 	// Spell casting related
-	idEntity				*magicWand;
-	idEntity				*magicWandTrail;
+	idEntity *				magicWand;
+	idEntity *				magicWandTrail;
 	idArxMisc				arxMiscFunctions;
 	short					magicLastYPos;
 	short					magicLastXPos;

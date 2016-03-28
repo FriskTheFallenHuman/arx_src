@@ -2251,7 +2251,6 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 	// Solarsplace 20th Dec 2011 - Arx - End Of Sun - On Fire Damage effects
 	if ( damageDef->GetInt( "onFire" ) ) {
-		// Solarsplace - Arx EOS - Thanks Hexen
 		onFire =  gameLocal.time + 5000;
 	}
 
@@ -2266,10 +2265,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		*/
 		if ( !HasEnemies() && !CanSee(player, true) ) {
 			damage = 2 * damage;
-
-			//REMOVEME
-			gameLocal.Printf( "! Backstab !\n" );
-
+			//gameLocal.Printf( "! Backstab !\n" );
 			player->ShowHudMessage( "#str_general_00002" ); // "! Backstab !"
 		}
 
@@ -2280,15 +2276,11 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		if ( !damageDef->GetBool( "no_critical_damage", "0" ) ) { // Disable the weapon projectiles from causing a critical hit
 			if ( player->ArxCalculateHeroChance( "add_critical_hit" ) ) {
 				damage = damage + ( damage * 0.5 ); // This is cumulative if you get a backstab too.
-
-				//REMOVEME
-				gameLocal.Printf( "! Critical hit !\n" );
-
+				//gameLocal.Printf( "! Critical hit !\n" );
 				player->ShowHudMessage( "#str_general_00003" ); // "! Critical hit !"
 			}
 		}
 	}
-
 
 	//REMOVEME
 #ifdef _DT

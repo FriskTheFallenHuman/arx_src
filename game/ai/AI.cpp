@@ -3522,51 +3522,14 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	//***************************************************************
 	//*** Arx End Of Sun
 
-	//REMOVEME
-	gameLocal.Printf( "inflictor name is %s\n", inflictor->name.c_str() );
-
-	if ( inflictor->spawnArgs.GetBool( "arx_cooked_enemy", "0" ) )
-	{
-		//REMOVEME
-		gameLocal.Printf( "arx_cooked_enemy\n" );
-
+	// Very simple, if on fire by any means when killed drop cooked version is has one.
+	if ( onFire > gameLocal.time ) {
 		if ( spawnArgs.GetBool( "arx_searchable_corpse", "0" ) ) {
-
-			//REMOVEME
-			gameLocal.Printf( "arx_searchable_corpse\n" );
-
 			idStr dropFood = spawnArgs.GetString( "arx_searchable_find_fixed" );
 			dropFood.Replace( "_raw", "_cooked" );
 			spawnArgs.Set( "arx_searchable_find_fixed", dropFood );
-
-			//REMOVEME
-			gameLocal.Printf( "dropFood = %s\n", dropFood.c_str() );
 		}	
-	} else {
-
-		//REMOVEME
-		gameLocal.Printf( "!arx_cooked_enemy\n" );
 	}
-
-	// This must be before setting script to state_Killed as we set spawn args here that are checked in the ai_monster_base.script
-
-	//gameLocal.Printf("ARX - idAI %s was killed by inflictor %s.\n", this->name.c_str(),  inflictor->name.c_str() );
-
-	// Old crap. Kept for reference
-	/*
-	if ( inflictor->spawnArgs.GetBool( "arx_cooked_enemy", "0" ) )
-	{
-		// Here we would spawn for example a cooked chicken or cooked rat ribs
-		spawnArgs.SetFloat( "arx_spawned_cooked_food", 1 );
-		PostEventSec( &AI_SpawnItemCooked, 1, "def_cooked_drops" );
-	}
-	else
-	{
-		// Here we would spawn for example a raw chicken or raw rat ribs
-		spawnArgs.SetFloat( "arx_spawned_raw_food", 1 );
-		PostEventSec( &AI_SpawnItemCooked, 1, "def_raw_drops" );
-	}
-	*/
 
 	// Spawn death drop items on a delay, so they are not affected by the physics of fire ball blasts etc.
 	PostEventSec( &AI_SpawnItem, 1 );
