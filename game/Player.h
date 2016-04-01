@@ -454,6 +454,10 @@ public:
 	bool					shoppingSystemOpen;
 	idEntity *				lastShopEntity;
 
+	// Solarsplace 1st Apr 2016 - Teleporter GUI related
+	idUserInterface *		teleporterSystem;
+	bool					teleporterSystemOpen;
+
 	// Solarsplace - Water related
 	int						waterScreenFinishTime;
 	bool					playerUnderWater;
@@ -724,6 +728,11 @@ public:
 	// Shop GUI related
 	void					ToggleShoppingSystem( void );		// Solarsplace 2nd Nov 2011
 	void					UpdateShoppingSystem( void );		// Solarsplace 2nd Nov 2011
+
+	// Teleporter GUI related
+	void					ToggleTeleporterSystem( void );		// Solarsplace 1st Apr 2016
+	void					UpdateTeleporterSystem( void );		// Solarsplace 1st Apr 2016
+	void					ProcessTeleportation( void );		// Solarsplace 1st Apr 2016
 
 	// Magic related
 	void					ToggleMagicMode( void );				// Solarsplace 29th Apr 2010

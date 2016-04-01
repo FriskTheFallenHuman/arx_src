@@ -206,6 +206,9 @@ const int ARX_ENTITY_STATE_IGNITE = 999;
 const int ARX_QUEST_STATE_INITIAL = 0;
 const int ARX_QUEST_STATE_COMPLETED = 999;
 
+const int ARX_TELEPORTER_INACTIVE = 0;
+const int ARX_TELEPORTER_ACTIVE = 999;
+
 //*****************************************************************
 //*****************************************************************
 
@@ -2218,6 +2221,8 @@ void idPlayer::Spawn( void ) {
 		journalSystem = uiManager->FindGui( "guis/placeholder.gui", true, false, true );
 		journalSystemOpen = false;
 
+		teleporterSystem = uiManager->FindGui( "guis/teleporter/teleporter.gui", true, false, true );
+		teleporterSystemOpen = false;
 	}
 
 	SetLastHitTime( 0 );
@@ -2413,6 +2418,9 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteUserInterface( shoppingSystem, false );
 	savefile->WriteBool( shoppingSystemOpen );
+
+	savefile->WriteUserInterface( teleporterSystem, false );
+	savefile->WriteBool( teleporterSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Save Arx EOS user interfaces
 
 	savefile->WriteInt( weapon_soulcube );
@@ -2717,6 +2725,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadUserInterface( shoppingSystem );
 	savefile->ReadBool( shoppingSystemOpen );
+
+	savefile->ReadUserInterface( teleporterSystem );
+	savefile->ReadBool( teleporterSystemOpen );
 	// End - Solarsplace - 15th May 2010  - Load Arx EOS user interfaces
 
 	savefile->ReadInt( weapon_soulcube );
@@ -5335,6 +5346,11 @@ idUserInterface *idPlayer::ActiveGui( void ) {
 		return shoppingSystem;
 	}
 
+	if ( teleporterSystemOpen )
+	{
+		return teleporterSystem;
+	}
+
 	// Solarsplace 9th Jun 2015 - Full Screen Trigger GUI related
 	if ( fullScreenMenuGUIId != "" ) {
 
@@ -5595,6 +5611,14 @@ void idPlayer::Weapon_GUI( void ) {
 
 	// Solarsplace 2nd Nov 2011 - NPC GUI related
 	if ( !shoppingSystemOpen ) {
+		if ( idealWeapon != currentWeapon ) {
+			Weapon_Combat();
+		}
+		StopFiring();
+		weapon.GetEntity()->LowerWeapon();
+	}
+
+	if ( !teleporterSystemOpen ) {
 		if ( idealWeapon != currentWeapon ) {
 			Weapon_Combat();
 		}
@@ -5904,6 +5928,18 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 			if ( lastShopEntity ) {
 				lastShopEntity->ActivateTargets( gameLocal.GetLocalPlayer() ); // If the shop is a door / chest then shut it!
 			}
+		}
+	}
+
+	if ( token.Icmp( "shutteleportergui" ) == 0 ) {
+		if ( teleporterSystemOpen ) {
+			ToggleTeleporterSystem();
+		}
+	}
+
+	if ( token.Icmp( "arx_perform_level_teleport" ) == 0 ) {
+		if ( teleporterSystemOpen ) {
+			ProcessTeleportation();
 		}
 	}
 
@@ -8769,6 +8805,28 @@ void idPlayer::ToggleShoppingSystem(void)
 
 /*
 ==============
+idPlayer::ToggleTeleporterSystem
+==============
+*/
+void idPlayer::ToggleTeleporterSystem(void)
+{
+	// Solarsplace 2nd Nov 2011 - NPC GUI Related
+	if( !teleporterSystemOpen )
+	{
+		teleporterSystem->Activate( true, gameLocal.time );
+		teleporterSystem->SetStateInt( "listTeleporterItems_sel_0", -1 );
+		teleporterSystem->StateChanged( gameLocal.time, false );
+		teleporterSystemOpen = true;
+	}
+	else
+	{
+		teleporterSystem->Activate( false, gameLocal.time );
+		teleporterSystemOpen = false;
+	}
+}
+
+/*
+==============
 idPlayer::ToggleMagicMode
 ==============
 */
@@ -10929,6 +10987,49 @@ void idPlayer::UpdateJournalGUI( void )
 
 /*
 ===============
+UpdateTeleporterSystem
+===============
+*/
+void idPlayer::UpdateTeleporterSystem( void )
+{
+	const idDeclEntityDef *teleporterDef = gameLocal.FindEntityDef( "item_arx_teleporter", false );
+	int teleporterCount = teleporterDef->dict.GetInt( "arx_teleporter_count", "0" );
+
+	// Clear out the teleporter list
+	int j = 0;
+	for ( j = 0; j < 255; j++ ) {
+		teleporterSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), "" );
+	}
+
+	for ( j = 0; j < teleporterCount; j++ ) {
+
+		idStr teleporterDestrination = gameLocal.ArxGetSafeLanguageMessage( teleporterDef->dict.GetString( va( "arx_teleporter_display_text_%i", j) , "" ) );
+
+		float teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", gameLocal.GetMapName() ), "0" );
+
+		if ( teleporterActive == ARX_TELEPORTER_ACTIVE ) {		
+			objectiveSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_GREEN "%s", teleporterDestrination.c_str() ) );
+		} else {
+			objectiveSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_BLACK "%s", teleporterDestrination.c_str() ) );
+		}
+	}
+
+	// !!! Critical - MUST DO THIS !!!
+	teleporterSystem->StateChanged( gameLocal.time );
+}
+
+/*
+===============
+ProcessTeleportation
+===============
+*/
+void idPlayer::ProcessTeleportation( void )
+{
+
+}
+
+/*
+===============
 idPlayerConsumeInventoryItem
 
 Returns false if the item shouldn't be consumed
@@ -11645,6 +11746,7 @@ void idPlayer::GetEntityByViewRay( void )
 						if ( readableSystemOpen ) { ToggleReadableSystem(); }
 						if ( journalSystemOpen ) { ToggleJournalSystem(); }
 						if ( conversationSystemOpen ) { ToggleConversationSystem(); }
+						if ( teleporterSystemOpen ) { ToggleTeleporterSystem(); }
 					}
 
 					lastShopEntity = target; // Needed so we can close the door when we move away from, or stop looking at the door!
