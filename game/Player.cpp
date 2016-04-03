@@ -9234,6 +9234,21 @@ void idPlayer::PerformImpulse( int impulse ) {
 
 	switch( impulse )
 	{
+		case IMPULSE_13: { // _DT - toggle fists
+			if (
+			!inventorySystemOpen &&		// 1
+			!journalSystemOpen &&		// 2
+			!readableSystemOpen &&		// 3
+			!conversationSystemOpen &&	// 4
+			!shoppingSystemOpen	&&		// 5
+			!objectiveSystemOpen		// 6				
+			)
+
+			{
+				SelectWeapon( weapon_fists, true );
+			}
+			break;
+		}
 		case IMPULSE_16: { // Arx - Quick health
 			ConsumeInventoryItem( FindInventoryItemIndex ( "#str_item_00061" ) ); // "A life potion"
 			break;
@@ -9356,8 +9371,14 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!objectiveSystemOpen		// 6
 				)
 
-				{ 
-					SelectWeapon( inventory.arx_snake_weapon, true );
+				{
+					// _DT - check if player has snake compass // FIXME: pretty ugly code
+					if (FindInventoryItemCount( "#str_item_00099" ) > 0) {
+						SelectWeapon( inventory.arx_snake_weapon, true );
+					} else {
+						ShowHudMessage( "#str_general_00016" ); // "You cannot yet speak the words of power"
+						StartSoundShader( declManager->FindSound( "arx_magic_drawing_failed" ), SND_CHANNEL_ANY, 0, false, NULL );
+					}					
 				}
 
 			break;
