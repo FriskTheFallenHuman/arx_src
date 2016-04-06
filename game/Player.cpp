@@ -7423,6 +7423,14 @@ void idPlayer::TraceUsables()
 		}
 		/******************************************************************************************
 		*******************************************************************************************/
+		if ( target->spawnArgs.GetBool( "arx_teleporter_item" ) && !target->IsHidden() )
+		{
+			if ( hud )
+			{
+				hud->SetStateString( "playerLookingAt_invItem_inv_name", "" ) ; //TODO names for doors, chests etc.
+				hud->HandleNamedEvent( "playerLookingAt_levelChangeItem" );
+			}
+		}
 	}
 	else
 	{
@@ -11026,7 +11034,14 @@ void idPlayer::UpdateTeleporterSystem( void )
 
 		idStr teleporterDestrination = gameLocal.ArxGetSafeLanguageMessage( teleporterDef->dict.GetString( va( "arx_teleporter_display_text_%i", j) , "" ) );
 
-		float teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", gameLocal.GetMapName() ), "0" );
+		// Convert from example gameLocal.GetMapName() "maps/game/mymap.map" to session command "game/mymap"
+		/*
+		idStr sessionMapName = gameLocal.GetMapName();
+		sessionMapName.Replace( "maps/", "" );
+		sessionMapName.Replace( ".map", "" );
+		*/
+
+		float teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", teleporterDestrination ), "0" );
 
 		if ( teleporterActive == ARX_TELEPORTER_ACTIVE ) {		
 			objectiveSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_GREEN "%s", teleporterDestrination.c_str() ) );
@@ -11046,6 +11061,59 @@ ProcessTeleportation
 */
 void idPlayer::ProcessTeleportation( void )
 {
+	int destinationSelection = 0;
+	const idDeclEntityDef *teleporterDef;
+	idStr destinationMap;
+	float teleporterActive;
+
+	// ****************************************
+	// ****************************************
+
+	// Get the selected teleportation destination
+	destinationSelection = conversationSystem->State().GetInt( "listTeleporterItems_sel_0", "0" );
+	if ( destinationSelection == -1 ) {
+		return; // Nothing selected in list def do nothing.
+		//TODO - Play fail sound.
+	} else {
+		// Values in def are 1 based. Need to add 1
+		destinationSelection ++;
+	}
+
+	// Get a reference to a teleporter entity def
+	teleporterDef = gameLocal.FindEntityDef( "item_arx_teleporter", false );
+
+	// ****************************************
+	// ****************************************
+	// Is this destination teleporter activated?
+
+	// Might get: "arx_teleporter_map_name_4"	"game/snake_sanctuary"
+	destinationMap = teleporterDef->dict.GetString( va( "arx_teleporter_map_name_%i", destinationSelection ), "" );
+
+	teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", destinationMap ), "0" );
+
+	if ( teleporterActive != ARX_TELEPORTER_ACTIVE ) {
+		//TODO - Play fail sound. Magic fizzle?
+		return;
+	}
+
+	// ****************************************
+	// ****************************************
+
+	// Save level transition data just before we send a session command to change levels.
+	SaveTransitionInfo();
+
+	// This is the info_player_start on the destination map.
+	idStr levelTransitionSpawnPoint = teleporterDef->dict.GetString( "arx_teleporter_entity_name", "" );
+
+	// Convert nextMap variable contents ( folder/mapname ) to gameLocal.GetMapName() format ( maps/folder/mapname.map )
+	idStr nextMapGameLocalFormat = "maps/" + destinationMap + ".map" + levelTransitionSpawnPoint;
+
+	SetMapEntryPoint( nextMapGameLocalFormat );
+
+	gameLocal.sessionCommand = "map " + destinationMap;
+
+	// ****************************************
+	// ****************************************
 
 }
 
@@ -11934,6 +12002,17 @@ void idPlayer::GetEntityByViewRay( void )
 					thread->CallFunction( target, func, true );
 					thread->Start();
 				}
+			}
+		}
+		//************************************************************************************************
+		//************************************************************************************************
+		//************************************************************************************************
+		else if ( target->spawnArgs.GetBool( "arx_teleporter_item" ) && !target->IsHidden() )
+		{
+			// Note level change functionality handled in HandleSingleGuiCommand
+			if ( target->spawnArgs.GetString( "target_gui" ) != "" )
+			{
+				ToggleTeleporterSystem();
 			}
 		}
 		//************************************************************************************************
