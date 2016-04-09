@@ -8806,15 +8806,11 @@ void idPlayer::ToggleShoppingSystem(void)
 	// Solarsplace 6th Nov 2011 - Shop GUI Related
 	if( !shoppingSystemOpen )
 	{
-		gameLocal.Printf("ToggleShoppingSystem = opening\n" ); //REMOVEME
-
 		shoppingSystem->Activate( true, gameLocal.time );
 		shoppingSystemOpen = true;
 	}
 	else
 	{
-		gameLocal.Printf("ToggleShoppingSystem = closing\n" ); //REMOVEME
-
 		shoppingSystem->Activate( false, gameLocal.time );
 		shoppingSystemOpen = false;
 	}
@@ -9280,7 +9276,8 @@ void idPlayer::PerformImpulse( int impulse ) {
 			!readableSystemOpen &&		// 3
 			!conversationSystemOpen &&	// 4
 			!shoppingSystemOpen	&&		// 5
-			!objectiveSystemOpen		// 6				
+			!objectiveSystemOpen &&		// 6
+			!teleporterSystemOpen		// 7
 			)
 
 			{
@@ -9311,7 +9308,8 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!readableSystemOpen &&		// 3
 				!conversationSystemOpen &&	// 4
 				!shoppingSystemOpen &&		// 5
-				!objectiveSystemOpen		// 6
+				!objectiveSystemOpen &&		// 6
+				!teleporterSystemOpen		// 7
 				)
 
 				{ ToggleInventorySystem(); }
@@ -9326,8 +9324,9 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!journalSystemOpen &&		// 2
 				!readableSystemOpen &&		// 3
 				!conversationSystemOpen &&	// 4
-				!shoppingSystemOpen			// 5
+				!shoppingSystemOpen &&		// 5
 				//!objectiveSystemOpen		// 6
+				!teleporterSystemOpen
 				)
 
 				{ TogglePDA(); }
@@ -9407,7 +9406,8 @@ void idPlayer::PerformImpulse( int impulse ) {
 				!readableSystemOpen &&		// 3
 				!conversationSystemOpen &&	// 4
 				!shoppingSystemOpen	&&		// 5
-				!objectiveSystemOpen		// 6
+				!objectiveSystemOpen &&		// 6
+				!teleporterSystemOpen
 				)
 
 				{
@@ -13247,7 +13247,7 @@ void idPlayer::Think( void ) {
 	// if ( ( usercmd.buttons ^ oldCmd.buttons ) & BUTTON_5 ) {
 
 	// Solarsplace - 21st Dec 2012 - Updated list of GUIS
-	if ( objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen || shoppingSystemOpen )
+	if ( objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen || shoppingSystemOpen || teleporterSystemOpen )
 	{
 		// Do nothing - other GUI's are open.
 	}
