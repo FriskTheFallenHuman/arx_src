@@ -206,7 +206,7 @@ const int ARX_ENTITY_STATE_IGNITE = 999;
 const int ARX_QUEST_STATE_INITIAL = 0;
 const int ARX_QUEST_STATE_COMPLETED = 999;
 
-const int ARX_TELEPORTER_INACTIVE = 0;
+const int ARX_TELEPORTER_INACTIVE = 666;
 const int ARX_TELEPORTER_ACTIVE = 999;
 
 //*****************************************************************
@@ -7895,7 +7895,16 @@ void idPlayer::UpdateViewAngles( void ) {
 	// Solarsplace 11th April 2010 - Inventory related - Added inventorySystem to condition
 	// Solarsplace 6th May 2010 - Journal related - Added journalSystem to condition
 	// Solarsplace 2nd Nov 2011 - Added NPC GUI
-	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen || inventorySystemOpen || journalSystemOpen || readableSystemOpen || conversationSystemOpen || shoppingSystemOpen) ) {
+
+	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 ||
+		objectiveSystemOpen ||
+		inventorySystemOpen ||
+		journalSystemOpen ||
+		readableSystemOpen ||
+		conversationSystemOpen ||
+		shoppingSystemOpen ||
+		teleporterSystemOpen ) ) {
+
 		// no view changes at all, but we still want to update the deltas or else when
 		// we get out of this mode, our view will snap to a kind of random angle
 		UpdateDeltaViewAngles( viewAngles );
@@ -8818,16 +8827,38 @@ idPlayer::ToggleTeleporterSystem
 */
 void idPlayer::ToggleTeleporterSystem(void)
 {
-	// Solarsplace 2nd Nov 2011 - NPC GUI Related
-	if( !teleporterSystemOpen )
-	{
-		teleporterSystem->Activate( true, gameLocal.time );
-		teleporterSystem->SetStateInt( "listTeleporterItems_sel_0", -1 );
-		teleporterSystem->StateChanged( gameLocal.time, false );
-		teleporterSystemOpen = true;
-	}
-	else
-	{
+	// Solarsplace 8th April
+
+	int teleporterActive = ARX_TELEPORTER_INACTIVE;
+	idStr sessionMapName = "";
+
+	if( !teleporterSystemOpen ) {
+
+		// Can only use an acivated teleporter
+
+		// Convert from example gameLocal.GetMapName() "maps/game/mymap.map" to session command "game/mymap"
+		sessionMapName = gameLocal.GetMapName();
+		sessionMapName.Replace( "maps/", "" );
+		sessionMapName.Replace( ".map", "" );
+
+		idStr persistentKey = va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", sessionMapName.c_str() );
+
+		teleporterActive = gameLocal.persistentLevelInfo.GetInt( persistentKey, "0" );
+		
+		if ( teleporterActive == ARX_TELEPORTER_ACTIVE ) {
+
+			teleporterSystem->Activate( true, gameLocal.time );
+			teleporterSystem->SetStateInt( "listTeleporterItems_sel_0", -1 );
+			teleporterSystem->StateChanged( gameLocal.time, false );
+			teleporterSystemOpen = true;
+		} else {
+
+			// Play a sound to indicate object unuseable.
+			StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+			teleporterSystemOpen = false;
+		}
+
+	} else {
 		teleporterSystem->Activate( false, gameLocal.time );
 		teleporterSystemOpen = false;
 	}
@@ -11021,37 +11052,35 @@ UpdateTeleporterSystem
 */
 void idPlayer::UpdateTeleporterSystem( void )
 {
-	const idDeclEntityDef *teleporterDef = gameLocal.FindEntityDef( "item_arx_teleporter", false );
-	int teleporterCount = teleporterDef->dict.GetInt( "arx_teleporter_count", "0" );
+	if ( teleporterSystem && teleporterSystemOpen )
+	{
 
-	// Clear out the teleporter list
-	int j = 0;
-	for ( j = 0; j < 255; j++ ) {
-		teleporterSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), "" );
-	}
+		const idDeclEntityDef *teleporterDef = gameLocal.FindEntityDef( "item_arx_teleporter", false );
+		int teleporterCount = teleporterDef->dict.GetInt( "arx_teleporter_count", "0" );
 
-	for ( j = 0; j < teleporterCount; j++ ) {
-
-		idStr teleporterDestrination = gameLocal.ArxGetSafeLanguageMessage( teleporterDef->dict.GetString( va( "arx_teleporter_display_text_%i", j) , "" ) );
-
-		// Convert from example gameLocal.GetMapName() "maps/game/mymap.map" to session command "game/mymap"
-		/*
-		idStr sessionMapName = gameLocal.GetMapName();
-		sessionMapName.Replace( "maps/", "" );
-		sessionMapName.Replace( ".map", "" );
-		*/
-
-		float teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", teleporterDestrination ), "0" );
-
-		if ( teleporterActive == ARX_TELEPORTER_ACTIVE ) {		
-			objectiveSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_GREEN "%s", teleporterDestrination.c_str() ) );
-		} else {
-			objectiveSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_BLACK "%s", teleporterDestrination.c_str() ) );
+		// Clear out the teleporter list
+		int j = 0;
+		for ( j = 0; j < teleporterCount; j++ ) {
+			teleporterSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), "" );
 		}
-	}
 
-	// !!! Critical - MUST DO THIS !!!
-	teleporterSystem->StateChanged( gameLocal.time );
+		for ( j = 0; j < teleporterCount; j++ ) {
+
+			idStr teleporterDestination = gameLocal.ArxGetSafeLanguageMessage( teleporterDef->dict.GetString( va( "arx_teleporter_display_text_%i", j) , "" ) );
+			idStr teleporterMap = teleporterDef->dict.GetString( va( "arx_teleporter_map_name_%i", j) , "" );
+
+			float teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", teleporterMap.c_str() ), "0" );
+
+			if ( teleporterActive == ARX_TELEPORTER_ACTIVE ) {		
+				teleporterSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_GREEN "%s", teleporterDestination.c_str() ) );
+			} else {
+				teleporterSystem->SetStateString( va( "listTeleporterItems_item_%i", j ), va(S_COLOR_RED "%s", teleporterDestination.c_str() ) );
+			}
+		}
+
+		// !!! Critical - MUST DO THIS !!!
+		teleporterSystem->StateChanged( gameLocal.time );
+	}
 }
 
 /*
@@ -11070,13 +11099,12 @@ void idPlayer::ProcessTeleportation( void )
 	// ****************************************
 
 	// Get the selected teleportation destination
-	destinationSelection = conversationSystem->State().GetInt( "listTeleporterItems_sel_0", "0" );
+	destinationSelection = teleporterSystem->State().GetInt( "listTeleporterItems_sel_0", "-1" );
 	if ( destinationSelection == -1 ) {
-		return; // Nothing selected in list def do nothing.
-		//TODO - Play fail sound.
-	} else {
-		// Values in def are 1 based. Need to add 1
-		destinationSelection ++;
+		// Nothing selected in list def do nothing.
+		// Play a sound to indicate object unuseable.
+		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+		return; 
 	}
 
 	// Get a reference to a teleporter entity def
@@ -11089,10 +11117,15 @@ void idPlayer::ProcessTeleportation( void )
 	// Might get: "arx_teleporter_map_name_4"	"game/snake_sanctuary"
 	destinationMap = teleporterDef->dict.GetString( va( "arx_teleporter_map_name_%i", destinationSelection ), "" );
 
-	teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", destinationMap ), "0" );
+	//REMOVEME
+	gameLocal.Printf( "ProcessTeleportation destinationMap = %s\n", destinationMap.c_str() );
+	gameLocal.Printf( "ProcessTeleportation destinationSelection = %i\n", destinationSelection );
+
+	teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", destinationMap.c_str() ), "0" );
 
 	if ( teleporterActive != ARX_TELEPORTER_ACTIVE ) {
-		//TODO - Play fail sound. Magic fizzle?
+		// Play a sound to indicate object unuseable.
+		StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
 		return;
 	}
 
@@ -11114,7 +11147,6 @@ void idPlayer::ProcessTeleportation( void )
 
 	// ****************************************
 	// ****************************************
-
 }
 
 /*
@@ -11274,6 +11306,13 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			if ( arg->GetKey() == "inv_arx_item_attribute" )
 			{
 				itemAttribute = arg->GetValue();
+
+				// Control Object ( Activate Teleporter )
+				if ( strcmp( itemAttribute, "control_object" ) == 0 )
+				{
+					RadiusSpell( itemAttribute, ARX_DEFAULT_SPELL_RADIUS );
+					gave = true;
+				}
 
 				// Ignite
 				if ( strcmp( itemAttribute, "ignite" ) == 0 )
@@ -13158,6 +13197,7 @@ void idPlayer::Think( void ) {
 	UpdateShoppingSystem();
 	UpdateConversationSystem();
 	UpdateReadableGUI();
+	UpdateTeleporterSystem();
 
 	// This code is ONLY used for pre-cast magic projectiles.
 	/*
