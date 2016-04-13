@@ -17666,6 +17666,59 @@ void idPlayer::ArxTraceAIHealthHUD( void ) {
 	}
 }
 
+/*
+=================
+idPlayer::ArxHandleRunesGUI
+=================
+*/
+void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
+
+	const idDeclEntityDef *defSpellsList = NULL;
+	const idDeclEntityDef *defRune = NULL;
+	idStr selectedSpell = "";
+	idList<idStr> spellsList;
+	int n = 0;
+
+	defSpellsList = gameLocal.FindEntityDef( "arx_magic_rune_spells", false );
+	if ( !defSpellsList ) {
+		gameLocal.Warning( "ArxHandleRunesGUI cannot find entity def 'arx_magic_rune_spells'\n" );
+		return;
+	}
+
+	//idStr temp = va( "magic_spell_%i", selectedSpellIndex );
+
+	if ( !defSpellsList->dict.GetString( va( "magic_spell_%i", selectedSpellIndex ), "", selectedSpell ) ) {
+        gameLocal.Warning( "ArxHandleRunesGUI cannot find index item %i in entity def 'arx_magic_rune_spells'\n", selectedSpellIndex );
+		return;
+	}
+
+	// Remove this text from the string e.g. "magic_aam_folgora_morte_cosum"
+	selectedSpell.Replace( "magic_", "" );
+	
+	// Here we split the string on "_" and append each item to a list object e.g. "aam_folgora_morte_cosum"
+	while ( selectedSpell.Length() ) {
+		n = selectedSpell.Find( "_" );
+		if ( n >= 0 ) {
+			spellsList.Append( selectedSpell.Left( n ) );
+			selectedSpell = selectedSpell.Right( selectedSpell.Length() - n - 1 );
+		} else {
+			spellsList.Append( selectedSpell );
+			selectedSpell = "";
+		}
+	}
+
+	for ( int x = 0; x < spellsList.Num(); x++ ) {
+
+		defRune = gameLocal.FindEntityDef( spellsList[x], false );
+
+		// "guis/assets/book/runes/folgora_icon.tga";
+		idStr runeImage2 = va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
+
+	}
+
+
+}
+
 // sikk---> Depth Render
 /*
 ==================

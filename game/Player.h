@@ -477,6 +477,7 @@ public:
 	float					ArxCalculateD3GameBonuses( float baseValue, int bonusType );
 	bool					ArxCalculateHeroChance( idStr chanceDescription );					// solarsplace 15th Mar 2013
 	void					ArxPlayerLevelUp( void );
+	void					ArxHandleRunesGUI( int selectedSpellIndex );
 
 	/*
 	*** END - Solarsplace - Arx EOS - PUBLIC
