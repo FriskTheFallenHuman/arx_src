@@ -17673,8 +17673,13 @@ idPlayer::ArxHandleRunesGUI
 */
 void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
 
+	if ( !journalSystemOpen && journalSystem ) {
+		return;
+	}
+
 	const idDeclEntityDef *defSpellsList = NULL;
 	const idDeclEntityDef *defRune = NULL;
+	const idDeclEntityDef *defSpellsTextInformation = NULL;
 	idStr selectedSpell = "";
 	idList<idStr> spellsList;
 	int n = 0;
@@ -17707,12 +17712,29 @@ void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
 		}
 	}
 
+	// Get the .DEF containing all the textual information for the spells.
+	defSpellsTextInformation = gameLocal.FindEntityDef( "arx_magic_rune_spells_text_information", false );
+	if ( !defSpellsTextInformation ) {
+		gameLocal.Warning( "ArxHandleRunesGUI cannot find entity def 'arx_magic_rune_spells_text_information'\n" );
+		return;
+	}
+
+	idStr spellDescription = defSpellsTextInformation->dict.GetString( va( "magic_spell_name_description_%i", selectedSpellIndex ), "" );
+	idStr spellDirections = defSpellsTextInformation->dict.GetString( va( "magic_spell_name_directions_%i", selectedSpellIndex ), "" );
+
+	journalSystem->SetStateString( "arx_journal_spell_description", spellDescription.c_str() );
+	journalSystem->SetStateString( "arx_journal_spell_directions", spellDirections.c_str() );
+
 	for ( int x = 0; x < spellsList.Num(); x++ ) {
 
 		defRune = gameLocal.FindEntityDef( spellsList[x], false );
 
 		// "guis/assets/book/runes/folgora_icon.tga";
-		idStr runeImage2 = va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
+		idStr runeIconFile = va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
+
+		journalSystem->SetStateString( va( "arx_journal_rune_icon_%i", x ), runeIconFile.c_str() );
+
+
 
 	}
 
