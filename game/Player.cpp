@@ -11223,9 +11223,9 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			// Set the weapon max health
 			weapon.GetEntity()->health_max = itemHealthMax;
 
-			// Optional, may wish to play an equip sound.
-			if ( sound )
-			{ StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
+			// Optional, may wish to play an equip sound. - _DT: commented out, weapons play raise sound through frames in model def.
+			// if ( sound )
+			// { StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL ); }
 
 		}
 
