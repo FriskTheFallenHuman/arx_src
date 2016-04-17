@@ -1125,7 +1125,7 @@ void idAFEntity_Gibbable::SpawnGibs( const idVec3 &dir, const char *damageDefNam
 		}
 		list[i]->GetRenderEntity()->noShadow = true;
 		list[i]->GetRenderEntity()->shaderParms[ SHADERPARM_TIME_OF_DEATH ] = gameLocal.time * 0.001f;
-		list[i]->PostEventSec( &EV_Remove, 4.0f );
+		list[i]->PostEventSec( &EV_Remove, 16.0f ); // Arx - End Of Sun - Was 4.0f
 	}
 }
 

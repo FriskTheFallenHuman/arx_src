@@ -2316,6 +2316,9 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 			if ( ( health < -20 ) && spawnArgs.GetBool( "gib" ) && damageDef->GetBool( "gib" ) ) {
 				Gib( dir, damageDefName );
+			} else if ( spawnArgs.GetBool( "arx_always_gib" ) ) {
+				// Arx - End Of Sun
+				Gib( dir, damageDefName );
 			}
 		} else {
 			Pain( inflictor, attacker, damage, dir, location );
