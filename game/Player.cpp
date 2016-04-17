@@ -6475,6 +6475,24 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// *****************************************************
 	// *****************************************************
 	// *****************************************************
+	// Runes PopUp
+
+	if ( token.Icmp( "arx_select_runes_popup" ) == 0 ) {
+		if ( objectiveSystem && objectiveSystemOpen ) {
+
+			int selectedSpellIndex = -1;
+			selectedSpellIndex = objectiveSystem->State().GetInt( "listMagicSpells_sel_0", "0" );
+			if ( selectedSpellIndex == -1 ) {
+				return true; // Nothing selected in list def
+			} else {
+				ArxHandleRunesGUI( selectedSpellIndex );
+			}
+		}
+	}
+
+	// *****************************************************
+	// *****************************************************
+	// *****************************************************
 	// Journal Maps
 
 	if ( token.Icmp( "arx_select_level_map" ) == 0 ) {
@@ -10521,7 +10539,6 @@ void idPlayer::UpdateInventoryGUI( void )
 
 			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
 		}
-
 	}
 }
 
@@ -10531,6 +10548,42 @@ void idPlayer::UpdateJournalGUI( void )
 
 	if ( objectiveSystem && objectiveSystemOpen )
 	{
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
+		// Runes Page
+
+		const idDeclEntityDef *runesComboDef = gameLocal.FindEntityDef( "arx_magic_rune_spells", false );
+		const idDeclEntityDef *runesTextDef = gameLocal.FindEntityDef( "arx_magic_rune_spells_text_information", false );
+
+		int runesMax = runesComboDef->dict.GetInt( "magic_spell_max", "0" );
+
+		int r = 0;
+		for ( r = 0; r < runesMax; r++ ) {
+			//objectiveSystem->SetStateString( va( "listMagicSpellsHidden_item_%i", r ), "" );
+			objectiveSystem->SetStateString( va( "listMagicSpells_item_%i", r ), "" );
+		}
+
+		for ( r = 0; r < runesMax; r++ ) {
+
+			idStr runeCombo = runesComboDef->dict.GetString( va( "magic_spell_%i", r ), "" );
+			idStr runeText = gameLocal.ArxGetSafeLanguageMessage( runesTextDef->dict.GetString( va( "magic_spell_name_%i", r ), "" ) );
+
+			bool hasSpellRunes = gameLocal.persistentLevelInfo.GetBool( runeCombo, "0" );
+			if ( hasSpellRunes ) {
+				runeText = va( S_COLOR_GREEN "%s", runeText.c_str() );
+			} else {
+				runeText = va( S_COLOR_BLACK "%s", runeText.c_str() );
+			}
+
+			//objectiveSystem->SetStateString( va( "listMagicSpellsHidden_item_%i", r ), runeCombo.c_str() );
+			objectiveSystem->SetStateString( va( "listMagicSpells_item_%i", r ), runeText.c_str() );
+		}
+
+		// ************************************************************
+		// ************************************************************
+		// ************************************************************
+
 		// Get the maps friendly name if possible!
 		const idDeclEntityDef *friendlyMapDef = gameLocal.FindEntityDef( "arx_friendly_map_names", false );
 
@@ -10919,8 +10972,9 @@ void idPlayer::UpdateJournalGUI( void )
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_taar", "0", &result );
 		objectiveSystem->SetStateString( "spell_aam_yok_taar", result );
 
-		gameLocal.persistentLevelInfo.GetString( "spell_aam_cosum_vitae", "0", &result );
-		objectiveSystem->SetStateString( "spell_aam_cosum_vitae", result );
+		// Feed
+		gameLocal.persistentLevelInfo.GetString( "spell_aam_vitae_cosum", "0", &result );
+		objectiveSystem->SetStateString( "spell_aam_vitae_cosum", result );
 
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_fridd", "0", &result );
 		objectiveSystem->SetStateString( "spell_aam_yok_fridd", result );
@@ -11029,11 +11083,17 @@ void idPlayer::UpdateJournalGUI( void )
 
 		// Arx End Of Sun - Custom Spells:
 
+		// Fire Bomb
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_folgora_morte_cosum", "0", &result );
 		objectiveSystem->SetStateString( "spell_aam_folgora_morte_cosum", result );
 
+		// Lightning Bomb
 		gameLocal.persistentLevelInfo.GetString( "spell_aam_yok_morte_cosum", "0", &result );
 		objectiveSystem->SetStateString( "spell_aam_yok_morte_cosum", result );
+
+		// Control Object
+		gameLocal.persistentLevelInfo.GetString( "spell_comunicatum_cosum", "0", &result );
+		objectiveSystem->SetStateString( "spell_comunicatum_cosum", result );
 
 		/*****************************************************************************
 		 *****************************************************************************
@@ -12206,8 +12266,8 @@ void idPlayer::MagicUpdateJournalSpells( void )
 	if ( aam && yok && taar )
 	{ gameLocal.persistentLevelInfo.Set("spell_aam_yok_taar", "1"); }
 
-	if ( aam && cosum && vitae )
-	{ gameLocal.persistentLevelInfo.Set("spell_aam_cosum_vitae", "1"); }
+	if ( aam && vitae && cosum )
+	{ gameLocal.persistentLevelInfo.Set("spell_aam_vitae_cosum", "1"); }
 
 	if ( aam && yok && fridd )
 	{ gameLocal.persistentLevelInfo.Set("spell_aam_yok_fridd", "1"); }
@@ -12314,6 +12374,19 @@ void idPlayer::MagicUpdateJournalSpells( void )
 	if ( mega && aam && mega && yok )
 	{ gameLocal.persistentLevelInfo.Set("spell_mega_aam_mega_yok", "1"); }
 
+	// Arx End Of Sun - Custom Spells:
+
+	// Fire Bomb
+	if ( aam && folgora && morte && cosum )
+	{ gameLocal.persistentLevelInfo.Set( "spell_aam_folgora_morte_cosum", "1" ); }
+
+	// Lightning Bomb
+	if ( aam && yok && morte && cosum )
+	{ gameLocal.persistentLevelInfo.Set( "spell_aam_yok_morte_cosum", "1" ); }
+
+	// Control Object
+	if ( comunicatum && cosum )
+	{ gameLocal.persistentLevelInfo.Set( "spell_comunicatum_cosum", "1" ); }
 }
 
 void idPlayer::PlaySpecificEntitySoundShader( idEntity *ent, const char *sndShaderName )
@@ -17673,10 +17746,13 @@ idPlayer::ArxHandleRunesGUI
 */
 void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
 
-	if ( !journalSystemOpen && journalSystem ) {
+	// Solarsplace - Arx End Of Sun
+
+	if ( !objectiveSystemOpen && objectiveSystem ) {
 		return;
 	}
 
+	const int MAX_GUI_RUNES = 4; // 0 to 5
 	const idDeclEntityDef *defSpellsList = NULL;
 	const idDeclEntityDef *defRune = NULL;
 	const idDeclEntityDef *defSpellsTextInformation = NULL;
@@ -17690,15 +17766,13 @@ void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
 		return;
 	}
 
-	//idStr temp = va( "magic_spell_%i", selectedSpellIndex );
-
 	if ( !defSpellsList->dict.GetString( va( "magic_spell_%i", selectedSpellIndex ), "", selectedSpell ) ) {
         gameLocal.Warning( "ArxHandleRunesGUI cannot find index item %i in entity def 'arx_magic_rune_spells'\n", selectedSpellIndex );
 		return;
 	}
 
-	// Remove this text from the string e.g. "magic_aam_folgora_morte_cosum"
-	selectedSpell.Replace( "magic_", "" );
+	// Remove this text from the string e.g. "spell_aam_folgora_morte_cosum"
+	selectedSpell.Replace( "spell_", "" );
 	
 	// Here we split the string on "_" and append each item to a list object e.g. "aam_folgora_morte_cosum"
 	while ( selectedSpell.Length() ) {
@@ -17722,23 +17796,31 @@ void idPlayer::ArxHandleRunesGUI( int selectedSpellIndex ) {
 	idStr spellDescription = defSpellsTextInformation->dict.GetString( va( "magic_spell_name_description_%i", selectedSpellIndex ), "" );
 	idStr spellDirections = defSpellsTextInformation->dict.GetString( va( "magic_spell_name_directions_%i", selectedSpellIndex ), "" );
 
-	journalSystem->SetStateString( "arx_journal_spell_description", spellDescription.c_str() );
-	journalSystem->SetStateString( "arx_journal_spell_directions", spellDirections.c_str() );
+	spellDescription = gameLocal.ArxGetSafeLanguageMessage( spellDescription );
+	spellDirections = gameLocal.ArxGetSafeLanguageMessage( spellDirections );
+
+	objectiveSystem->SetStateString( "arx_journal_spell_description", spellDescription.c_str() );
+	objectiveSystem->SetStateString( "arx_journal_spell_directions", spellDirections.c_str() );
+
+	// Clear the runes from any previous spells with more runes.
+	for ( int x = 0; x < MAX_GUI_RUNES; x++ ) {
+		objectiveSystem->SetStateString( va( "arx_journal_rune_icon_%i", x ), "" );
+	}
 
 	for ( int x = 0; x < spellsList.Num(); x++ ) {
 
-		defRune = gameLocal.FindEntityDef( spellsList[x], false );
+		idStr runeIconFile = ""; // va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
 
-		// "guis/assets/book/runes/folgora_icon.tga";
-		idStr runeIconFile = va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
+		bool hasRune = gameLocal.persistentLevelInfo.GetBool( spellsList[x], "0" );
 
-		journalSystem->SetStateString( va( "arx_journal_rune_icon_%i", x ), runeIconFile.c_str() );
+		if ( hasRune ) {
+			runeIconFile = va ( "guis/assets/book/runes/%s_icon.tga", spellsList[x].c_str() );
+		} else {
+			runeIconFile = va ( "guis/assets/book/runes/%s_icon_grey.tga", spellsList[x].c_str() );
+		}
 
-
-
+		objectiveSystem->SetStateString( va( "arx_journal_rune_icon_%i", x ), runeIconFile.c_str() );
 	}
-
-
 }
 
 // sikk---> Depth Render
