@@ -13857,6 +13857,9 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 
 		poisonTime = poisonTime - (int)GetPercentageBonus( (float)poisonTime, (float)poisonSkill );
 
+		//TESTME
+		gameLocal.Printf( "idPlayer::Damage poisonTime = %i\n", poisonTime );
+
 		if ( ArxCalculateHeroChance( "add_poison" ) ) {
 			inventory.arx_timer_player_poison += gameLocal.time + SEC2MS( poisonTime );
 		}
@@ -15971,7 +15974,6 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//TESTME
 		if ( gameLocal.random.RandomFloat() * 100 > inventory.arx_class_resistance_to_poison ) {
 			returnChance = true;
 		}
@@ -15982,9 +15984,11 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//TESTME
 		int fire_resistance_chance = ( inventory.arx_attr_dexterity * 2 ) + ( inventory.arx_attr_constitution * 2 ) + ( inventory.arx_player_level * 2 );
 		if ( fire_resistance_chance > MAX_FIRE_RESISTANCE_CHANCE ) { fire_resistance_chance = MAX_FIRE_RESISTANCE_CHANCE; };
+
+		//TESTME
+		gameLocal.Printf( "ArxCalculateHeroChance: fire_resistance_chance = %i\n", fire_resistance_chance );
 
 		if ( gameLocal.random.RandomFloat() * 100 > fire_resistance_chance ) {
 			returnChance = true;
@@ -15996,9 +16000,11 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 		if ( godmode ) { return false; }
 
-		//TESTME
 		int cold_resistance_chance = ( inventory.arx_attr_constitution * 4 ) + ( inventory.arx_player_level * 2 );
 		if ( cold_resistance_chance > MAX_COLD_RESISTANCE_CHANCE ) { cold_resistance_chance = MAX_COLD_RESISTANCE_CHANCE; }
+
+		//TESTME
+		gameLocal.Printf( "ArxCalculateHeroChance: cold_resistance_chance = %i\n", cold_resistance_chance );
 
 		if ( gameLocal.random.RandomFloat() * 100 > cold_resistance_chance ) {
 			returnChance = true;
@@ -16008,10 +16014,10 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 	// Chance of critical hit
 	if ( strcmp( chanceDescription, "add_critical_hit" ) == 0 ) {
 
-		//TESTME
-		int critical_hit_chance = MAX_PERCENTAGE - (int)( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 );
+		int critical_hit_chance = (int)( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 ) + ( inventory.arx_player_level * 2 );
+		if ( critical_hit_chance > MAX_PERCENTAGE ) { critical_hit_chance = MAX_PERCENTAGE; }
 
-		//REMOVEME
+		//TESTME
 		gameLocal.Printf( "ArxCalculateHeroChance: critical_hit_chance = %i\n", critical_hit_chance );
 
 		if ( critical_hit_chance < 0 ) { critical_hit_chance = 0; }
