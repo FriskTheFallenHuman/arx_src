@@ -3253,9 +3253,16 @@ void idPlayer::RestorePersistantInfo( void ) {
 
 	inventory.RestoreInventory( this, spawnArgs );
 
+	// ************************************************************
+	// ************************************************************
+	// ************************************************************
 	// Solarsplace - Arx End Of Sun
 	ArxLoadSkillSpawnArgsIntoInventory();
 	UpdateWeaponHealth();
+	ArxUpdateHeroSkills();
+	// ************************************************************
+	// ************************************************************
+	// ************************************************************
 
 	health = spawnArgs.GetInt( "health", "100" );
 
@@ -3545,6 +3552,8 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 
 	//_hud->SetStateInt( "player_health", health );
 	_hud->SetStateInt( "player_health", idMath::FtoiFast( ArxGetStatAsPercentage( ARX_STAT_HEALTH ) ) );
+	_hud->SetStateInt( "player_health_current", health );
+	_hud->SetStateInt( "player_health_max", inventory.arx_class_health_points );
 	
 	_hud->SetStateInt( "player_stamina", staminaPercentage );
 	_hud->SetStateInt( "player_armor", inventory.armor );
@@ -16661,7 +16670,7 @@ void idPlayer::ArxLoadSkillSpawnArgsIntoInventory( void ) {
 
 /*
 =================
-idPlayer::ArxUpdateHeroSkills
+idPlayer::GetSpellBonus
 =================
 */
 int idPlayer::GetSpellBonus( int spell ) {
@@ -17519,6 +17528,8 @@ void idPlayer::ArxPlayerLevelUp( void ) {
 	// SP - Made additive incase the player does not spend all their points each time.
 	inventory.arx_attribute_points = inventory.arx_attribute_points + spawnArgs.GetInt( "arx_levelup_attribute_points", "1" );
 	inventory.arx_skill_points = inventory.arx_skill_points + spawnArgs.GetInt( "arx_levelup_skill_points", "15" );
+
+	ArxUpdateHeroSkills();
 }
 
 /*
