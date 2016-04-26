@@ -974,6 +974,13 @@ private:
 	bool					fxFov;
 #ifdef _DT
 	bool					isRunning;
+	bool					changeLevelOK;	// _DT - Use this to skip 'UpdateHeroStats' in player Think, if changing level.
+											// We need to skip it since it modifies some timed attributes, and that should not happen
+											// when changing map. 'ClearDownTimedAttributes' is called before that method,
+											// and these timed attributes should not be modified after attribute cleardown,
+											// otherwise we would save wrong values.
+											// Added this bool check so we can keep the same order in method call - changing
+											// method call order in Think could be very dangerous, so we should avoid it.
 	// gasp bubble particle -->
 	const idDeclParticle *	smokeGasp;
 	int						smokeGaspTime;

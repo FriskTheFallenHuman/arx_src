@@ -1663,6 +1663,7 @@ idPlayer::idPlayer() {
 	centerView.Init( 0, 0, 0, 0 );
 	fxFov					= false;
 #ifdef _DT
+	changeLevelOK			= false;
 	isRunning				= false;
 	// gasp bubble particle -->
 	smokeGasp				= NULL;
@@ -1890,6 +1891,7 @@ void idPlayer::Init( void ) {
 	centerView.Init( 0, 0, 0, 0 );
 	fxFov					= false;
 #ifdef _DT
+	changeLevelOK			= false;
 	isRunning				= false;
 	// gasp bubble particle -->
 	smokeGaspTime			= 0;
@@ -3224,15 +3226,23 @@ Saves any inventory and player stats when changing levels.
 void idPlayer::SavePersistantInfo( void ) {
 
 	idDict &playerInfo = gameLocal.persistentPlayerInfo[entityNumber];
-
 	playerInfo.Clear();
 
-	inventory.ClearDownTimedAttributes( false ); // _DT
+	// _DT - Note -->
+	
+	// The engine calls the method 'idGameLocal::GetPersistentPlayerInfo' (which calls this method) twice,
+	// even in singleplayer. This is due to a first call to check player health,
+	// then a second call in a for loop ( for each player ), that method in the .exe source code is 'idSessionLocal::SaveGame'.	
+	// This was causing some problems with Arx timers - they were
+	// set 2 times, thworing some bugs like hungry player right after save/load.
+	// So, call to inventory.ClearDownTimedAttributes has been moved to its old position ('GetEntityByViewRay'),
+	// and I added a check to avoid the problem of wrong time values in save file.
+	// inventory.ClearDownTimedAttributes( false );
+
+	// _DT - Note <--
 
 	inventory.GetPersistantData( playerInfo );
-
 	playerInfo.SetInt( "health", health );
-
 	playerInfo.SetInt( "current_weapon", currentWeapon );
 }
 
@@ -11972,7 +11982,8 @@ void idPlayer::GetEntityByViewRay( void )
 			idStr nextMap;
 			idStr nextMapGameLocalFormat;
 			idStr levelTransitionSpawnPoint;
-			boolean changeLevelOK = false;
+			// boolean changeLevelOK = false; // _DT - added as instance variable, we need to read it in Think. Take a look in declaration for more info.
+			changeLevelOK = false; // _DT
 
 			// Check pre-requisites
 			if ( !target->spawnArgs.GetString( "nextMap", "", nextMap ) ) {
@@ -11995,7 +12006,7 @@ void idPlayer::GetEntityByViewRay( void )
 			if ( changeLevelOK ) {
 
 				// Carry over timed attributes such as magic and damages.
-				// inventory.ClearDownTimedAttributes( false ); // _DT : moved to SavePersistantInfo()
+				inventory.ClearDownTimedAttributes( false );
 
 				// Active any targets of the change level entity.
 				target->ActivateTargets( this );
@@ -13370,7 +13381,9 @@ void idPlayer::Think( void ) {
 	}
 
 	// 15th Mar 2013 - Process bonuses and player stats etc
-	UpdateHeroStats();
+	if(!changeLevelOK){ // _DT - Take a look to declaration for more info.
+		UpdateHeroStats();
+	}	
 
 	// Solarsplace - End
 	// **************************************************************************
@@ -17101,7 +17114,7 @@ void idPlayer::UpdateHeroStats( void ) {
 					}
 				}
 			}
-
+			// gameLocal.Printf("\n idPlayer::UpdateHeroStats: \n arx_timer_player_hungry: %i, time: %i \n", inventory.arx_timer_player_hungry, gameLocal.time ); // _DT - debug
 			// Hunger damage
 			if ( inventory.arx_timer_player_hungry <= gameLocal.time ) {
 				if ( hud ) {
