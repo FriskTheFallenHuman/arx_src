@@ -16031,7 +16031,7 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 		if ( critical_hit_chance < 0 ) { critical_hit_chance = 0; }
 
-		if ( gameLocal.random.RandomFloat() * 100 > critical_hit_chance ) {
+		if ( gameLocal.random.RandomFloat() * 100 < critical_hit_chance ) {
 			returnChance = true;
 		}
 	}
