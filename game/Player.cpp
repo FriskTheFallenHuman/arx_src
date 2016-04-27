@@ -3241,6 +3241,9 @@ void idPlayer::SavePersistantInfo( void ) {
 	// and I added a check to avoid the problem ( for which I moved cleardown here in the past...) of wrong time values in save file.
 	// inventory.ClearDownTimedAttributes( false );
 
+	 // gameLocal.Printf("\n idPlayer::SavePersistantInfo: \n time: %i, arx_timer_player_hungry: %i \n", 
+	 // 					gameLocal.time, inventory.arx_timer_player_hungry); // _DT - debug
+
 	// _DT - Note <--
 
 	inventory.GetPersistantData( playerInfo );
@@ -5961,6 +5964,9 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	if ( token.Icmp( "arx_perform_level_teleport" ) == 0 ) {
 		if ( teleporterSystemOpen ) {
 			ProcessTeleportation();
+			return true;	// _DT - 'HandleSingleGuiCommand' was called twice without returning true ( take a look at 'idEntity::HandleGuiCommands' ).
+							// This was causing another sneaky bug with cleardown of timed attributes - we do it through 'ProcessTeleportation'.
+							// May need to check if we need to return true in other code paths...
 		}
 	}
 
@@ -11212,6 +11218,12 @@ void idPlayer::ProcessTeleportation( void )
 
 	// ****************************************
 	// ****************************************
+	
+	// _DT -->
+	changeLevelOK = true;
+	// Carry over timed attributes such as magic and damages.
+	inventory.ClearDownTimedAttributes( false );	
+	// _DT <--
 
 	// Save level transition data just before we send a session command to change levels.
 	SaveTransitionInfo();
@@ -11978,6 +11990,8 @@ void idPlayer::GetEntityByViewRay( void )
 		//************************************************************************************************
 		else if ( target->spawnArgs.GetBool( "arx_level_change" ) && !target->IsHidden() )
 		{
+			// gameLocal.Printf("idPlayer::GetEntityByViewRay: arx_level_change \n"); // _DT - debug
+
 			// Solarsplace - Added and tested on 20th Nov 2010
 			// Updated 25th Nov 2013
 
@@ -17116,7 +17130,7 @@ void idPlayer::UpdateHeroStats( void ) {
 					}
 				}
 			}
-			// gameLocal.Printf("\n idPlayer::UpdateHeroStats: \n arx_timer_player_hungry: %i, time: %i \n", inventory.arx_timer_player_hungry, gameLocal.time ); // _DT - debug
+			
 			// Hunger damage
 			if ( inventory.arx_timer_player_hungry <= gameLocal.time ) {
 				if ( hud ) {
@@ -17556,7 +17570,7 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 
 	// Solarsplace - 25th Nov 2013
 
-	const int RESET_TIME = -9999;
+	const int RESET_TIME = -9999; // -10 secs...
 
 	if ( clearDown ) {
 
@@ -17577,6 +17591,37 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		// On level change gameLocal.time resets to 0
 		// Adjust timed attribues to carry over so that player
 		// cannot cheat by changing levels back and forth.
+
+		// _DT - new code -->
+
+		// We need to save these values even if < than current time, so we don't need to check them.
+		// Previous code is still below.
+
+		// Update time
+		arx_timer_player_stats_update = arx_timer_player_stats_update - gameLocal.time;
+		// Poisoned
+		arx_timer_player_poison = arx_timer_player_poison - gameLocal.time;
+		// Invisible
+		arx_timer_player_invisible = arx_timer_player_invisible - gameLocal.time;
+		// Fire damage
+		arx_timer_player_onfire = arx_timer_player_onfire - gameLocal.time;
+		// Telekinesis
+		arx_timer_player_telekinesis = arx_timer_player_telekinesis - gameLocal.time;
+		// Levitate
+		arx_timer_player_levitate = arx_timer_player_levitate - gameLocal.time;
+		// Warmth
+		arx_timer_player_warmth = arx_timer_player_warmth - gameLocal.time;
+		// Hungry
+		// gameLocal.Printf("\n idPlayer::ClearDownTimedAttributes: \n arx_timer_player_hungry before clear: %i \n", arx_timer_player_hungry); // _DT - debug
+		arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
+
+		// gameLocal.Printf("\n idPlayer::ClearDownTimedAttributes end \n"); // _DT - debug
+
+		// _DT - new code <--
+
+		// =============================================================================
+		// _DT - previous code, commented out -->
+		/* 
 
 		// Update time
 		if ( arx_timer_player_stats_update > gameLocal.time ) {
@@ -17626,14 +17671,17 @@ void idInventory::ClearDownTimedAttributes( bool clearDown ) {
 		} else {
 			arx_timer_player_warmth = RESET_TIME;
 		}
-
+		
 		// Hungry
-		arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time; // _DT
-//		if ( arx_timer_player_hungry > gameLocal.time ) {
-//			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
-//		} else {
-//		 	arx_timer_player_hungry = RESET_TIME;
-//		}
+		if ( arx_timer_player_hungry > gameLocal.time ) {
+			arx_timer_player_hungry = arx_timer_player_hungry - gameLocal.time;
+		} else {
+			arx_timer_player_hungry = RESET_TIME;
+		}
+
+		*/ 
+		// _DT - previous code, commented out <--
+		// =============================================================================		
 	}
 }
 
