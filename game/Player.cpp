@@ -3232,11 +3232,13 @@ void idPlayer::SavePersistantInfo( void ) {
 	
 	// The engine calls the method 'idGameLocal::GetPersistentPlayerInfo' (which calls this method) twice,
 	// even in singleplayer. This is due to a first call to check player health,
-	// then a second call in a for loop ( for each player ), that method in the .exe source code is 'idSessionLocal::SaveGame'.	
+	// then a second call in a for loop, for each player (check 'idSessionLocal::SaveGame').	
 	// This was causing some problems with Arx timers - they were
-	// set 2 times, thworing some bugs like hungry player right after save/load.
-	// So, call to inventory.ClearDownTimedAttributes has been moved to its old position ('GetEntityByViewRay'),
-	// and I added a check to avoid the problem of wrong time values in save file.
+	// set 2 times, throwing some bugs like hungry player right after save/load.
+	// Also, cleardown here was still wrong: we need to do that only at level change, 
+	// since game time will be reset only in that situation, not when save/load.
+	// So, call to inventory.ClearDownTimedAttributes has been un-commented to its old position ('GetEntityByViewRay'),
+	// and I added a check to avoid the problem ( for which I moved cleardown here in the past...) of wrong time values in save file.
 	// inventory.ClearDownTimedAttributes( false );
 
 	// _DT - Note <--
