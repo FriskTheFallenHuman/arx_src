@@ -41,8 +41,7 @@ const idStr ARX_PROP_SHOP_ITEM = "ARX_ENT_SHOP_ITEM_";
 
 void idArxShop::LoadActiveShop( idEntity *shopEntity )
 {
-	//REMOVEME
-	gameLocal.Printf( "Shop LoadActiveShop = %s\n", shopEntity->name.c_str() );
+	//gameLocal.Printf( "Shop LoadActiveShop = %s\n", shopEntity->name.c_str() );
 
 	const char *result;
 	idStr shop_item_icon;
@@ -77,8 +76,7 @@ void idArxShop::LoadActiveShop( idEntity *shopEntity )
 
 			if ( idStr::Icmp( "", shopItemClass ) ) // Returns 0 if the text is equal
 			{ 
-				//REMOVEME
-				gameLocal.Printf( "shopItem_%i = shopItemClass %s\n", i, shopItemClass.c_str() );
+				//gameLocal.Printf( "shopItem_%i = shopItemClass %s\n", i, shopItemClass.c_str() );
 
 				// Save the item in the persistent dictionary
 				currentShopSlotItem = currentMapName + ARX_REC_SEP + ARX_PROP_SHOP + ARX_REC_SEP + currentShopName + ARX_REC_SEP + va( ARX_PROP_SHOP_ITEM + "%i", i );
@@ -157,8 +155,7 @@ void idArxShop::SaveShopState( void ) {
 	// Called when buying or selling in a shop.
 	// Persists the shop state between level changes.
 
-	//REMOVEME
-	gameLocal.Printf( "idArxShop::SaveShopState for shop '%s'.\n", currentShopName.c_str() );
+	//gameLocal.Printf( "idArxShop::SaveShopState for shop '%s'.\n", currentShopName.c_str() );
 
 	int inventoryItemCount = 0;
 	idStr currentMapName = gameLocal.GetMapName();
@@ -195,8 +192,7 @@ void idArxShop::SaveShopState( void ) {
 
 			gameLocal.persistentLevelInfo.Set( currentShopSlotItem, shopItemClass );
 
-			//REMOVEME
-			gameLocal.Printf( "Saving shop state K(%s) V(%s)'\n", currentShopSlotItem.c_str(), shopItemClass.c_str() );
+			//gameLocal.Printf( "Saving shop state K(%s) V(%s)'\n", currentShopSlotItem.c_str(), shopItemClass.c_str() );
 
 			inventoryItemCount ++; // 0 to ARX_MAX_SHOP_ITEMS_IN_TOTAL
 
@@ -235,8 +231,7 @@ bool idArxShop::AddShopItem( const char *className )
 		shopItemDef->dict.GetString( "inv_name", "name = 404", shop_item_name ); // Hopefully people with 'get' that name = 404  = inv_name is not set for this item! 
 		shopItemDef->dict.GetString( "inv_shop_item_value", "404", inv_shop_item_value ); // Hopefully people with 'get' that 404 gold coins = inv_shop_item_value is not set for this item! 
 
-		//REMOVEME
-		gameLocal.Printf( "AddShopItem %i = %s\n", totalUsedShopSlots, className );	
+		//gameLocal.Printf( "AddShopItem %i = %s\n", totalUsedShopSlots, className );	
 
 		if ( shopItemDef->dict.GetBool( "inv_inventory_nostack", "0" ) || existingShopItemIndex == ITEM_NOT_FOUND )
 		{
@@ -269,8 +264,7 @@ bool idArxShop::AddShopItem( const char *className )
 
 void idArxShop::RemoveShopItem( int slotId )
 {
-	//REMOVEME
-	gameLocal.Printf( "RemoveShopItem( %i )\n", slotId );
+	//gameLocal.Printf( "RemoveShopItem( %i )\n", slotId );
 
 	idDict tempshopSlotItem_Dict;
 	int itemGroupCount;
@@ -288,8 +282,7 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		SaveShopState();
 
-		//REMOVEME
-		shopSlotItem_Dict->Print();
+		//shopSlotItem_Dict->Print();
 
 		return;
 	}
@@ -321,7 +314,6 @@ void idArxShop::RemoveShopItem( int slotId )
 
 			if ( tempshopSlotItem_Dict.GetInt( va( "shop_item_count_%i", i ), "0" ) > 0 ) {
 
-				//REMOVEME
 				//gameLocal.Printf( "remshop: shop_item_class_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_class_%i", i ) ) );
 				//gameLocal.Printf( "remshop: shop_item_count_%i = %s\n", i, tempshopSlotItem_Dict.GetString( va( "shop_item_count_%i", i ) ) );
 
@@ -339,8 +331,7 @@ void idArxShop::RemoveShopItem( int slotId )
 
 		SaveShopState();
 
-		//REMOVEME
-		shopSlotItem_Dict->Print();
+		//shopSlotItem_Dict->Print();
 	}
 }
 
@@ -431,8 +422,7 @@ int idArxShop::CountUsedShopSlots( void ) {
 		}
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "idArxShop::CountUsedShopSlots returns: %d\n", totalSlotsUsed );
+	//gameLocal.Printf( "idArxShop::CountUsedShopSlots returns: %d\n", totalSlotsUsed );
 
 	return totalSlotsUsed;
 }

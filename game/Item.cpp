@@ -367,12 +367,10 @@ bool idItem::GiveToPlayer( idPlayer *player ) {
 		}
 
 		if ( spawnArgs.GetBool( "inv_carry" ) ) {
-			//REMOVEMEx
 			gameLocal.Printf( "idItem::GiveToPlayer - player->GiveInventoryItem\n" );
 			return player->GiveInventoryItem( &spawnArgs );
 		} 
 		
-		//REMOVEMEx
 		gameLocal.Printf( "idItem::GiveToPlayer - player->GiveItem\n" );
 		return player->GiveItem( this );
 	*/

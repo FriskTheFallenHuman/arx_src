@@ -3843,12 +3843,6 @@ void idGameLocal::RadiusDamage( const idVec3 &origin, idEntity *inflictor, idEnt
 				}
 			}
 
-			// ****************************************
-			// ****************************************
-#ifndef _DT // this print is a bit misleading, it is already called inside Damage in Actor.cpp
-			//REMOVEME
-			gameLocal.Printf ( "idGameLocal::RadiusDamage '%s' was (%i) damaged by '%s'\n", ent->name.c_str(), damage, damageDefName );
-#endif
 			ent->Damage( inflictor, attacker, dir, damageDefName, damageScale, INVALID_JOINT );
 		} 
 	}
@@ -4699,8 +4693,7 @@ const char * idGameLocal::GetStringFromEntityDef( idStr entityDefName, idStr sea
 	if ( def ) {
 		str = def->dict.GetString( searchString, "" );
 
-		//REMOVEME
-		gameLocal.Printf( "idGameLocal::GetStringFromEntityDef found %s\n", str );
+		//gameLocal.Printf( "idGameLocal::GetStringFromEntityDef found %s\n", str );
 	}
 
 	if ( str == NULL ) {

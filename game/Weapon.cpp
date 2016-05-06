@@ -3205,8 +3205,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 	// SP - Arx - 12th May 2015 - Weapon health related
 	// at the moment this is a special case for the bow weapon
 
-	//REMOVEME
-	gameLocal.Printf( "Weapon (REMOVE) '%s' health = %d\n", this->name.c_str(), health );
+	//gameLocal.Printf( "Weapon (REMOVE) '%s' health = %d\n", this->name.c_str(), health );
 
 	if ( allowWeaponDamage_Projectile ) {
 
@@ -3215,8 +3214,7 @@ void idWeapon::Event_LaunchProjectiles( int num_projectiles, float spread, float
 		damageWeapon = gameLocal.random.RandomInt( damageWeapon );
 		health -= gameLocal.GetLocalPlayer()->ArxCalculateOwnWeaponDamage( damageWeapon, ARX_WEAPON_TYPE_PROJECTILE );
 
-		//REMOVEME
-		gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
+		//gameLocal.Printf( "Weapon '%s' health = %d\n", this->name.c_str(), health );
 	}
 	// ************************************************
 }

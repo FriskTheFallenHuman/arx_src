@@ -706,8 +706,7 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 				const idDeclEntityDef *dmgDef = gameLocal.FindEntityDef( damageDefName, false );
 				if ( dmgDef != NULL ) {
 
-					//REMOVEME
-					gameLocal.Printf ( "idProjectile::Collide '%s'\n", damageDefName );
+					//gameLocal.Printf ( "idProjectile::Collide '%s'\n", damageDefName );
 
 					// Duplicated in idGameLocal::RadiusDamage
 					if ( dmgDef->dict.GetBool( "arx_magic_damage_skills" ) ) {

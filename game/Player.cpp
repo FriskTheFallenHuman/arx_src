@@ -2664,8 +2664,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	int	  num;
 	float set;
 
-	// REMOVEME
-	gameLocal.Printf( " idPlayer::Restore\n" );
+	//gameLocal.Printf( " idPlayer::Restore\n" );
 
 	savefile->ReadUsercmd( usercmd );
 	playerView.Restore( savefile );
@@ -4630,8 +4629,7 @@ idPlayer::UpdateWeaponHealth - Solarsplace - 26th Nov 2013
 */
 bool idPlayer::UpdateWeaponHealth( void ) {
 
-	//REMOVEME
-	gameLocal.Printf( "Entered idPlayer::UpdateWeaponHealth\n" );
+	//gameLocal.Printf( "Entered idPlayer::UpdateWeaponHealth\n" );
 
 	idStr currentWeaponUniqueName;
 	int invItemIndex;
@@ -4645,9 +4643,8 @@ bool idPlayer::UpdateWeaponHealth( void ) {
 	// Using the unique name, attempt to find the inventory item number / id.
 	invItemIndex = FindInventoryItemIndexUniqueName( currentWeaponUniqueName.c_str() );
 
-	//REMOVEME
-	gameLocal.Printf( "idPlayer::UpdateWeaponHealth - currentWeaponUniqueName = %s\n", currentWeaponUniqueName.c_str() );
-	gameLocal.Printf( "idPlayer::UpdateWeaponHealth - invItemIndex = %d\n", invItemIndex );
+	//gameLocal.Printf( "idPlayer::UpdateWeaponHealth - currentWeaponUniqueName = %s\n", currentWeaponUniqueName.c_str() );
+	//gameLocal.Printf( "idPlayer::UpdateWeaponHealth - invItemIndex = %d\n", invItemIndex );
 
 	if ( invItemIndex >= 0 ) {
 
@@ -4657,9 +4654,8 @@ bool idPlayer::UpdateWeaponHealth( void ) {
 
 		// Now we update the weapon class properties.
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health = %d\ns", itemHealth );
-		gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health_max = %d\n", itemHealthMax );
+		//gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health = %d\ns", itemHealth );
+		//gameLocal.Printf( "idPlayer::UpdateWeaponHealth - inv_health_max = %d\n", itemHealthMax );
 
 		// Set the weapon health
 		weapon.GetEntity()->health = itemHealth;
@@ -6021,8 +6017,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// Solarsplace 24th Jun 2014 - Shop related
 	if ( token.Icmp( "shop_sellitem" ) == 0 ) {
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_sellitem\n" );
+		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_sellitem\n" );
 
 		if ( src->ReadToken( &token2 ) ) {
 
@@ -10502,6 +10497,11 @@ void idPlayer::UpdateInventoryGUI( void )
 		invItemGroupCount->Clear();
 		invItemGroupPointer->Clear();
 
+		bool hasInventoryKeyRing = false;
+		if ( FindInventoryItemCount( "#str_item_00450" ) > 0 ) {
+			hasInventoryKeyRing = true;
+		}
+
 		int itemGroupCount;
 
 		for ( j = 0; j < c; j++ ) {
@@ -10509,6 +10509,13 @@ void idPlayer::UpdateInventoryGUI( void )
 			idDict *item = inventory.items[j];
 
 			if ( !item->GetBool( "inv_pda" ) ) {
+
+				// Solarsplace - 6th May 2016 - Hide inventory keys if the player has a key ring.
+				if ( hasInventoryKeyRing ) {
+					if ( item->GetBool( "inv_arx_key", "0" ) ) {
+						continue;
+					}
+				}
 
 				const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
 
@@ -11204,9 +11211,8 @@ void idPlayer::ProcessTeleportation( void )
 	// Might get: "arx_teleporter_map_name_4"	"game/snake_sanctuary"
 	destinationMap = teleporterDef->dict.GetString( va( "arx_teleporter_map_name_%i", destinationSelection ), "" );
 
-	//REMOVEME
-	gameLocal.Printf( "ProcessTeleportation destinationMap = %s\n", destinationMap.c_str() );
-	gameLocal.Printf( "ProcessTeleportation destinationSelection = %i\n", destinationSelection );
+	//gameLocal.Printf( "ProcessTeleportation destinationMap = %s\n", destinationMap.c_str() );
+	//gameLocal.Printf( "ProcessTeleportation destinationSelection = %i\n", destinationSelection );
 
 	teleporterActive = gameLocal.persistentLevelInfo.GetFloat( va( "<ARX_TELEPORTER_ACTIVATED>%s<ARX_TELEPORTER_ACTIVATED>", destinationMap.c_str() ), "0" );
 
@@ -13770,8 +13776,7 @@ void idPlayer::CalcDamagePoints( idEntity *inflictor, idEntity *attacker, const 
 		damage = ArxCalculatePlayerDamage( damage, ARX_DAMAGE_TYPE_NON_MAGIC );
 	}
 
-	//REMOVEME
-	gameLocal.Printf ( "idPlayer::CalcDamagePoints 'armorSave' was (%i) points.\n", armorSave );
+	//gameLocal.Printf ( "idPlayer::CalcDamagePoints 'armorSave' was (%i) points.\n", armorSave );
 
 	// Arx End Of Sun
 	// *****************************************
@@ -13978,8 +13983,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		// *************************************
 		// *************************************
 
-		//REMOVEME
-		gameLocal.Printf ( "idPlayer::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
+		//gameLocal.Printf ( "idPlayer::Damage '%s' was (%i) damaged by '%s'\n", name.c_str(), damage, damageDefName );
 
 		int oldHealth = health;
 		health -= damage;
@@ -15891,7 +15895,7 @@ void idPlayer::Event_PlayerMoney( int amount )
 
 void idPlayer::Event_OpenCloseShop( const char *newState )
 {
-	gameLocal.Printf( "Event_OpenCloseShop\n" ); //REMOVEME
+	//gameLocal.Printf( "Event_OpenCloseShop\n" );
 	ToggleShoppingSystem();
 }
 
@@ -16003,8 +16007,10 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 
 	const int MAX_COLD_RESISTANCE_CHANCE = 60; // %
 	const int MAX_FIRE_RESISTANCE_CHANCE = 60; // %
+	const int MAX_CRITICAL_HIT_CHANCE = 70; //%
 	const int MAX_PERCENTAGE = 100; // %
 
+	// Return true to do damage to player.
 	bool returnChance = false;
 
 	// Chance of getting poisoned
@@ -16053,7 +16059,7 @@ bool idPlayer::ArxCalculateHeroChance( idStr chanceDescription ) {
 	if ( strcmp( chanceDescription, "add_critical_hit" ) == 0 ) {
 
 		int critical_hit_chance = (int)( (float)inventory.arx_attr_dexterity * 5.0f ) + ( (float)inventory.arx_skill_close_combat * DIV2 ) + ( inventory.arx_player_level * 2 );
-		if ( critical_hit_chance > MAX_PERCENTAGE ) { critical_hit_chance = MAX_PERCENTAGE; }
+		if ( critical_hit_chance > MAX_CRITICAL_HIT_CHANCE ) { critical_hit_chance = MAX_CRITICAL_HIT_CHANCE; }
 
 		//TESTME
 		gameLocal.Printf( "ArxCalculateHeroChance: critical_hit_chance = %i\n", critical_hit_chance );
@@ -16104,8 +16110,7 @@ int idPlayer::ArxCalculateOwnWeaponDamage( int baseDamageAmount, int weaponSkill
 		newDamageAmount = MIN_DAMAGE_AMOUNT;
 	}
 
-	//REMOVEME
-	gameLocal.Printf( "ArxCalculateOwnWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
+	//gameLocal.Printf( "ArxCalculateOwnWeaponDamage: Base damage = %d,  new damage = %d )\n", baseDamageAmount, newDamageAmount );
 
 	return newDamageAmount;
 }
@@ -16211,8 +16216,7 @@ int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
 
-			//REMOVEME
-			gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_NON_MAGIC' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
+			//gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_NON_MAGIC' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
 
 		case ARX_DAMAGE_TYPE_MAGICAL :
 
@@ -16220,14 +16224,12 @@ int idPlayer::ArxCalculatePlayerDamage( int baseDamageAmount, int damageType ) {
 
 			newDamageAmount = baseDamageAmount - (int)GetPercentageBonus( (float)baseDamageAmount, (float)tmpSkillValue );
 
-			//REMOVEME
-			gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_MAGICAL' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
+			//gameLocal.Printf ( "idPlayer::ArxCalculatePlayerDamage 'ARX_DAMAGE_TYPE_MAGICAL' baseDamage (%i) newDamage (%i)\n", baseDamageAmount, newDamageAmount);
 	}
 
 	if ( newDamageAmount <= 0 ) {
 
-		//REMOVEME
-		gameLocal.Printf( "idPlayer::ArxCalculatePlayerDamage setting damage to (%i)\n", MIN_DAMAGE_AMOUNT );
+		//gameLocal.Printf( "idPlayer::ArxCalculatePlayerDamage setting damage to (%i)\n", MIN_DAMAGE_AMOUNT );
 
 		newDamageAmount = MIN_DAMAGE_AMOUNT;
 	}
@@ -16583,8 +16585,7 @@ idPlayer::CreateNewHero
 */
 void idPlayer::CreateNewHero( void ) {
 
-	//REMOVEME
-	gameLocal.Printf( "idPlayer::CreateNewHero\n" );
+	//gameLocal.Printf( "idPlayer::CreateNewHero\n" );
 
 	ArxLoadSkillSpawnArgsIntoInventory();
 
