@@ -389,14 +389,14 @@ void idGameLocal::Init( void ) {
 	r_vmodes[13].height=1200;
 
 	// Zombie
-	r_vmodes[13].ratio=2;
-	r_vmodes[13].width=1920;
-	r_vmodes[13].height=1080;
+	r_vmodes[14].ratio=2;
+	r_vmodes[14].width=1920;
+	r_vmodes[14].height=1080;
 
 	// WQXGA - 27–30 in (69–76 cm)
-	r_vmodes[14].ratio=2;
-	r_vmodes[14].width=2560;
-	r_vmodes[14].height=1600;
+	r_vmodes[15].ratio=2;
+	r_vmodes[15].width=2560;
+	r_vmodes[15].height=1600;
 
 	Printf( "...%d aas types\n", aasList.Num() );
 	Printf( "game initialized.\n" );
