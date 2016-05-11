@@ -5460,33 +5460,50 @@ void idAnimatedEntity::AddLocalDamageEffect( jointHandle_t jointNum, const idVec
 	// can't see wounds on the player model in single player mode
 	if ( !( IsType( idPlayer::Type ) && !gameLocal.isMultiplayer ) ) {
 		// place a wound overlay on the model
-		key = va( "mtr_wound_%s", materialType );
-#ifdef _DT // decal angle
-		decal = def->dict.RandomPrefix( key, gameLocal.random ); // higher priority to decal in prj def
-		if ( *decal == '\0' ) {
-			decal = spawnArgs.RandomPrefix( key, gameLocal.random );
-		}
-		if ( *decal != '\0' ) {
-			ProjectOverlay( origin, dir, 20.0f, decal, angle );
+#ifdef _DT // Blade decal check
+		
+		if( def->dict.GetBool( "blade", "0" ) ) { // Choose the blade decal defined in the enemy, if damaged by a blade.
+			key = va( "mtr_wound_blade_%s", materialType );
+		} else {
+			key = va( "mtr_wound_%s", materialType );
 		}
 #else
+		key = va( "mtr_wound_%s", materialType );		
+#endif
 		decal = spawnArgs.RandomPrefix( key, gameLocal.random );
 		if ( *decal == '\0' ) {
 			decal = def->dict.RandomPrefix( key, gameLocal.random );
 		}
 		if ( *decal != '\0' ) {
+#ifdef _DT // decal angle
+			ProjectOverlay( origin, dir, 20.0f, decal, angle );
+#else
 			ProjectOverlay( origin, dir, 20.0f, decal );
+#endif			
 		}
-#endif
 	}
 
 	// a blood spurting wound is added
 	key = va( "smoke_wound_%s", materialType );
 	bleed = spawnArgs.GetString( key );
+
+#ifdef _DT // Check stuff for smoke particle.
+
+	bool fists = def->dict.GetBool( "fists", "0" );
+	bool skip_smoke_effect = false;
+
+	if ( fists && !strcmp( materialType, "metal" ) ) {
+		skip_smoke_effect = true; // Remove sparks with fists when hit metal.
+	} else if ( *bleed == '\0' ) {
+		bleed = def->dict.GetString( key );
+	}
+	if ( !skip_smoke_effect && ( *bleed != '\0' ) ) {
+#else
 	if ( *bleed == '\0' ) {
 		bleed = def->dict.GetString( key );
 	}
 	if ( *bleed != '\0' ) {
+#endif	
 		de = new damageEffect_t;
 		de->next = this->damageEffects;
 		this->damageEffects = de;
