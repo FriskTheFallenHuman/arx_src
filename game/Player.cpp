@@ -434,6 +434,8 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	// armor
 	dict.SetInt( "armor", armor );
 
+	// _DT - NOTE: maxHealth saved/restored to/from arx_class_health_points
+
 	// ****************************************************
 	// ****************************************************
 	// ****************************************************
@@ -16381,7 +16383,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 	// Get current player health statistics
 	int tmp_current_player_health = this->health;
-	int tmp_current_player_max_health = this->health_max;
+	int tmp_current_player_max_health = inventory.maxHealth; // _DT - Fixes bug of non-full health with ring after level up. Was --> // this->health_max;
 
 	// Get current player mana statistics
 	int ammo_mana_index = idWeapon::GetAmmoNumForName( "ammo_mana" );
