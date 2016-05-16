@@ -616,6 +616,23 @@ void idInventory::GetPersistantData( idDict &dict ) {
 		sprintf( key, "levelTrigger_Trigger_%i", i );
 		dict.Set( key, levelTriggers[i].triggerName );
 	}
+
+	// arxLevelMaps // _DT
+	for ( i = 0; i < arxLevelMaps.Num(); i++ ) {
+		sprintf( key, "arxLevelMap_mapFileSystemName_%i", i );
+		dict.Set( key, arxLevelMaps[i].mapFileSystemName );
+
+		sprintf( key, "arxLevelMap_mapName_%i", i );
+		dict.Set( key, arxLevelMaps[i].mapName );
+
+		sprintf( key, "arxLevelMap_mapDescription_%i", i );
+		dict.Set( key, arxLevelMaps[i].mapDescription );
+
+		sprintf( key, "arxLevelMap_mapImageFile_%i", i );
+		dict.Set( key, arxLevelMaps[i].mapImageFile );
+	}
+	dict.SetInt( "arxLevelMaps", arxLevelMaps.Num() );
+
 }
 
 /*
@@ -822,6 +839,26 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 		levelTriggers.Append( lti );
 	}
 
+	// arxLevelMaps // _DT
+	num = dict.GetInt( "arxLevelMaps" );
+	for ( i = 0; i < num; i++ ) {
+
+		_arxLevelMaps arx_lm;
+
+		sprintf( itemname, "arxLevelMap_mapFileSystemName_%i", i );
+		arx_lm.mapFileSystemName = dict.GetString( itemname );
+
+		sprintf( itemname, "arxLevelMap_mapName_%i", i );
+		arx_lm.mapName = dict.GetString( itemname );
+
+		sprintf( itemname, "arxLevelMap_mapDescription_%i", i );
+		arx_lm.mapDescription = dict.GetString( itemname );
+
+		sprintf( itemname, "arxLevelMap_mapImageFile_%i", i );
+		arx_lm.mapImageFile = dict.GetString( itemname );
+
+		arxLevelMaps.Append( arx_lm );
+	}
 }
 
 /*
