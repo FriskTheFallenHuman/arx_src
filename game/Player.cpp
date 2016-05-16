@@ -192,6 +192,8 @@ const idStr ARX_PROP_MAPENTRYPOINT = "ARX_MAPENTRYPOINT";
 const idStr ARX_PROP_MAP_ANY = "ARX_MAP_ANY";
 const idStr ARX_PROP_ENT_ANY = "ARX_ENT_ANY";
 
+const idStr ARX_EQUIP_EMPTY = "ARX_EQUIP_EMPTY";
+
 // ***** MIRRORED IN arx_quest_base.script *****
 const idStr ARX_CHAR_QUEST_WINDOW = "ARX_C_Q_WINDOW";
 const idStr ARX_QUEST_STATE = "ARX_QUEST_STATE"; // Must mirror in scripts too.
@@ -253,7 +255,7 @@ void idInventory::Clear( void ) {
 
 	int i;
 	for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
-		arx_equiped_items[ i ] = "";
+		arx_equiped_items[ i ] = ARX_EQUIP_EMPTY;
 	}
 
 	arx_snake_weapon				= ARX_MAGIC_WEAPON;
@@ -6111,8 +6113,8 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					// Un-equip the item if equiped (if any match)
 					int i;
 					for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
-						if ( inventory.arx_equiped_items[ i ] == sellingItem->GetString( "inv_unique_name" ) ) {
-							inventory.arx_equiped_items[ i ] == "";
+						if ( strcmp( inventory.arx_equiped_items[ i ], sellingItem->GetString( "inv_unique_name" ) ) == 0 ) {
+							inventory.arx_equiped_items[ i ] = ARX_EQUIP_EMPTY;
 						}
 					}
 
@@ -6524,12 +6526,12 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 	// *****************************************************
 	// *** Unequip items
 	if ( token.Icmp( "unequip_left_ring" ) == 0 ) {
-		inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = "";
+		inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = ARX_EQUIP_EMPTY;
 		return true;
 	}
 
 	if ( token.Icmp( "unequip_right_ring" ) == 0 ) {
-		inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = "";
+		inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = ARX_EQUIP_EMPTY;
 		return true;
 	}
 
@@ -10081,8 +10083,8 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 		// Un-equip the item if equiped (if any match)
 		int i;
 		for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
-			if ( inventory.arx_equiped_items[ i ] == droppingItem->GetString( "inv_unique_name" ) ) {
-				inventory.arx_equiped_items[ i ] == "";
+			if ( strcmp( inventory.arx_equiped_items[ i ], droppingItem->GetString( "inv_unique_name" ) ) == 0 ) {
+				inventory.arx_equiped_items[ i ] = ARX_EQUIP_EMPTY;
 			}
 		}
 
@@ -10725,7 +10727,7 @@ void idPlayer::UpdateJournalGUI( void )
 
 		// *** Left ring equipment
 		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ], "inv_icon" );
-		if ( strcmp( equipedItemIcon, "" ) == 0 ) {
+		if ( strcmp( equipedItemIcon, ARX_EQUIP_EMPTY ) == 0 ) {
 			objectiveSystem->SetStateBool( "ring_left_equipped", false );
 			objectiveSystem->SetStateString( "ring_left_icon", "" );
 		} else {
@@ -10735,7 +10737,7 @@ void idPlayer::UpdateJournalGUI( void )
 
 		// *** Right ring equipment
 		equipedItemIcon = GetInventoryItemString( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ], "inv_icon" );
-		if ( strcmp( equipedItemIcon, "" ) == 0 ) {
+		if ( strcmp( equipedItemIcon, ARX_EQUIP_EMPTY ) == 0 ) {
 			objectiveSystem->SetStateBool( "ring_right_equipped", false );
 			objectiveSystem->SetStateString( "ring_right_icon", "" );
 		} else {
@@ -11364,7 +11366,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 		if ( itemHealth > 0 ) {
 
 			// Clear any previous equiped weapon 
-			inventory.arx_equiped_items[ ARX_EQUIPED_WEAPON ] = "";
+			inventory.arx_equiped_items[ ARX_EQUIPED_WEAPON ] = ARX_EQUIP_EMPTY;
 
 			// Switch to the inventory selected weapon
 			int weaponId = inventory.items[invItemIndex]->GetInt( "inv_weapon_def" );
@@ -11407,8 +11409,8 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			bool leftRingFull = false;
 			bool rightRingFull = false;
 
-			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] != "" ) { leftRingFull = true; }
-			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] != "" ) { rightRingFull = true; }
+			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] != ARX_EQUIP_EMPTY ) { leftRingFull = true; }
+			if ( inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] != ARX_EQUIP_EMPTY ) { rightRingFull = true; }
 
 			// If left and right rings are already equiped swap the left one.
 			if ( leftRingFull && rightRingFull ) {
@@ -12273,6 +12275,10 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 				int randomGoldMin = target->spawnArgs.GetInt( "player_money_gold_amount_min", "1" );
 				int randomGoldMax = target->spawnArgs.GetInt( "player_money_gold_amount_max", "20" );
 				int randomGoldAmount = randomGoldMin + gameLocal.random.RandomInt( randomGoldMax - randomGoldMin );
+
+				//gameLocal.Printf( "randomGoldMin = %i\n", randomGoldMin );
+				//gameLocal.Printf( "randomGoldMax = %i\n", randomGoldMax );
+				//gameLocal.Printf( "randomGoldAmount = %i\n", randomGoldAmount );
 
 				Event_PlayerMoney( randomGoldAmount );
 				gave = true;
@@ -15934,8 +15940,12 @@ void idPlayer::Event_PlayerMoney( int amount )
 {
 	if ( amount > 0 )
 	{
+		idStr goldAmount = idStr( amount );
+		idStr message = common->GetLanguageDict()->GetString( "#str_general_00004" );
+		message += " (" + goldAmount + ")";
+
 		inventory.money += amount;
-		ShowHudMessage( common->GetLanguageDict()->GetString( "#str_general_00004" ) ); // "Your gold increased"
+		ShowHudMessage( message ); // "Your gold increased"
 		StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 		idThread::ReturnInt( 1 );
 	}
@@ -16206,7 +16216,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
 		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_NORMAL_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_NORMAL_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
@@ -16216,7 +16226,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
 		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MAGIC_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MAGIC_PROJECTILE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
@@ -16230,7 +16240,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 		*/
 		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue ); // _DT
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DAMAGE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
@@ -16240,7 +16250,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
 		returnValue = baseValue + GetPercentageBonus( baseValue, tmpSkillValue );
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DISTANCE ) ( Out = %f )\n", baseValue, returnValue);
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, ARX_MELEE_DISTANCE ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 
@@ -16248,7 +16258,7 @@ float idPlayer::ArxCalculateD3GameBonuses( float baseValue, int bonusType ) {
 
 		returnValue = (float)baseValue;
 
-		gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, default ) ( Out = %f )\n", baseValue, returnValue);
+		//gameLocal.Printf("ArxCalculateD3GameBonuses( In = %f, default ) ( Out = %f )\n", baseValue, returnValue);
 
 		break;
 	}
@@ -16431,7 +16441,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 		invUniqueName = inventory.arx_equiped_items[ x ];
 
-		if ( idStr::Icmp( "", invUniqueName ) ) // Returns 0 if the text is equal
+		if ( idStr::Icmp( ARX_EQUIP_EMPTY, invUniqueName ) ) // Returns 0 if the text is equal
 		{
 			invItemIndex = FindInventoryItemIndexUniqueName( invUniqueName.c_str() );
 
@@ -16478,7 +16488,7 @@ void idPlayer::UpdateEquipedItems( void ) {
 
 		invUniqueName = inventory.arx_equiped_items[ i ];
 
-		if ( idStr::Icmp( "", invUniqueName ) ) // Returns 0 if the text is equal
+		if ( idStr::Icmp( ARX_EQUIP_EMPTY, invUniqueName ) ) // Returns 0 if the text is equal
 		{
 			invItemIndex = FindInventoryItemIndexUniqueName( invUniqueName.c_str() );
 

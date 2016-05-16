@@ -431,6 +431,10 @@ argv(0) noclip
 ==================
 */
 void Cmd_Noclip_f( const idCmdArgs &args ) {
+
+	// Arx End Of Sun
+	gameLocal.Warning( "The 'noclip' command is strongly unencouraged in Arx - End Of Sun. The game relies on map triggers which will not work when noclipping and you will likely break your quest!\n" );
+
 	char		*msg;
 	idPlayer	*player;
 
@@ -2335,7 +2339,6 @@ void Cmd_VidRestart_f( const idCmdArgs &args ) {
 		height = cvarSystem->GetCVarInteger( "r_customHeight");
 		width = cvarSystem->GetCVarInteger( "r_customWidth");
 		ratio = cvarSystem->GetCVarInteger( "r_aspectRatio");
-
 	}
 
 	cvarSystem->SetCVarInteger( "r_aspectRatio", ratio );
@@ -2343,7 +2346,7 @@ void Cmd_VidRestart_f( const idCmdArgs &args ) {
 	cvarSystem->SetCVarInteger( "r_customHeight", height );
 	cvarSystem->SetCVarInteger( "r_customWidth", width );
 
-	cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart" );
+	cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart\n" );
 
 	const idCmdArgs nil;
 	
