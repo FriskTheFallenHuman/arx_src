@@ -6124,7 +6124,7 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					StartSound( "snd_shop_success", SND_CHANNEL_ANY, 0, false, NULL );
 				} else {
 
-					ShowHudMessage( "##str_general_00021" ); // !! The shop is full !!
+					ShowHudMessage( "#str_general_00021" ); // !! The shop is full !!
                     StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
 				}
 			}
@@ -10528,6 +10528,8 @@ void idPlayer::UpdateInventoryGUI( void )
 			inventorySystem->SetStateString( va( "inv_icon_%i", j ), "" );
 			inventorySystem->SetStateString( va( "inv_text_%i", j ), "" );
 			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), "0" ); // Solarsplace 24th Sep 2011 - Reset item groupings totals.
+			inventorySystem->SetStateString( va( "inv_equipped_icon_%i", j ), "" );
+			inventorySystem->SetStateInt( va( "inv_equipped_status_%i", j ), 0 );
 		}
 
 		const idKeyValue *argPointer;
@@ -10611,6 +10613,22 @@ void idPlayer::UpdateInventoryGUI( void )
 			inventorySystem->SetStateString( va( "inv_text_%i", j ), itext );
 
 			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
+
+			// Equipped items
+
+			/*
+			condition_amber.tga
+			condition_green.tga
+			condition_red.tga
+			*/
+
+			int i;
+			for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+				if ( inventory.arx_equiped_items[ i ] == item->GetString( "inv_unique_name" ) ) {
+					inventorySystem->SetStateString( va( "inv_equipped_icon_%i", j ), "guis/assets/icons/condition_green.tga" );
+					inventorySystem->SetStateInt( va( "inv_equipped_status_%i", j ), 1 );
+				}
+			}
 		}
 	}
 }
@@ -11381,6 +11399,11 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 
 		if ( equipType == "ring" ) {
 
+			// Rotate left to right
+			inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ];
+			inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = uniqueName;
+
+			/*
 			bool leftRingFull = false;
 			bool rightRingFull = false;
 
@@ -11401,6 +11424,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					itemEquiped = true;
 				}
 			}
+			*/
 
 		} else if ( equipType == "weapon" ) {
 
