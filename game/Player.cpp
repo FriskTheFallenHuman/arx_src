@@ -10115,11 +10115,18 @@ void idPlayer::DropInventoryItem( int invItemIndex )
 
 bool idPlayer::ArxCheckPlayerInventoryFull( void )
 {
+	// doomtrinity's note - 17th May 2016: Call this method only if you're absolutely sure that the item to add cannot be stacked.
 	// Solarsplace - Arx End Of Sun - 29th Sep 2015
 
 	const int MAX_INVENTORY_SLOTS = 16 * 3; // Number of slots in the players inventory screen.
 	int i = 0;
 	int inventorySlotsUsed = 0;
+
+	// _DT -->
+	int keys_count = 0; // Counter for any possible standard key in the inventory. Not the key ring!
+	bool hasKeyRing = false;
+	const char *key_ring_name = common->GetLanguageDict()->GetString( "#str_item_00450" );
+	// _DT <--
 
 	idDict *stackedInventoryItems;
 	stackedInventoryItems = new idDict();
@@ -10130,6 +10137,16 @@ bool idPlayer::ArxCheckPlayerInventoryFull( void )
 		idDict *item = inventory.items[i];
 
 		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+
+		// _DT - Check if there's a standard key, or the key ring in the inventory.
+		if ( item->GetBool( "inv_arx_key", "0" ) )
+		{
+			keys_count++;
+		} 
+		else if ( !strcmp(key_ring_name,iname))
+		{
+			hasKeyRing = true;
+		}
 
 		if ( item->GetBool( "inv_inventory_nostack", "0" ) )
 		{
@@ -10150,6 +10167,9 @@ bool idPlayer::ArxCheckPlayerInventoryFull( void )
 		}
 	}
 
+	int disposable_keys = hasKeyRing ? keys_count : 0;
+	inventorySlotsUsed -= disposable_keys; // _DT - Remove standard keys from the count if the key ring is in the inventory.
+
 	int result = MAX_INVENTORY_SLOTS - inventorySlotsUsed;
 
 	if ( result > 0 ) {
@@ -10167,9 +10187,12 @@ idPlayer::ArxCheckPlayerInventoryFull
 */
 bool idPlayer::ArxCheckPlayerInventoryFull( idDict &itemDict )
 {
-	// Solarsplace - Arx End Of Sun - 29th Sep 2015
-
+	// _DT -->
+	int keys_count = 0; // Counter for any possible standard key in the inventory. Not the key ring!
+	bool hasKeyRing = false;
+	const char *key_ring_name = common->GetLanguageDict()->GetString( "#str_item_00450" );
 	const char *item_to_check_name = common->GetLanguageDict()->GetString( itemDict.GetString( "inv_name" ) );
+	// _DT <--
 
 	const int MAX_INVENTORY_SLOTS = 16 * 3; // Number of slots in the players inventory screen.
 	int i = 0;
@@ -10184,6 +10207,16 @@ bool idPlayer::ArxCheckPlayerInventoryFull( idDict &itemDict )
 		idDict *item = inventory.items[i];
 
 		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+
+		// _DT - Check if there's a standard key, or the key ring in the inventory.
+		if ( item->GetBool( "inv_arx_key", "0" ) )
+		{
+			keys_count++;
+		} 
+		else if ( !strcmp(key_ring_name,iname))
+		{
+			hasKeyRing = true;
+		}
 		
 		if ( item->GetBool( "inv_inventory_nostack", "0" ) )
 		{
@@ -10208,6 +10241,24 @@ bool idPlayer::ArxCheckPlayerInventoryFull( idDict &itemDict )
 			}
 		}
 	}
+	// _DT -->
+
+	if ( !strcmp( item_to_check_name,key_ring_name ) )
+	{
+		// Key ring is not in the inventory yet, but we're about to add it.
+		// Need to do this so if the inventory is full, but it contains one or more key, we can still add it.
+		hasKeyRing = true;
+	}
+	else if ( itemDict.GetBool( "inv_arx_key", "0" ) && hasKeyRing )
+	{
+		// Should fall here only if key ring is already in inventory, and we're about to take a standard key.
+		keys_count++;
+	}
+
+	int disposable_keys = hasKeyRing ? keys_count : 0;
+	inventorySlotsUsed -= disposable_keys; // _DT - Remove standard keys from the count if the key ring is in the inventory.
+
+	// _DT <--
 
 	int result = MAX_INVENTORY_SLOTS - inventorySlotsUsed;
 
