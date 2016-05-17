@@ -1131,7 +1131,7 @@ private:
 	void					Event_PlayerMoney( int amount );									// 15th Oct 2011 - Solarsplace
 	void					Event_OpenCloseShop( const char *newState );						// 30th Nov 2011 - Solarsplace
 	void					Event_RemoveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
-	void					Event_GiveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace
+	bool					Event_GiveInventoryItem( const char *name );						// 29th Dec 2011 - Solarsplace // // _DT - modified return type from 'void' to 'bool'.
 	void					Event_FindInventoryItemCount( const char *name );					// 2nd Jan 2011 - Solarsplace
 	void					Event_GiveJournal( const char *name );								// 13th Sep 2012 - Solarsplace
 	void					Event_GetMapName( void );											// 22nd Sep 2012 - Solarsplace
@@ -1159,6 +1159,8 @@ private:
 	idDict					*invItemGroupCount;												// solarsplace 24th Sep 2011
 	idDict					*invItemGroupPointer;											// solarsplace 24th Sep 2011
 	bool					ArxCheckPlayerInventoryFull( void );							// solarsplace 29th Sep 2015
+	bool					ArxCheckPlayerInventoryFull( idDict &itemDict );				// doomtrinity 17th May 2016
+	bool					ArxIsItemStackedInInventory( idDict &itemDict );				// doomtrinity 17th May 2016
 
 	// Skills related
 	void					CreateNewHero( void );											// solarsplace 10th Apr 2015

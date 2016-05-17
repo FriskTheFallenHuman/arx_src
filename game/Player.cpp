@@ -4318,7 +4318,7 @@ bool idPlayer::GiveInventoryItem( idDict *item ) {
 		return false;
 	}
 
-	if ( ArxCheckPlayerInventoryFull() ) {
+	if ( ArxCheckPlayerInventoryFull(*item) ) { // _DT - was using ArxCheckPlayerInventoryFull()
 		return false;
 	}
 
@@ -4952,7 +4952,8 @@ void idPlayer::GiveItem( const char *itemname ) {
 }
 
 // Solarsplace - 29th Dec 2011 - Arx - End Of Sun
-void idPlayer::Event_GiveInventoryItem( const char *name ) {
+bool idPlayer::Event_GiveInventoryItem( const char *name ) { // _DT - modified return type from 'void' to 'bool'.
+	bool _give = false;
 
 	const idDeclEntityDef *shopItemDef = NULL;
 	idDict args;
@@ -4974,25 +4975,30 @@ void idPlayer::Event_GiveInventoryItem( const char *name ) {
 		args.Set( "inv_name", invName );
 	}
 
-	GiveInventoryItem( &args );
+	_give = GiveInventoryItem( &args );
 
 	if ( !gameLocal.isNewFrame )
-	{ return; } // don't play the sound, but don't report an error
+	{ return _give; } // don't play the sound, but don't report an error
 
-	// Play pickup sound effect
-	const idSoundShader *shader;
-	const char *sound;
-	if ( args.GetString( "snd_acquire", "", &sound ) ) {
-		if ( !sound[0] == '\0' ) {
-			shader = declManager->FindSound( sound );
-			StartSoundShader( shader, SND_CHANNEL_ITEM, 0, false, NULL );
+	if (_give) // DT - Play sound only if we got the item.
+	{
+		// Play pickup sound effect
+		const idSoundShader *shader;
+		const char *sound;
+		if ( args.GetString( "snd_acquire", "", &sound ) ) {
+			if ( !sound[0] == '\0' ) {
+				shader = declManager->FindSound( sound );
+				StartSoundShader( shader, SND_CHANNEL_ITEM, 0, false, NULL );
+			}
 		}
-	}
 
-	if ( hud ) {
-		hud->HandleNamedEvent( "invPickup" );
-		ShowHudMessage( "Item " + invName + " received" );	
-	}
+		if ( hud ) {
+			hud->HandleNamedEvent( "invPickup" );
+			ShowHudMessage( "Item " + invName + " received" );	
+		}
+	}	
+
+	return _give;
 }
 
 /*
@@ -6143,12 +6149,12 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	// Solarsplace 17th Nov 2011 - Shop related
 	if ( token.Icmp( "shop_buyitem" ) == 0 ) {
-
+		/* // _DT - Inventory full check moved below, we need to check which item we're about to buy.
 		if ( ArxCheckPlayerInventoryFull() ) {
 			// Play a sound to indicate nothing to pickup.
 			StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
 			return false;
-		}
+		} */ 
 
 		//gameLocal.Printf( "idPlayer::HandleSingleGuiCommand - shop_buyitem\n" );
 
@@ -6179,6 +6185,13 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 					}
 
 					idDict args = shopItemDef->dict;
+
+					// _DT - Inventory full check moved here, if this is a stacked item we can buy it.
+					if ( ArxCheckPlayerInventoryFull(args) ) {
+						// Play a sound to indicate nothing to pickup.
+						StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
+						return false;
+					}
 
 					// Solarsplace 9th Oct 2011 - If we specify a drop item use that.
 					// This is because the item we may 'get' is static, but it must be a moveable variant to be dropped from the inventory on most occasions.
@@ -10146,6 +10159,94 @@ bool idPlayer::ArxCheckPlayerInventoryFull( void )
 		return true;
 	}
 }
+// _DT -->
+/*
+================
+idPlayer::ArxCheckPlayerInventoryFull
+================
+*/
+bool idPlayer::ArxCheckPlayerInventoryFull( idDict &itemDict )
+{
+	// Solarsplace - Arx End Of Sun - 29th Sep 2015
+
+	const char *item_to_check_name = common->GetLanguageDict()->GetString( itemDict.GetString( "inv_name" ) );
+
+	const int MAX_INVENTORY_SLOTS = 16 * 3; // Number of slots in the players inventory screen.
+	int i = 0;
+	int inventorySlotsUsed = 0;
+
+	idDict *stackedInventoryItems;
+	stackedInventoryItems = new idDict();
+	stackedInventoryItems->Clear();
+
+	for ( i = 0; i < inventory.items.Num(); i++ ) {
+
+		idDict *item = inventory.items[i];
+
+		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+		
+		if ( item->GetBool( "inv_inventory_nostack", "0" ) )
+		{
+			// If this item cannot be stacked then it obviously takes up 1 slot.
+			inventorySlotsUsed ++;
+		}
+		else
+		{
+			if ( !strcmp(item_to_check_name,iname) )
+			{
+				// The item to check is already stacked in the inventory.
+				return false;
+			}
+			// There is no limit to stacking stackable items in a single slot.
+			// So if the dict does not contain the inventory name then it must
+			// be a different new item that can be stacked and therefore a new
+			// slot is taken up.
+			if ( !stackedInventoryItems->FindKey( iname ) )
+			{
+				inventorySlotsUsed ++;
+				stackedInventoryItems->SetInt( iname, i );
+			}
+		}
+	}
+
+	int result = MAX_INVENTORY_SLOTS - inventorySlotsUsed;
+
+	if ( result > 0 ) {
+		return false;
+	} else {
+		ShowHudMessage( "#str_general_00020" ); // Your inventory is full!
+		return true;
+	}
+}
+
+/*
+================
+idPlayer::ArxIsItemStackedInInventory // actually unused.
+================
+*/
+bool idPlayer::ArxIsItemStackedInInventory( idDict &itemDict )
+{
+	if ( itemDict.GetBool( "inv_inventory_nostack", "0" ) )
+	{
+			// return, this item is not marked to be stacked.
+			return false;
+	}
+	const char *item_to_check_name = common->GetLanguageDict()->GetString( itemDict.GetString( "inv_name" ) );
+
+	for ( int i = 0; i < inventory.items.Num(); i++ ) {
+
+		idDict *item = inventory.items[i];
+		const char *iname = common->GetLanguageDict()->GetString( item->GetString( "inv_name" ) );
+	
+		if ( !strcmp(item_to_check_name,iname) )
+		{
+			// The item to check is already stacked in the inventory.
+			return true;
+		}		
+	}
+	return false;
+}
+// _DT <--
 
 void idPlayer::UpdateShoppingSystem( void )
 {
@@ -11779,7 +11880,7 @@ void idPlayer::GetEntityByViewRay( void )
 			}
 
 			if ( !skipInventoryFullCheck ) {
-				if ( ArxCheckPlayerInventoryFull() ) {
+				if ( ArxCheckPlayerInventoryFull(target->spawnArgs) ) { // _DT - was using ArxCheckPlayerInventoryFull()
 					// Play a sound to indicate nothing to pickup.
 					StartSound( "snd_arx_pickup_fail", SND_CHANNEL_ANY, 0, false, NULL );
 					return;
@@ -12250,14 +12351,15 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 	idStr fixedGiveItem = target->spawnArgs.GetString( "arx_searchable_find_fixed", "" ); // Get a specified single find item
 
 	if ( fixedGiveItem.Length() ) {
-
-		if ( ArxCheckPlayerInventoryFull() ) {
+		/* // _DT - skip this check, it is handled through 'Event_GiveInventoryItem( randomGiveItem )'
+		if ( ArxCheckPlayerInventoryFull(target->spawnArgs) ) { 
 			gave = false;
 		} else {
 			// Give the player a specified single item
 			Event_GiveInventoryItem( fixedGiveItem );
 			gave = true;
-		}
+		} */ 
+		gave = Event_GiveInventoryItem( fixedGiveItem ); // _DT
 		
 	} else if ( target->spawnArgs.GetBool( "player_money_gold", "0" ) ) {
 
@@ -12286,9 +12388,9 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 		}
 	} else {
 
-		if ( ArxCheckPlayerInventoryFull() ) {
-			gave = false;
-		} else {
+		// if ( ArxCheckPlayerInventoryFull() ) { // _DT - skip this check, it is handled through 'Event_GiveInventoryItem( randomGiveItem )'
+		//	gave = false;
+		// } else {
 
 			// Give the player a random item from the list
 			int MAX_CHOICE = target->spawnArgs.GetInt( "arx_searchable_find_max", 0 );
@@ -12298,13 +12400,13 @@ bool idPlayer::GiveSearchItem( idEntity *target )
 				idStr randomGiveItem = target->spawnArgs.GetString( va( "arx_searchable_find_%i", randomItemNumber ),  "" ); // Get a specified single find item
 				if ( randomGiveItem.Length() ) {
 					// Give the player the specified single item
-					Event_GiveInventoryItem( randomGiveItem );
-					gave = true;
+					gave = Event_GiveInventoryItem( randomGiveItem ); // _DT - 'Event_GiveInventoryItem' returns a bool now.
+					// gave = true;
 				}
 			} else {
 				gameLocal.Warning( "No 'arx_searchable_find_max' on '%s'\n", target->name.c_str() );
 			}
-		}
+		// }
 	}
 
 	if ( gave ) {
