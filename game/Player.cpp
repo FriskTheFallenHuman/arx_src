@@ -11556,6 +11556,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 			// Rotate left to right
 			inventory.arx_equiped_items[ ARX_EQUIPED_RING_RIGHT ] = inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ];
 			inventory.arx_equiped_items[ ARX_EQUIPED_RING_LEFT ] = uniqueName;
+			itemEquiped = true;
 
 			/*
 			bool leftRingFull = false;
@@ -11939,10 +11940,10 @@ void idPlayer::GetEntityByViewRay( void )
 			}
 
 			// Solarsplace 9th Oct 2011 - Does this item require another inventory item before it can be picked up?
-			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
+			requiredItemInvName = gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "requires_inv_item", "" ) );
 			if ( idStr::Icmp( requiredItemInvName, "" ) != 0 ) // Updated to be in line with the level change code below 20th Nov 2010
 			{
-				inventoryItem = FindInventoryItem( target->spawnArgs.GetString( "requires_inv_item" ) );
+				inventoryItem = FindInventoryItem( requiredItemInvName );
 				if ( !inventoryItem )
 				{
 					// Play a sound to indicate nothing to pickup.
@@ -12141,12 +12142,12 @@ void idPlayer::GetEntityByViewRay( void )
 
 			if ( actualDoorMaster->spawnArgs.GetBool( "lock_status", "0" ) == true )
 			{
-				requiredItemInvName = actualDoorMaster->spawnArgs.GetString( "requires_inv_item", "" );
+				requiredItemInvName = gameLocal.ArxGetSafeLanguageMessage( actualDoorMaster->spawnArgs.GetString( "requires_inv_item", "" ) );
 
 				// The door is currently locked.
 				if ( idStr::Icmp( requiredItemInvName, "" ) != 0 ) // Updated to be in line with the level change code below 20th Nov 2010
 				{
-					inventoryItem = FindInventoryItem( actualDoorMaster->spawnArgs.GetString( "requires_inv_item" ) );
+					inventoryItem = FindInventoryItem( requiredItemInvName );
 					if ( inventoryItem )
 					{
 						PlaySpecificEntitySoundShader( actualDoorMaster, "snd_unlocked" ); 
@@ -12231,9 +12232,9 @@ void idPlayer::GetEntityByViewRay( void )
 			}
 
 			// Does this level change require that the player has something in their inventory?
-			requiredItemInvName = target->spawnArgs.GetString( "requires_inv_item", "" );
+			requiredItemInvName = gameLocal.ArxGetSafeLanguageMessage( target->spawnArgs.GetString( "requires_inv_item", "" ) );
 			if ( idStr::Icmp( requiredItemInvName, "" ) != 0 ) {
-				inventoryItem = FindInventoryItem( target->spawnArgs.GetString( "requires_inv_item" ) );
+				inventoryItem = FindInventoryItem( requiredItemInvName );
 				if ( inventoryItem ) {
 					changeLevelOK = true;
 				}
@@ -17185,7 +17186,10 @@ void idPlayer::UpdateHeroStats( void ) {
 		return;
 	}
 
-	//TODO
+	if ( health <= 0 ) {
+		return;
+	}
+
 	const int ARX_HERO_UPDATE_RATE = 2000;
 	const int ARX_MANA_LEVITATE_RATE = 2;
 	const int ARX_POISON_DAMAGE_BASE = 5;
