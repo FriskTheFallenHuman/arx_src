@@ -4815,6 +4815,39 @@ const char *idPlayer::GetInventoryItemHealthIcon( int health, int health_max, co
 
 /*
 ===============
+idPlayer::GetInventoryEquippedItemHealthIcon - Solarsplace - 11th Mar 2013
+===============
+*/
+const char *idPlayer::GetInventoryEquippedItemHealthIcon( int health, int health_max ) {
+
+	int healthPercentage;
+	const char *assetName;
+
+	// Prevent divide by 0 exception set health_max to 100 if it is 0.
+	if ( health_max == 0 ) { health_max = 100; }
+
+	healthPercentage = ( (float)health / (float)health_max ) * 100; // Just in case health_max is some how 0.
+
+	//gameLocal.Printf( "idPlayer::GetInventoryItemHealthIcon healthPercentage(%d) health(%d) health_max(%d)\n", healthPercentage, health, health_max );
+
+	if ( healthPercentage >= 51 ) {
+
+		assetName = "guis/assets/icons/condition_green.tga";
+
+	} else if ( healthPercentage >= 26 && healthPercentage <= 50 ) {
+
+		assetName = "guis/assets/icons/condition_amber.tga";
+
+	} else if ( healthPercentage <= 25 ) {
+
+		assetName = "guis/assets/icons/condition_red.tga";
+	}
+
+	return assetName;
+}
+
+/*
+===============
 idPlayer::UpdateInventoryItem - Solarsplace - 22nd Feb 2013
 ===============
 */
@@ -10337,6 +10370,8 @@ void idPlayer::UpdateShoppingSystem( void )
 			shoppingSystem->SetStateString( va( "inv_text_%i", j ), "" );
 			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), "0" );
 			shoppingSystem->SetStateString( va( "inv_shop_item_value_%i", j ), "" );
+			shoppingSystem->SetStateString( va( "inv_equipped_icon_%i", j ), "" );
+			shoppingSystem->SetStateInt( va( "inv_equipped_status_%i", j ), 0 );
 		}
 
 		const idKeyValue *argPointer;
@@ -10443,6 +10478,15 @@ void idPlayer::UpdateShoppingSystem( void )
 			shoppingSystem->SetStateInt( va( "inv_value_%i", j ), ivalue ); // _DT money
 
 			shoppingSystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
+
+			// Equipped item indication.
+			const char *eicon = GetInventoryEquippedItemHealthIcon( tempHealth, tempHealthMax );
+			for ( int i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+				if ( inventory.arx_equiped_items[ i ] == item->GetString( "inv_unique_name" ) ) {
+					shoppingSystem->SetStateString( va( "inv_equipped_icon_%i", j ), eicon );
+					shoppingSystem->SetStateInt( va( "inv_equipped_status_%i", j ), 1 );
+				}
+			}
 		}
 
 		/*********************************************************************************************************/
@@ -10768,18 +10812,11 @@ void idPlayer::UpdateInventoryGUI( void )
 
 			inventorySystem->SetStateString( va( "inv_group_count_%i", j ), argGroupCount->GetValue() );
 
-			// Equipped items
-
-			/*
-			condition_amber.tga
-			condition_green.tga
-			condition_red.tga
-			*/
-
-			int i;
-			for ( i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
+			// Equipped item indication.
+			const char *eicon = GetInventoryEquippedItemHealthIcon( tempHealth, tempHealthMax );
+			for ( int i = 0; i < ARX_MAX_EQUIPED_ITEMS; i++ ) {
 				if ( inventory.arx_equiped_items[ i ] == item->GetString( "inv_unique_name" ) ) {
-					inventorySystem->SetStateString( va( "inv_equipped_icon_%i", j ), "guis/assets/icons/condition_green.tga" );
+					inventorySystem->SetStateString( va( "inv_equipped_icon_%i", j ), eicon );
 					inventorySystem->SetStateInt( va( "inv_equipped_status_%i", j ), 1 );
 				}
 			}
@@ -11685,7 +11722,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					// Wine counts as food. Stave off hunger for inv_health * minute
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DIV4 ) * SEC2MS( 60 ) );
 					}
 				}
 
@@ -11695,7 +11732,7 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					// Stave off hunger for inv_health * minute
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( healthAmount * SEC2MS( 60 ) );
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DIV4 ) * SEC2MS( 60 ) );
 					}
 					gave = true;
 				}
@@ -16508,66 +16545,17 @@ idPlayer::UpdateEquipedItems
 */
 void idPlayer::UpdateEquipedItems( void ) {
 
-	// ****************************************************
-	// ****************************************************
 	idStr invUniqueName = "";
 	int invItemIndex = 0;
 	int itemHealth = 0;
-
-	// ****************************************************
-	// ****************************************************
 	
 	int items_arx_power_health = 0;
 	int items_arx_power_mana = 0;
 	int items_arx_power_armour = 0;
 
-	// SP - Not implementing ATM too much work.
-	/*
-	int tmp_arx_attr_strength = 0;
-	int tmp_arx_attr_mental = 0;
-	int tmp_arx_attr_dexterity = 0;
-	int tmp_arx_attr_constitution = 0;
-
-	int tmp_arx_skill_casting = 0;
-	int tmp_arx_skill_close_combat = 0;
-	int tmp_arx_skill_defense = 0;
-	int tmp_arx_skill_ethereal_link = 0;
-	int tmp_arx_skill_intuition = 0;
-	int tmp_arx_skill_object_knowledge = 0;
-	int tmp_arx_skill_projectile = 0;
-	int tmp_arx_skill_stealth = 0;
-	int tmp_arx_skill_technical = 0;
-	*/
-
-	// ****************************************************
-	// ****************************************************
-	
 	int total_arx_power_health = 0;
 	int total_arx_power_mana = 0;
 	int total_arx_power_armour = 0;
-
-	// SP - Not implementing ATM too much work.
-	/*
-	int total_arx_attr_strength = 0;
-	int total_arx_attr_mental = 0;
-	int total_arx_attr_dexterity = 0;
-	int total_arx_attr_constitution = 0;
-
-	int total_arx_skill_casting = 0;
-	int total_arx_skill_close_combat = 0;
-	int total_arx_skill_defense = 0;
-	int total_arx_skill_ethereal_link = 0;
-	int total_arx_skill_intuition = 0;
-	int total_arx_skill_object_knowledge = 0;
-	int total_arx_skill_projectile = 0;
-	int total_arx_skill_stealth = 0;
-	int total_arx_skill_technical = 0;
-	*/
-
-	// *******************************
-	// *******************************
-	// *******************************
-	// TODO - Link with skills
 
 	// Get current player health statistics
 	int tmp_current_player_health = this->health;
@@ -16581,9 +16569,6 @@ void idPlayer::UpdateEquipedItems( void ) {
 	// Get current player armour statistics
 	int tmp_current_player_armour = this->inventory.armor;
 	int tmp_current_player_max_armour = this->inventory.maxarmor;
-
-	// ****************************************************
-	// ****************************************************
 
 	// ****************************************************
 	// ****************************************************
@@ -16661,56 +16646,18 @@ void idPlayer::UpdateEquipedItems( void ) {
 					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_mana", "0", items_arx_power_mana );
 					inventory.items[invItemIndex]->GetInt( "inv_arx_attr_armour", "0", items_arx_power_armour );
 
-					// SP - Not implementing ATM too much work.]
-					/*
-					inventory.items[invItemIndex]->GetInt( "arx_attr_strength", "0",		tmp_arx_attr_strength );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_mental", "0",			tmp_arx_attr_mental );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_dexterity", "0",		tmp_arx_attr_dexterity );
-					inventory.items[invItemIndex]->GetInt( "arx_attr_constitution", "0",	tmp_arx_attr_constitution );
-
-					inventory.items[invItemIndex]->GetInt( "arx_skill_casting", "0",		tmp_arx_skill_casting );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_close_combat", "0",	tmp_arx_skill_close_combat );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_defense", "0",		tmp_arx_skill_defense );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_ethereal_link", "0",	tmp_arx_skill_ethereal_link );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_intuition", "0",		tmp_arx_skill_intuition );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_object_knowledge", "0",	tmp_arx_skill_object_knowledge );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_projectile", "0",		tmp_arx_skill_projectile );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_stealth", "0",		tmp_arx_skill_stealth );
-					inventory.items[invItemIndex]->GetInt( "arx_skill_technical", "0",		tmp_arx_skill_technical );
-					*/
-
-					// *********************************************
-					// Update running totals from temp variables
-
-					/*
-					total_arx_power_health += items_arx_power_health;
-					total_arx_power_mana += items_arx_power_mana;
-					total_arx_power_armour += items_arx_power_armour;
-					*/
-
-					// SP - Not implementing ATM too much work.
-					/*
-					total_arx_attr_strength += tmp_arx_attr_strength;
-					total_arx_attr_mental += tmp_arx_attr_mental;
-					total_arx_attr_dexterity += tmp_arx_attr_dexterity;
-					total_arx_attr_constitution += tmp_arx_attr_constitution;
-
-					total_arx_skill_casting += tmp_arx_skill_casting;
-					total_arx_skill_close_combat += tmp_arx_skill_close_combat;
-					total_arx_skill_defense += tmp_arx_skill_defense;
-					total_arx_skill_ethereal_link += tmp_arx_skill_ethereal_link;
-					total_arx_skill_intuition += tmp_arx_skill_intuition;
-					total_arx_skill_object_knowledge += tmp_arx_skill_object_knowledge;
-					total_arx_skill_projectile += tmp_arx_skill_projectile;
-					total_arx_skill_stealth += tmp_arx_skill_stealth;
-					total_arx_skill_technical += tmp_arx_skill_technical;
-					*/
-
 					// *************************************************
 					// *************************************************
 					// Process health
 
 					int needed_Health = tmp_current_player_max_health - tmp_current_player_health;
+
+					// The amount of bonus on offer by the item is greater than
+					// the item health value of the item, so set the bonus on offer
+					// to the remaining health.
+					if ( itemHealth < items_arx_power_health ) {
+						items_arx_power_health = itemHealth;
+					}
 
 					// If health needed and item gives health
 					if ( needed_Health > 0 && items_arx_power_health > 0 ) {
@@ -16718,35 +16665,55 @@ void idPlayer::UpdateEquipedItems( void ) {
 						// Item can give more than needed
 						if ( needed_Health < items_arx_power_health ) {
 							tmp_current_player_health += needed_Health;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Health );
+							itemHealth = itemHealth - needed_Health;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						} else {
 							tmp_current_player_health += items_arx_power_health;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_health );
+							itemHealth = itemHealth - items_arx_power_health;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						}
 					}
 
 					// *************************************************
 					// *************************************************
 					// Process mana
+
 					int needed_Mana = tmp_current_player_max_mana - tmp_current_player_mana;
+
+					// The amount of bonus on offer by the item is greater than
+					// the item health value of the item, so set the bonus on offer
+					// to the remaining health.
+					if ( itemHealth < items_arx_power_mana ) {
+						items_arx_power_mana = itemHealth;
+					}
 
 					// If mana needed and item gives mana
 					if ( needed_Mana > 0 && items_arx_power_mana > 0 ) {
-
+					
 						// Item can give more than needed
 						if ( needed_Mana < items_arx_power_mana ) {
 							tmp_current_player_mana += needed_Mana;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Mana );
+							itemHealth = itemHealth - needed_Mana;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						} else {
 							tmp_current_player_mana += items_arx_power_mana;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_mana );
+							itemHealth = itemHealth - items_arx_power_mana;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						}
 					}
 
 					// *************************************************
 					// *************************************************
 					// Process armour
+
 					int needed_Armour = tmp_current_player_max_armour - tmp_current_player_armour;
+
+					// The amount of bonus on offer by the item is greater than
+					// the item health value of the item, so set the bonus on offer
+					// to the remaining health.
+					if ( itemHealth < items_arx_power_armour ) {
+						items_arx_power_armour = itemHealth;
+					}
 
 					// If mana needed and item gives mana
 					if ( needed_Armour > 0 && items_arx_power_armour > 0 ) {
@@ -16754,13 +16721,15 @@ void idPlayer::UpdateEquipedItems( void ) {
 						// Item can give more than needed
 						if ( needed_Armour < items_arx_power_armour ) {
 							tmp_current_player_armour += needed_Armour;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - needed_Armour );
+							itemHealth = itemHealth - needed_Armour;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						} else {
 							tmp_current_player_armour += items_arx_power_armour;
-							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth - items_arx_power_armour );
+							itemHealth = itemHealth - items_arx_power_armour;
+							inventory.items[invItemIndex]->SetInt( "inv_health", itemHealth );
 						}
 					}
-				}
+				} // if ( itemHealth > 0 )
 			}
 		}
 	}

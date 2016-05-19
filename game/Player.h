@@ -14,7 +14,7 @@
 
 // <---- *** Arx ***
 
-const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 60 ) * 15;	// 15 minutes default.
+const int ARX_NEXT_HUNGRY_DEFAULT		= SEC2MS( 60 ) * 10;	// 15 minutes default.
 const int ARX_HUNGER_WARNING_TIME		= SEC2MS( 60 ) * 2;		// Start to warn 2 minutes before hunger damage.
 const int ARX_HUNGER_DAMAGE_INC			= SEC2MS( 30 );			// Increase hunger damage every x seconds
 
@@ -655,6 +655,7 @@ public:
 	bool					UpdateInventoryItem_health( int newWeaponHealth );
 	bool					UpdateInventoryItem_health_max( int newWeaponHealthMax ); // Think of it as max health / durability an item can be repaired to
 	const char *			GetInventoryItemHealthIcon( int health, int health_max, const idDict itemDict );
+	const char *			GetInventoryEquippedItemHealthIcon( int health, int health_max );
 	idStr					GetInventoryItemString( const char *uniqueItemName, const char *dictKey );
 	bool					UpdateWeaponHealth( void );
 
