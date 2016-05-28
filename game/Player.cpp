@@ -13739,6 +13739,17 @@ void idPlayer::Think( void ) {
 			smokeGaspTime = 0;
 		}
 	}
+
+	/* 
+	// Fix to load base points value into the inventory when save->restart->load after levelup -> apply skills. 
+	// Already done in ArxUpdateHeroSkills, but there you have to wait for next levelup.
+
+	static bool isArxLoadSkillSpawnArgsIntoInventory = false;
+	if(!isArxLoadSkillSpawnArgsIntoInventory){
+		isArxLoadSkillSpawnArgsIntoInventory = true;
+		gameLocal.Printf( "idPlayer::Think - ArxLoadSkillSpawnArgsIntoInventory \n" );
+		ArxLoadSkillSpawnArgsIntoInventory();
+	} */ 
 #endif
 	//neuro start    
 	// determine if portal sky is in pvs
@@ -16888,7 +16899,7 @@ void idPlayer::ArxLoadSkillSpawnArgsIntoInventory( void ) {
 
 	inventory.arx_class_armour_points_base			= this->spawnArgs.GetFloat( "maxarmor", "0" );
 	inventory.arx_class_health_points_base			= this->spawnArgs.GetFloat( "maxhealth", "0" );
-	inventory.arx_class_mana_points_base			= inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
+	inventory.arx_class_mana_points_base			= this->spawnArgs.GetFloat( "ammo_mana", "0" );
 	inventory.arx_class_resistance_to_magic_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_magic_base", "0" );
 	inventory.arx_class_resistance_to_poison_base	= this->spawnArgs.GetFloat( "arx_class_resistance_to_poison_base", "0" );
 	inventory.arx_class_damage_points_base			= this->spawnArgs.GetFloat( "arx_class_damage_points_base", "0" );
@@ -17009,6 +17020,12 @@ void idPlayer::ArxUpdateHeroSkills( void ) {
 	// ********************************************************************
 	// ********************************************************************
 	// ********************************************************************
+	
+	// _DT - 28/05/16 - added ArxLoadSkillSpawnArgsIntoInventory()
+	// Fixes bug: base points value reset in the inventory when save->restart->load after levelup -> apply skills. 
+	// You have to wait for next levelup, if you're loading a savegame with this bug.
+	// Alternative: add base value to save file, but this will break previous savegame file.
+	ArxLoadSkillSpawnArgsIntoInventory();
 
 	// Class: Armour Points ( D3: max armour )
 	tmpFloatValue =
