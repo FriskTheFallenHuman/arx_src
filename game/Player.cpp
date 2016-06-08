@@ -11722,7 +11722,10 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					// Wine counts as food. Stave off hunger for inv_health * minute
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DIV4 ) * SEC2MS( 60 ) );
+						// SP - Update 8th June 2016 - Hunger updated to now recharge 3/4 of health value from previous 1/4
+						// Example a mushroom with now stave off hunger for about 2 mins and a chicken for about 15 mins.
+						// Previously a mushroom would stave off hunger for about 45 seconds and a chicken for 5 mins.
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DEUXTIERS ) * SEC2MS( 60 ) );
 					}
 				}
 
@@ -11732,7 +11735,8 @@ bool idPlayer::ConsumeInventoryItem( int invItemIndex ) {
 					// Stave off hunger for inv_health * minute
 					int healthAmount = item->GetInt( "inv_health", 0 );
 					if ( healthAmount > 0 ) {
-						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DIV4 ) * SEC2MS( 60 ) );
+						// SP - Update 8th June 2016 - Hunger updated to now recharge 3/4 of health value from previous 1/4
+						inventory.arx_timer_player_hungry = inventory.arx_timer_player_hungry + ( ( healthAmount * DEUXTIERS ) * SEC2MS( 60 ) );
 					}
 					gave = true;
 				}
@@ -17191,6 +17195,10 @@ void idPlayer::UpdateHeroStats( void ) {
 	int max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
 	int currentManaLevel = inventory.ammo[ ammo_mana ];
 
+	// Time (in secs) for frost to fully build on the screen ( 30 * 60 = 1800 ).
+	// 60 represents frames per second?
+	int screenFrostTime = g_screenFrostTime.GetInteger() * 60.0f;
+
 	// *******************************************************************************
 	// *******************************************************************************
 	// Solarsplace - Arx End Of Sun - cold system - Thanks Sikkmod
@@ -17202,7 +17210,9 @@ void idPlayer::UpdateHeroStats( void ) {
 		if ( gameLocal.time > inventory.arx_timer_player_warmth ) {
 
 			if ( g_screenFrostTime.GetInteger() ) {
-				int n = g_screenFrostTime.GetInteger() * 60;
+
+				int n = screenFrostTime; // g_screenFrostTime.GetInteger() * 60;
+
 				nScreenFrostAlpha++;
 				nScreenFrostAlpha = ( nScreenFrostAlpha > n ) ? n : nScreenFrostAlpha;
 			}
@@ -17220,7 +17230,7 @@ void idPlayer::UpdateHeroStats( void ) {
 
 		if ( nScreenFrostAlpha > 0 ) {
 
-			float n = (float)g_screenFrostTime.GetInteger() * 60.0f;
+			float n = (float)screenFrostTime; // g_screenFrostTime.GetInteger() * 60.0f;
 			if ( n > 0 ) {
 				n = n * 0.4f; // Start playing shiver sounds after 40% if full frost time
 			}
@@ -17336,14 +17346,26 @@ void idPlayer::UpdateHeroStats( void ) {
 			// Frost damage
 			if ( nScreenFrostAlpha > 0 ) {
 
-				float n = (float)g_screenFrostTime.GetInteger() * 60.0f;
+				float n = (float)screenFrostTime; // g_screenFrostTime.GetInteger() * 60.0f;
 				if ( n > 0 ) {
 					n = n * 0.5f; // Start doing cold damage after 50% if full frost time
 				}
 
 				if ( (float)nScreenFrostAlpha > n ) {
 					if ( ArxCalculateHeroChance( "add_cold" ) ) {
-						Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", ARX_COLD_DAMAGE_BASE ), 1.0f, INVALID_JOINT );
+
+						// SP - Update 8th June 2016
+						// When player starts to freeze only do damage at ARX_COLD_DAMAGE_BASE.
+						// The longer the player freezes buid up to max of 10 pts damage.
+						int coldDamage = ARX_COLD_DAMAGE_BASE;
+						if ( screenFrostTime > 0 ) {
+							float dmgPercent = ( (float)nScreenFrostAlpha / (float)screenFrostTime ) * 100.0f;
+							dmgPercent = dmgPercent * DIV10; // Scale the percentage to be between 0 and 10.
+							coldDamage = (int)dmgPercent;
+							if ( coldDamage < ARX_COLD_DAMAGE_BASE ) { coldDamage = ARX_COLD_DAMAGE_BASE; }
+						}
+
+						Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", coldDamage ), 1.0f, INVALID_JOINT );
 					}
 				}
 			}
