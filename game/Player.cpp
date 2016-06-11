@@ -17183,7 +17183,7 @@ void idPlayer::UpdateHeroStats( void ) {
 	const int ARX_HERO_UPDATE_RATE = 2000;
 	const int ARX_MANA_LEVITATE_RATE = 2;
 	const int ARX_POISON_DAMAGE_BASE = 5;
-	const int ARX_COLD_DAMAGE_BASE = 3;
+	const int ARX_COLD_DAMAGE_BASE = 1; //3;
 	const int ARX_COLD_DAMAGE_START_RATE = 20; // Start to take damage after 20 seconds of cold exposure.
 	
 	const int ARX_FREEZE_NONE = 0;
@@ -17219,7 +17219,7 @@ void idPlayer::UpdateHeroStats( void ) {
 		} else {
 
 			if ( g_screenFrostTime.GetInteger() ) {
-				nScreenFrostAlpha -= 3; // SP was 2 set to 3 to warm up a little quicker
+				nScreenFrostAlpha -= 4; // SP was 3 set to 4 to warm up a little quicker
 				nScreenFrostAlpha = ( nScreenFrostAlpha < 0 ) ? 0 : nScreenFrostAlpha;
 			}
 		}
@@ -17346,24 +17346,39 @@ void idPlayer::UpdateHeroStats( void ) {
 			// Frost damage
 			if ( nScreenFrostAlpha > 0 ) {
 
+				float damageStartPercent = 0.3f;
 				float n = (float)screenFrostTime; // g_screenFrostTime.GetInteger() * 60.0f;
 				if ( n > 0 ) {
-					n = n * 0.5f; // Start doing cold damage after 50% if full frost time
+					n = n * damageStartPercent; // Start doing cold damage after x% if full frost time
 				}
 
 				if ( (float)nScreenFrostAlpha > n ) {
 					if ( ArxCalculateHeroChance( "add_cold" ) ) {
 
 						// SP - Update 8th June 2016
-						// When player starts to freeze only do damage at ARX_COLD_DAMAGE_BASE.
 						// The longer the player freezes buid up to max of 10 pts damage.
 						int coldDamage = ARX_COLD_DAMAGE_BASE;
+
 						if ( screenFrostTime > 0 ) {
-							float dmgPercent = ( (float)nScreenFrostAlpha / (float)screenFrostTime ) * 100.0f;
+
+							// The damage only starts after n * nScreenFrostAlpha value so scale
+							// the percentages so the damage can scale from 1 to 10 rather that say 3 (depending on n) to 10
+							float amount1 = (float)nScreenFrostAlpha - n;
+							float amount2 = (float)screenFrostTime - n;
+
+							float dmgPercent = ( amount1 / amount2 ) * 100.0f;
+
+							//gameLocal.Printf( "coldDamage (%f) / (%f) = (%f)\n", amount1, amount2, dmgPercent );
+
 							dmgPercent = dmgPercent * DIV10; // Scale the percentage to be between 0 and 10.
+
 							coldDamage = (int)dmgPercent;
+
+							// Make sure not to try and do 0 damage.
 							if ( coldDamage < ARX_COLD_DAMAGE_BASE ) { coldDamage = ARX_COLD_DAMAGE_BASE; }
 						}
+
+						//gameLocal.Printf( "coldDamage = %i\n", coldDamage );
 
 						Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", coldDamage ), 1.0f, INVALID_JOINT );
 					}
@@ -17380,50 +17395,9 @@ void idPlayer::UpdateHeroStats( void ) {
 					Damage( NULL, NULL, vec3_origin, va( "damage_arx_general_%i", hungerDamage ), 1.0f, INVALID_JOINT );
 					hud->HandleNamedEvent( "IconPulseHunger" );
 				}
-
 			}
 		}
 	}
-
-	/*
-
-	int healthDecrementAmount = 5;
-	int healthDecrementDelaySecs = 5;
-
-	if ( playerPoisoned )
-	{
-		if ( health > 0 )
-		{
-			if ( gameLocal.time >= healthNextDecreaseTime )
-			{
-				health -= healthDecrementAmount;
-				healthNextDecreaseTime = gameLocal.time + SEC2MS( healthDecrementAmount);
-			}
-		}
-	}
-
-
-	*/
-
-
-	/*
-
-	*** Mana
-
-	int ammo_mana;
-	int max_mana;
-
-	ammo_mana = idWeapon::GetAmmoNumForName( "ammo_mana" );
-	max_mana = inventory.MaxAmmoForAmmoClass( this, "ammo_mana" );
-
-	if ( inventory.ammo[ ammo_mana ] < 100 )
-	{
-		inventory.ammo[ ammo_mana ] = inventory.ammo[ ammo_mana ] + manaIncrementAmount;
-	}
-
-	*/
-
-
 }
 
 float idPlayer::ArxSkillGetAlertDistance( float defaultDistance ) {

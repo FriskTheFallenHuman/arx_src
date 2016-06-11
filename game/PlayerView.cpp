@@ -612,7 +612,15 @@ idPlayerView::RenderPlayerView
 ===================
 */
 void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
+
 	const renderView_t *view = player->GetRenderView();
+
+	// Solarsplace - 31st May 2016
+	// Fixes bug where loading a previous save while a current game is in play will cause a crash.
+	// I wonder if this bug was present in the original Doom3?
+	if ( !view ) {
+		return;
+	}
 
 	// place the sound origin for the player
 	gameSoundWorld->PlaceListener( view->vieworg, view->viewaxis, player->entityNumber + 1, gameLocal.time, hud ? hud->State().GetString( "location" ) : "Undefined" );
